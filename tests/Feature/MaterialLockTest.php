@@ -222,7 +222,7 @@ class MaterialLockTest extends TestCase
         $this->assertSame([Material::EXTRA, $own->id, null], [$extra->kind, $extra->classroom_id, $extra->curriculum_id]);
 
         // Tutup akses lewat status
-        $this->actingAs($sensei)->put(route('manage.materials.update', $extra), $data + ['classroom_id' => $own->id, 'status' => 'draft'])->assertSessionHasNoErrors();
+        $this->actingAs($sensei)->put(route('manage.materials.update', $extra), ['classroom_id' => $own->id, 'status' => 'draft'] + $data)->assertSessionHasNoErrors();
         $this->assertSame('draft', $extra->fresh()->status);
 
         $this->actingAs($other)->get(route('manage.materials.edit', $extra))->assertForbidden();
