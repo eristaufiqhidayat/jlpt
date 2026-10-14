@@ -3,7 +3,7 @@
 @section('content')
     @php($isDone = $done->has($material->id))
     <div class="page-head">
-        <div><h1>{{ $material->title }}</h1><p>{{ $material->chapter ?: 'Materi' }}@if ($material->level) · {{ $material->level->code }}@endif @if ($material->duration_minutes) · {{ $material->duration_minutes }} menit @endif</p></div>
+        <div><h1>{{ $material->title }}</h1><p>@if ($material->curriculum){{ $material->curriculum->name }} · @endif{{ $material->chapterLabel() }}@if ($material->level) · {{ $material->level->code }}@endif @if ($material->duration_minutes) · {{ $material->duration_minutes }} menit @endif</p></div>
         <a class="btn secondary" href="{{ route('student.materials') }}">Semua materi</a>
     </div>
     <div class="materi-layout">
@@ -40,7 +40,7 @@
         </div>
         <div>
             <div class="card">
-                <div class="card-head"><h2>{{ $material->chapter ?: 'Materi' }}</h2></div>
+                <div class="card-head"><h2>{{ $material->isExtra() ? 'Materi dari sensei' : $material->chapterLabel() }}</h2></div>
                 @foreach ($siblings as $m)
                     <a @class(['materi-list-item', 'active' => $m->id === $material->id]) href="{{ route('student.materials.show', $m) }}">
                         <div @class(['num', 'done' => $done->has($m->id)])>{{ $done->has($m->id) ? '✓' : $loop->iteration }}</div>
@@ -54,7 +54,7 @@
                     @foreach ($others as $m)
                         <a class="materi-list-item" href="{{ route('student.materials.show', $m) }}">
                             <div class="num">{{ $m->icon() }}</div>
-                            <div class="info"><p>{{ $m->title }}</p><span>{{ $m->chapter }}</span></div>
+                            <div class="info"><p>{{ $m->title }}</p><span>{{ $m->chapterLabel() }}</span></div>
                         </a>
                     @endforeach
                 </div>

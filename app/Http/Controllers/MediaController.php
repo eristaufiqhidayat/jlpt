@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Material;
+use App\Services\MaterialAccess;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -21,6 +23,12 @@ class MediaController extends Controller
         // Materi belajar (video/PDF/PPT) boleh dibuka semua user yang login.
         $isAudio = ! str_starts_with($path, 'materials/') && preg_match('/\.(mp3|m4a|wav|ogg)$/i', $path);
         abort_if($isAudio && request()->user()->isStudent(), 403);
+
+        // File materi untuk peserta mengikuti lock yang sama dengan halaman materi (materials/{id}/nama-file).
+        if (str_starts_with($path, 'materials/') && request()->user()->isStudent()) {
+            $material = Material::find((int) (explode('/', $path)[1] ?? 0));
+            abort_unless($material && app(MaterialAccess::class)->canView(request()->user(), $material), 403);
+        }
 
         $disk = Storage::disk('local');
         abort_unless($disk->exists($path), 404);

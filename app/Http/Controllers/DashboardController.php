@@ -16,7 +16,7 @@ use App\Models\Question;
 use App\Models\User;
 use App\Http\Controllers\Student\LearningController;
 use App\Models\ClassSession;
-use App\Models\Material;
+use App\Services\MaterialAccess;
 use App\Support\ProgramJepang;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,8 +66,8 @@ class DashboardController extends Controller
     private function student(User $user): View
     {
         $user->load(['profile.level', 'programStages']);
-        $levelId = $user->profile?->level_id;
-        $materialsQuery = Material::published()->when($levelId, fn ($q) => $q->where(fn ($w) => $w->where('level_id', $levelId)->orWhereNull('level_id')));
+        // Materi yang terbuka untuk peserta (lock per kurikulum kelas, materi umum per level, materi tambahan kelasnya).
+        $materialsQuery = app(MaterialAccess::class)->visibleQuery($user);
         $totalMaterials = (clone $materialsQuery)->count();
         $doneMaterials = $user->completedMaterials()->whereIn('materials.id', (clone $materialsQuery)->pluck('id'))->count();
         $classIds = $user->classrooms()->pluck('classrooms.id');
