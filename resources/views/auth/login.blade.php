@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=5">
 </head>
 <body>
 <div class="login-wrap">
@@ -66,6 +66,20 @@
                 <button type="submit" class="btn big block">Masuk</button>
                 <p class="muted" style="font-size:12px;text-align:center;margin-top:18px">Lupa password? Hubungi admin lembaga.</p>
             </form>
+
+            @if ($demoRoles->isNotEmpty())
+                <div class="demo-login">
+                    <p><strong>Demo masuk cepat</strong> · mode uji coba, tanpa password</p>
+                    <div class="demo-login-btns">
+                        @foreach ($demoRoles as $role)
+                            <form method="POST" action="{{ route('login.demo', $role->value) }}">
+                                @csrf
+                                <button type="submit" class="btn small secondary">{{ $role->label() }}</button>
+                            </form>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

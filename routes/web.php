@@ -35,6 +35,8 @@ Route::get('/verifikasi/{token}', [CertificateController::class, 'verify'])->nam
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
+    // Demo masuk cepat: hanya aktif bila DEMO_LOGIN=true (dicek di controller)
+    Route::post('/login/demo/{role}', [LoginController::class, 'demo'])->middleware('throttle:20,1')->name('login.demo');
 });
 
 Route::middleware('auth')->group(function () {

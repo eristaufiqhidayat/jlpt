@@ -21,6 +21,11 @@ php artisan migrate --seed
 ```
 
 Kalau `ADMIN_PASSWORD` kosong, password admin dibuat acak dan ditampilkan sekali di terminal.
+
+**Demo masuk cepat** (untuk situs uji coba): isi `DEMO_LOGIN=true` di `.env`, lalu `php artisan config:clear`. Halaman login
+akan menampilkan tombol masuk tanpa password untuk Peserta, Sensei, Admin Pendidikan, Admin, dan Direktur (akun demo
+dibuat otomatis bila belum ada; emailnya di `config/app.php` → `demo_accounts`). Siapa pun yang membuka halaman login
+bisa masuk, termasuk sebagai Admin, jadi kembalikan ke `DEMO_LOGIN=false` sebelum situs dipakai peserta sungguhan.
 Lupa password? `php artisan user:password admin@example.com` (tambahkan `--admin` untuk membuat akun admin baru).
 Di `APP_ENV=local`, seeder juga membuat data demo: `sensei@example.com`, `student@example.com`, dan
 `direktur@example.com`, `pendidikan@example.com` (Admin Pendidikan) (password `password`), 8 soal N4, ujian gratis berkode `DEMON4`, kelas N4-A dengan jadwal,
