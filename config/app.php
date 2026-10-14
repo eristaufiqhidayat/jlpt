@@ -20,6 +20,21 @@ return [
     'brand_tagline' => env('APP_BRAND_TAGLINE', 'Japanese Language Learning & Testing System'),
 
     /*
+    | Tombol "Demo masuk cepat" di halaman login: masuk sebagai akun demo per peran tanpa password.
+    | Hanya untuk uji coba. Mati kecuali DEMO_LOGIN=true. Jangan aktifkan di situs yang dipakai peserta sungguhan.
+    */
+    'demo_login' => (bool) env('DEMO_LOGIN', false),
+
+    // Email akun demo per peran (sama dengan DemoSeeder). Akun dibuat otomatis bila belum ada.
+    'demo_accounts' => [
+        'student' => 'student@example.com',
+        'sensei' => 'sensei@example.com',
+        'education_admin' => 'pendidikan@example.com',
+        'admin' => 'admin-demo@example.com',
+        'director' => 'direktur@example.com',
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
