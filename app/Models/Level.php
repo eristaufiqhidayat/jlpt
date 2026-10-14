@@ -8,7 +8,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Level extends Model
 {
-    protected $fillable = ['test_type_id', 'code', 'name', 'sort_order'];
+    protected $fillable = ['test_type_id', 'code', 'name', 'sort_order', 'is_active'];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    public function masterLabel(): string
+    {
+        return trim(($this->testType?->name ?? '').' '.$this->code);
+    }
 
     public function testType(): BelongsTo
     {

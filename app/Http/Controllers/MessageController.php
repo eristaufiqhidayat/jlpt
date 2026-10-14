@@ -85,6 +85,6 @@ class MessageController extends Controller
 
     private function ensureCanBroadcast(User $user): void
     {
-        abort_unless($user->isAdmin() || $user->isSensei(), 403);
+        abort_unless($user->isAcademicAdmin() || $user->isSensei(), 403);
     }
 }

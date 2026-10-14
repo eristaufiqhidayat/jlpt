@@ -23,7 +23,7 @@ php artisan migrate --seed
 Kalau `ADMIN_PASSWORD` kosong, password admin dibuat acak dan ditampilkan sekali di terminal.
 Lupa password? `php artisan user:password admin@example.com` (tambahkan `--admin` untuk membuat akun admin baru).
 Di `APP_ENV=local`, seeder juga membuat data demo: `sensei@example.com`, `student@example.com`, dan
-`direktur@example.com` (password `password`), 8 soal N4, ujian gratis berkode `DEMON4`, kelas N4-A dengan jadwal,
+`direktur@example.com`, `pendidikan@example.com` (Admin Pendidikan) (password `password`), 8 soal N4, ujian gratis berkode `DEMON4`, kelas N4-A dengan jadwal,
 3 materi, tahapan Program Jepang, dan satu pesan.
 
 Scheduler wajib aktif di server supaya bagian ujian yang waktunya habis dikumpulkan otomatis
@@ -43,7 +43,8 @@ Scheduler wajib aktif di server supaya bagian ujian yang waktunya habis dikumpul
 | Program Jepang | `program_stages`, `program_documents` | 7 tahap (Pendaftaran → Keberangkatan) dan dokumen (paspor, sertifikat JLPT, interview, MCU, visa, tiket) |
 | Sertifikat | `certificates` | terbit otomatis saat lulus (nilai ≥ nilai minimal ujian), nomor `JGG-JLPT-2026-0001`, token verifikasi |
 | Pesan | `messages` | pesan admin/sensei ke peserta atau satu kelas; peserta bisa membalas |
-| Master | `test_types` → `levels` → `sections` | JLPT → N4 → Moji Goi / Bunpou Dokkai / Choukai, dengan durasi standar |
+| Master | `test_types` → `levels` → `sections` | JLPT → N4 → Moji Goi / Bunpou Dokkai / Choukai, dengan durasi standar; skor maks & batas lulus per jenis tes; level/bagian bisa dinonaktifkan |
+| Master akademik | `curricula`, `violation_categories`, `master_data_logs` | klasifikasi kelas (Minna I/II, JFT, N3, SSW per bidang; urutan = dasar lock), kategori batsu, log setiap perubahan data master |
 | Bank soal | `passages`, `questions`, `question_options` | bacaan/audio bersama, soal (isian, ★, bacaan, choukai), pilihan 1–4 |
 | Ujian | `exams`, `exam_sections` | kode akses, gratis/berbayar, durasi dan jumlah soal per bagian (bisa diubah sensei) |
 | Pengerjaan | `exam_attempts`, `attempt_sections`, `attempt_questions` | soal hasil acak + snapshot kunci, waktu per bagian |
@@ -108,7 +109,8 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 | Role | Menu | Isi |
 |---|---|---|
 | Semua | `/login` | Login dengan email + password (maks. 5 percobaan/menit) |
-| Admin | User | Tambah/edit admin, sensei, student; aktif/nonaktifkan; ganti password |
+| Admin | User | Tambah/edit admin, Admin Pendidikan, sensei, student; aktif/nonaktifkan; ganti password |
+| Admin Pendidikan | Data Master | Klasifikasi kelas, klasifikasi ujian (jenis tes → level → bagian), skor & batas lulus, kategori batsu. Hanya peran ini yang bisa menambah/mengubah/menonaktifkan (tidak ada hapus); staf lain hanya melihat. Setiap perubahan tercatat |
 | Admin | Pembayaran | Lihat semua transaksi (Midtrans & manual), catat pembayaran manual, ubah status |
 | Sensei & admin | Bank Soal | Soal isian, ★, bacaan, choukai, esai; furigana `{漢字|かんじ}`, garis bawah `__kata__`; gambar & audio |
 | Sensei & admin | Bacaan & audio | Bacaan/audio yang dipakai bersama beberapa soal |
@@ -160,9 +162,13 @@ Untuk production: ganti ke key production dan `MIDTRANS_IS_PRODUCTION=true`.
 ## Update dari versi sebelumnya
 
 ```bash
-php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan
+php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan, data master akademik
+php artisan db:seed --class=MasterDataSeeder   # klasifikasi kelas & ujian sesuai notulen; aman diulang, tidak menimpa perubahan
 php artisan optimize:clear
 ```
+
+Peran **Admin Pendidikan** (`education_admin`) dibuat admin lewat menu User. Peran ini mengelola Data Master dan
+punya akses yang sama dengan sensei/admin untuk materi, kelas, bank soal, ujian (semua ujian), penilaian esai, dan laporan.
 
 ## Tahap berikutnya
 

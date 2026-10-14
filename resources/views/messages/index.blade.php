@@ -3,7 +3,7 @@
 @section('content')
     <div class="page-head">
         <div><h1>Pesan</h1><p>Pengumuman dan pesan dari sensei/admin.</p></div>
-        @if (auth()->user()->isAdmin() || auth()->user()->isSensei())
+        @if (auth()->user()->isAcademicAdmin() || auth()->user()->isSensei())
             <a class="btn" href="{{ route('messages.create') }}">+ Tulis pesan</a>
         @endif
     </div>

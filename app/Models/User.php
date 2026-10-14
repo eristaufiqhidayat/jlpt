@@ -54,6 +54,18 @@ class User extends Authenticatable
         return $this->role === Role::Admin;
     }
 
+    /** Admin Pendidikan: satu-satunya peran yang boleh mengubah data master akademik. */
+    public function isEducationAdmin(): bool
+    {
+        return $this->role === Role::EducationAdmin;
+    }
+
+    /** Admin atau Admin Pendidikan: boleh melihat dan mengelola semua ujian, bukan hanya miliknya. */
+    public function isAcademicAdmin(): bool
+    {
+        return $this->isAdmin() || $this->isEducationAdmin();
+    }
+
     public function isSensei(): bool
     {
         return $this->role === Role::Sensei;

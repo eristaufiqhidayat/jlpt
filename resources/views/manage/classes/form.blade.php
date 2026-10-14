@@ -6,6 +6,11 @@
     <form method="POST" class="card" action="{{ $class->exists ? route('manage.classes.update', $class) : route('manage.classes.store') }}">
         @csrf @if ($class->exists) @method('PUT') @endif
         <div class="field"><label for="name">Nama kelas</label><input id="name" name="name" type="text" maxlength="60" value="{{ old('name', $class->name) }}" required placeholder="mis. N4-A"></div>
+        <div class="field"><label for="curriculum_id">Kurikulum (dari Data Master)</label>
+            <select id="curriculum_id" name="curriculum_id"><option value="">–</option>
+                @foreach ($curricula as $cur)<option value="{{ $cur->id }}" @selected((int) old('curriculum_id', $class->curriculum_id) === $cur->id)>{{ $cur->group }} · {{ $cur->name }}@unless ($cur->is_active) (nonaktif)@endunless</option>@endforeach
+            </select>
+            <div class="hint">Kurikulum baru hanya bisa ditambah Admin Pendidikan di menu Data Master.</div></div>
         <div class="row">
             <div class="field"><label for="level_id">Level</label>
                 <select id="level_id" name="level_id"><option value="">–</option>

@@ -9,7 +9,7 @@
         @forelse ($classrooms as $c)
             <a class="card" href="{{ route('manage.classes.show', $c) }}" style="text-decoration:none;color:inherit;display:block">
                 <div class="card-head"><h2>{{ $c->name }}</h2>{!! $c->is_active ? '<span class="badge ok">Aktif</span>' : '<span class="badge">Nonaktif</span>' !!}</div>
-                <p class="muted" style="margin:0;font-size:13px">{{ $c->level?->code ?? 'Semua level' }} · Instruktur: {{ $c->sensei?->name ?? '–' }}</p>
+                <p class="muted" style="margin:0;font-size:13px">@if ($c->curriculum){{ $c->curriculum->name }} · @endif{{ $c->level?->code ?? 'Semua level' }} · Instruktur: {{ $c->sensei?->name ?? '–' }}</p>
                 <p style="margin:10px 0 0;font-size:13px">👥 {{ $c->students_count }} peserta · 📅 {{ $c->upcoming_count }} jadwal mendatang</p>
             </a>
         @empty
