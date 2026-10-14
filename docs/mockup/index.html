@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JGG Learning System Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout: mockup toolbar di atas, lalu shell aplikasi jlpt (sidebar navy + konten krem). Portal Ujian memakai shell terpisah tanpa sidebar. */
+:root {
+  color-scheme: light;
+  --navy-900: #15255c; --navy-800: #1c3170; --navy-700: #243c86; --navy-600: #2c64a0; --sky: #5b8fc8; --steel: #48789c;
+  --sakura: #d6b638; --sakura-deep: #2c64a0; --gold: #d6b638; --gold-ink: #7a5f00;
+  --cream: #f2f5f9; --paper: #ffffff; --ink: #18223a; --ink-soft: #56627a; --line: #dde4ee; --line-soft: #ecf0f5;
+  --green: #2f8a5c; --orange: #c9741f; --blue: #2f6fae; --purple: #7357c4; --red: #b5362a;
+  --ok-bg: #e3f3ea; --warn-bg: #fdf2e2; --err-bg: #fdeee9; --info-bg: #eef3fa; --pur-bg: #f0ebfb;
+  --sb-text: #a9b7cf; --sb-muted: #6f7f9c;
+  --new: #7a5f00; --new-bg: #fbf4d4;
+  --radius: 14px; --shadow: 0 8px 28px rgba(11,31,58,.07);
+  --logo: url(data:image/webp;base64,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);
+  --font: 'Zen Kaku Gothic New', 'Noto Sans JP', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { margin: 0; font-family: var(--font); background: var(--cream); color: var(--ink); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { line-height: 1.3; margin: 0 0 .5em; text-wrap: balance; }
+h1 { font-size: 1.3rem; font-weight: 900; }
+h2 { font-size: 1rem; font-weight: 700; }
+h3 { font-size: .92rem; font-weight: 700; }
+p { margin: 0 0 .6em; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sakura-deep); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-soft); }
+.small { font-size: 12.5px; }
+
+/* ---------- Mockup toolbar ---------- */
+.mk { background: var(--paper); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 60; }
+.mk-title { font-weight: 900; font-size: 13px; letter-spacing: .02em; }
+.mk-title span { color: var(--ink-soft); font-weight: 500; }
+.seg { display: inline-flex; background: var(--cream); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 7px; cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--ink-soft); }
+.seg button[aria-pressed="true"] { background: var(--navy-900); color: #fff; }
+.mk-check { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; cursor: pointer; }
+.mk-legend { font-size: 12px; color: var(--ink-soft); margin-left: auto; }
+
+/* Penanda butir notulen */
+.tag { display: inline-flex; align-items: center; gap: 3px; background: var(--new-bg); color: var(--new); border: 1px solid #e8d48a; font-size: 10.5px; font-weight: 700; padding: 0 6px; border-radius: 6px; line-height: 18px; white-space: nowrap; vertical-align: middle; cursor: help; }
+.tag::before { content: "●"; font-size: 7px; }
+body.hide-tags .tag { display: none; }
+
+/* ---------- App shell ---------- */
+.shell { display: flex; min-height: calc(100% - 52px); }
+.sidebar { width: 228px; flex-shrink: 0; background: var(--navy-900); color: var(--sb-text); padding: 16px 0; display: flex; flex-direction: column; }
+.sb-brand { display: flex; align-items: center; gap: 10px; padding: 0 18px 16px; border-bottom: 1px solid rgba(255,255,255,.08); margin-bottom: 6px; }
+.logo { width: 38px; height: 38px; flex-shrink: 0; background: var(--logo) center / contain no-repeat; }
+.sb-brand p { margin: 0; font-size: 12px; font-weight: 900; color: #fff; line-height: 1.25; text-transform: uppercase; letter-spacing: .03em; }
+.sb-brand span { display: block; font-size: 10px; color: #93a3bf; line-height: 1.35; }
+.sb-brand .sb-role { color: var(--gold); font-weight: 700; margin-top: 2px; }
+.sb-nav { flex: 1; overflow-y: auto; }
+.sb-label { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--sb-muted); padding: 12px 18px 4px; }
+.sb-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 18px; font-size: 13px; color: var(--sb-text); border: 0; border-left: 3px solid transparent; background: none; text-align: left; cursor: pointer; font-weight: 500; }
+.sb-item .ic { width: 18px; text-align: center; font-size: 13px; opacity: .9; }
+.sb-item:hover { background: rgba(255,255,255,.05); color: #fff; }
+.sb-item.active { background: rgba(214,182,56,.16); color: #fff; border-left-color: var(--sakura); font-weight: 700; }
+.sb-item .dot { margin-left: auto; width: 7px; height: 7px; border-radius: 50%; background: var(--sakura); }
+body.hide-tags .sb-item .dot { display: none; }
+.sb-foot { padding: 12px 18px 0; border-top: 1px solid rgba(255,255,255,.08); font-size: 11.5px; color: #93a3bf; }
+
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { background: var(--paper); border-bottom: 1px solid var(--line); padding: 11px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.crumb { font-size: 13px; color: var(--ink-soft); }
+.crumb b { color: var(--ink); }
+.user-chip { display: flex; align-items: center; gap: 9px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--navy-700), var(--sky)); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12.5px; flex-shrink: 0; }
+.user-chip p { margin: 0; font-size: 12.5px; font-weight: 700; line-height: 1.3; }
+.user-chip span { font-size: 10.5px; color: var(--ink-soft); }
+.container { padding: 22px 24px 48px; width: 100%; max-width: 1180px; }
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.page-head h1 { margin: 0 0 2px; }
+.page-head p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+
+/* ---------- Komponen ---------- */
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; min-width: 0; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.card-head h2 { margin: 0; font-size: 14.5px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.split { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.stat { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+.stat .ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 17px; flex-shrink: 0; background: var(--info-bg); }
+.stat .ic.g { background: var(--ok-bg); } .stat .ic.o { background: var(--warn-bg); } .stat .ic.p { background: var(--pur-bg); } .stat .ic.r { background: var(--err-bg); }
+.stat b { display: block; font-size: 18px; font-weight: 900; line-height: 1.2; }
+.stat span { font-size: 12px; color: var(--ink-soft); }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 9px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; cursor: pointer; background: var(--navy-900); color: #fff; white-space: nowrap; }
+.btn.sakura { background: var(--sakura-deep); }
+.btn.ghost { background: var(--paper); color: var(--navy-700); border-color: var(--line); }
+.btn.sm { padding: 4px 10px; font-size: 12px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 20px; white-space: nowrap; }
+.b-green { background: var(--ok-bg); color: var(--green); }
+.b-orange { background: var(--warn-bg); color: var(--orange); }
+.b-red { background: var(--err-bg); color: var(--red); }
+.b-blue { background: var(--info-bg); color: var(--blue); }
+.b-purple { background: var(--pur-bg); color: var(--purple); }
+.b-grey { background: var(--line-soft); color: var(--ink-soft); }
+.b-navy { background: var(--navy-900); color: #fff; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 14px; overflow-x: auto; scrollbar-width: thin; }
+.tabs button { border: 0; background: none; padding: 9px 14px; font-weight: 700; font-size: 13px; color: var(--ink-soft); border-bottom: 2.5px solid transparent; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.tabs button[aria-selected="true"] { color: var(--navy-900); border-bottom-color: var(--sakura-deep); }
+.tabs button .lock { font-size: 11px; }
+.tabs button.locked { color: #a3a9b6; }
+
+.tbl-wrap { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line-soft); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; }
+
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.input { border: 1px solid var(--line); background: var(--paper); border-radius: 9px; padding: 7px 10px; width: 100%; }
+textarea.input { resize: vertical; min-height: 64px; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+.toolbar .input { width: auto; flex: 1 1 200px; }
+
+.note { border-radius: 10px; padding: 10px 12px; font-size: 12.5px; display: flex; gap: 9px; align-items: flex-start; }
+.note.info { background: var(--info-bg); color: #24507f; }
+.note.warn { background: var(--warn-bg); color: #8a5214; }
+.note.lockn { background: var(--line-soft); color: var(--ink-soft); }
+
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+.switch input { appearance: none; width: 34px; height: 20px; background: #cfd3db; border-radius: 20px; position: relative; cursor: pointer; transition: background .15s; flex-shrink: 0; margin: 0; }
+.switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: left .15s; }
+.switch input:checked { background: var(--green); }
+.switch input:checked::after { left: 16px; }
+
+.list { display: flex; flex-direction: column; }
+.li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.li:last-child { border-bottom: 0; }
+.li .grow { flex: 1; min-width: 0; }
+.li .grow p { margin: 0; font-weight: 700; font-size: 13px; }
+.li .grow span { font-size: 12px; color: var(--ink-soft); }
+.ico { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0; background: var(--info-bg); font-size: 14px; }
+.ico.g { background: var(--ok-bg); } .ico.o { background: var(--warn-bg); } .ico.r { background: var(--err-bg); } .ico.p { background: var(--pur-bg); } .ico.k { background: var(--line-soft); }
+
+/* Bab grid (materi & latihan) */
+.bab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.bab { border: 1px solid var(--line); border-radius: 11px; padding: 10px 12px; background: var(--paper); display: flex; flex-direction: column; gap: 3px; }
+.bab b { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+.bab p { margin: 0; font-weight: 700; font-size: 13px; }
+.bab .jp { font-family: 'Noto Sans JP', var(--font); font-size: 12px; color: var(--ink-soft); }
+.bab.done { border-color: #bfe2cd; background: #f6fbf8; }
+.bab.now { border-color: var(--sakura); box-shadow: 0 0 0 3px #f3e6b0; }
+.bab.lk { background: var(--line-soft); color: #9aa1ae; }
+.bab.lk p { color: #9aa1ae; }
+
+/* Progress bar */
+.bar { height: 7px; background: var(--line-soft); border-radius: 7px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--green); border-radius: 7px; }
+
+/* Timeline Progress to Japan */
+.tl { display: grid; grid-template-columns: repeat(8, minmax(96px, 1fr)); gap: 0; overflow-x: auto; padding: 6px 2px 4px; }
+.tl-step { position: relative; text-align: center; padding: 0 4px; }
+.tl-step::before { content: ""; position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: var(--line); z-index: 0; }
+.tl-step:first-child::before { display: none; }
+.tl-step.done::before, .tl-step.cur::before { background: var(--green); }
+.tl-c { position: relative; z-index: 1; width: 32px; height: 32px; border-radius: 50%; margin: 0 auto 6px; display: grid; place-items: center; font-weight: 900; font-size: 13px; background: var(--paper); border: 2.5px solid var(--line); color: var(--ink-soft); }
+.tl-step.done .tl-c { background: var(--green); border-color: var(--green); color: #fff; }
+.tl-step.cur .tl-c { border-color: var(--sakura-deep); color: var(--sakura-deep); box-shadow: 0 0 0 4px #f3e6b0; }
+.tl-step p { margin: 0; font-size: 12px; font-weight: 700; line-height: 1.3; }
+.tl-step span { display: block; font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+
+/* Jadwal mingguan */
+.sched { min-width: 620px; }
+.sched td { vertical-align: top; }
+.slot { background: var(--info-bg); border-radius: 8px; padding: 6px 8px; font-size: 12px; line-height: 1.35; }
+.slot b { display: block; font-size: 12px; }
+.slot.s2 { background: var(--pur-bg); } .slot.s3 { background: var(--ok-bg); } .slot.s4 { background: var(--warn-bg); }
+
+/* Kartu skor */
+.score { display: flex; align-items: baseline; gap: 6px; }
+.score b { font-size: 40px; font-weight: 900; line-height: 1; color: var(--navy-900); }
+.score span { font-size: 15px; color: var(--ink-soft); font-weight: 700; }
+.hidden-box { border: 1.5px dashed var(--line); border-radius: 11px; padding: 12px 14px; color: var(--ink-soft); font-size: 12.5px; display: flex; gap: 10px; align-items: center; background: repeating-linear-gradient(-45deg, var(--paper), var(--paper) 8px, #f6f8fb 8px, #f6f8fb 16px); }
+
+/* Berkas */
+.doc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.doc-row:last-child { border-bottom: 0; }
+.doc-row p { margin: 0; font-weight: 700; font-size: 13px; }
+.doc-row span.sub { display: block; font-size: 11.5px; color: var(--ink-soft); font-weight: 500; }
+
+/* Portal Ujian (shell terpisah) */
+.portal { min-height: calc(100% - 52px); background: var(--navy-900); color: #e6ecf6; }
+.p-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; border-bottom: 1px solid rgba(255,255,255,.1); flex-wrap: wrap; }
+.p-brand { display: flex; align-items: center; gap: 10px; }
+.p-brand p { margin: 0; font-weight: 900; font-size: 14px; color: #fff; letter-spacing: .02em; }
+.p-brand span { font-size: 11px; color: #93a3bf; }
+.p-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.p-nav button { border: 0; background: none; color: #a9b7cf; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; }
+.p-nav button[aria-pressed="true"] { background: rgba(214,182,56,.2); color: #fff; }
+.p-body { padding: 26px 24px 48px; max-width: 1080px; margin: 0 auto; }
+.p-body .card { color: var(--ink); }
+.p-hero h1 { color: #fff; font-size: 1.5rem; margin-bottom: 4px; }
+.p-hero p { color: #a9b7cf; margin-bottom: 18px; }
+.type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.type { background: var(--navy-800); border: 1px solid rgba(255,255,255,.08); border-radius: 13px; padding: 14px; cursor: pointer; text-align: left; color: #e6ecf6; display: flex; flex-direction: column; gap: 4px; }
+.type b { font-size: 15px; color: #fff; }
+.type .mx { font-size: 12px; color: var(--sakura); font-weight: 700; }
+.type small { color: #93a3bf; font-size: 11.5px; line-height: 1.45; }
+.type[aria-pressed="true"] { border-color: var(--sakura); background: #24418c; }
+.code-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.code-row .input { flex: 1 1 200px; font-size: 18px; letter-spacing: .18em; font-weight: 900; text-transform: uppercase; padding: 10px 14px; }
+.lv { display: flex; flex-wrap: wrap; gap: 6px; }
+.lv span { border: 1px solid var(--line); border-radius: 8px; padding: 3px 10px; font-size: 12.5px; font-weight: 700; background: var(--cream); }
+
+.screen[hidden] { display: none !important; }
+
+/* ---------- Login & pendaftaran ---------- */
+.auth { min-height: calc(100% - 52px); display: grid; place-items: center; padding: 36px 16px 48px; background: var(--cream); }
+.auth.dark { background: radial-gradient(1200px 500px at 50% -10%, #2a4a9a 0%, var(--navy-900) 60%); }
+.auth-card { width: 100%; max-width: 900px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); background: var(--paper); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 18px 50px rgba(11,31,58,.12); overflow: hidden; }
+.auth-side { background: var(--navy-900); color: #c9d4e6; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; position: relative; overflow: hidden; }
+.auth-side::after { content: ""; position: absolute; right: -90px; bottom: -90px; width: 300px; height: 300px; background: var(--logo) center / contain no-repeat; opacity: .14; pointer-events: none; }
+.big-jp { font-family: 'Noto Sans JP', var(--font); font-size: 38px; font-weight: 700; line-height: 1.25; color: #fff; margin: 0 0 12px; letter-spacing: .04em; }
+.auth-side > div { position: relative; z-index: 1; }
+.side-sub { color: #a9b7cf; font-size: 13px; max-width: 34ch; margin: 0; }
+.side-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; position: relative; z-index: 1; }
+.side-list li::before { content: "◆"; font-family: 'Noto Sans JP', var(--font); color: var(--sakura); margin-right: 8px; font-size: 11px; }
+.auth-form { padding: 30px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.logo.lg { width: 64px; height: 64px; }
+.p-login .logo { width: 52px; height: 52px; }
+.input.lg { padding: 10px 12px; font-size: 14px; }
+.lgbtn { justify-content: center; padding: 11px 14px; font-size: 14px; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--navy-600); font-weight: 700; font-size: 12.5px; cursor: pointer; }
+.linkbtn.light { color: #a9b7cf; align-self: flex-start; }
+.quick { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.divider { height: 1px; background: var(--line); }
+.auth-links { display: flex; flex-direction: column; gap: 12px; }
+.err { background: var(--err-bg); color: var(--red); border-radius: 9px; padding: 9px 12px; font-size: 12.5px; font-weight: 700; }
+.reg { width: 100%; max-width: 980px; }
+.dl { display: flex; gap: 10px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--paper); border-radius: 11px; padding: 10px 12px; cursor: pointer; }
+.dl b { display: block; font-size: 13px; }
+.dl small { color: var(--ink-soft); font-size: 11.5px; }
+.up { position: relative; overflow: hidden; }
+.up input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.p-login { width: 100%; max-width: 420px; background: var(--navy-800); border: 1px solid rgba(255,255,255,.1); border-radius: 18px; padding: 28px; display: flex; flex-direction: column; gap: 14px; color: #e6ecf6; box-shadow: 0 18px 50px rgba(0,0,0,.3); }
+.p-login h1 { color: #fff; margin: 0 0 2px; }
+.p-login .field label { color: #a9b7cf; }
+.p-login .input { background: #101d4a; border-color: rgba(255,255,255,.16); color: #fff; }
+.p-login .btn.ghost { background: transparent; color: #c9d4e6; border-color: rgba(255,255,255,.18); }
+.p-rules { background: rgba(255,255,255,.05); border-radius: 11px; padding: 12px 14px; font-size: 12.5px; color: #c9d4e6; }
+.p-rules p { margin: 0 0 4px; color: #fff; }
+.p-rules ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.p-user { color: #93a3bf; font-size: 12.5px; padding: 6px 4px 6px 12px; border-left: 1px solid rgba(255,255,255,.12); margin-left: 6px; align-self: center; }
+.sb-foot { display: flex; flex-direction: column; gap: 6px; }
+.sb-out { background: none; border: 0; color: #c9d4e6; font-weight: 700; font-size: 12.5px; padding: 0; cursor: pointer; text-align: left; }
+.sb-out:hover { color: #fff; }
+.top-out { display: none; }
+body.readonly .container .btn, body.readonly .container .input, body.readonly .container .switch { pointer-events: none; opacity: .45; }
+.matrix td { white-space: nowrap; }
+@media (max-width: 760px) {
+  .auth-card { grid-template-columns: minmax(0, 1fr); }
+  .auth-side { padding: 22px; gap: 14px; }
+  .big-jp { font-size: 28px; }
+  .side-list { display: none; }
+  .auth-form, .p-login { padding: 22px; }
+}
+
+@media (max-width: 860px) {
+  .shell { flex-direction: column; }
+  .sidebar { width: 100%; padding: 10px 0 0; }
+  .sb-brand { padding: 0 16px 10px; margin: 0; }
+  .sb-nav { display: flex; overflow-x: auto; padding: 0 8px; }
+  .sb-label, .sb-foot { display: none; }
+  .sb-item { width: auto; white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; padding: 9px 12px; }
+  .sb-item.active { border-bottom-color: var(--sakura); }
+  .sb-item .dot { margin-left: 4px; }
+  .topbar { padding: 10px 16px; }
+  .user-chip .txt { display: none; }
+  .container { padding: 16px 16px 40px; }
+  .split { grid-template-columns: minmax(0, 1fr); }
+  .p-top, .p-body { padding-left: 16px; padding-right: 16px; }
+  .mk-legend { margin-left: 0; }
+  .mk { position: static; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="mk" role="toolbar" aria-label="Kontrol mockup">
+  <div class="mk-title">Mockup JGG Learning System <span>· repo jlpt setelah notulen</span></div>
+  <div class="seg" id="sideSeg" aria-label="Aplikasi">
+    <button type="button" data-side="lms" aria-pressed="true">Aplikasi LMS</button>
+    <button type="button" data-side="portal" aria-pressed="false">Portal Ujian</button>
+  </div>
+  <button type="button" class="btn ghost sm" id="resetBtn">Kembali ke login</button>
+  <label class="mk-check"><input type="checkbox" id="tagToggle" checked> Tandai perubahan</label>
+  <div class="mk-legend"><span class="tag" title="Contoh penanda">3.b</span> = nomor butir notulen yang diwujudkan</div>
+</div>
+
+<!-- =================== LOGIN LMS =================== -->
+<div class="auth" id="lmsLogin">
+  <div class="auth-card">
+    <div class="auth-side">
+      <div class="sb-brand" style="padding:0;border:0;margin:0;position:relative;z-index:1"><div class="logo lg" role="img" aria-label="Logo PT. Jakaruta Global Group"></div><div><p>JGG Learning</p><span>PT. Jakaruta Global Group</span></div></div>
+      <div>
+        <p class="big-jp">日本へ、<br>一歩ずつ。</p>
+        <p class="side-sub">Selangkah demi selangkah ke Jepang. Materi Minna no Nihongo, latihan per bab, kelas, dan progres keberangkatan dalam satu tempat.</p>
+      </div>
+      <ul class="side-list">
+        <li>Materi Minna I · Minna II · N3 · JFT · SSW</li>
+        <li>Soal latihan per bab</li>
+        <li>Progress to Japan sampai kepulangan</li>
+      </ul>
+    </div>
+    <form class="auth-form" id="lmsForm" novalidate>
+      <div><h1 style="margin-bottom:2px">Masuk</h1><p class="muted small" style="margin:0">Untuk peserta, sensei, admin, dan direktur.</p></div>
+      <div class="err" id="lmsErr" hidden></div>
+      <div class="field"><label for="lmsEmail">Email atau NIS</label><input class="input lg" id="lmsEmail" autocomplete="username" placeholder="nama@email.com"></div>
+      <div class="field"><label for="lmsPass">Password</label><input class="input lg" id="lmsPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><label class="mk-check"><input type="checkbox" id="lmsRemember"> Ingat saya</label><button type="button" class="linkbtn">Lupa password?</button></div>
+      <button class="btn sakura lgbtn" type="submit">Masuk</button>
+      <div class="quick"><span class="small muted">Demo masuk cepat:</span><button type="button" class="btn ghost sm" data-quick="peserta">Peserta</button><button type="button" class="btn ghost sm" data-quick="sensei">Sensei</button><button type="button" class="btn ghost sm" data-quick="pendidikan">Admin Pendidikan</button><button type="button" class="btn ghost sm" data-quick="admin">Admin</button><button type="button" class="btn ghost sm" data-quick="superadmin">Superadmin</button><button type="button" class="btn ghost sm" data-quick="direktur">Direktur</button></div>
+      <div class="divider"></div>
+      <div class="auth-links">
+        <div class="li" style="padding:0;border:0"><div class="ico">📝</div><div class="grow"><p>Belum terdaftar?</p><span>Daftar sebagai calon peserta dan unggah berkas. <span class="tag" title="2 Pendaftaran calon peserta">2</span></span></div><button type="button" class="btn ghost sm" id="toDaftar">Daftar</button></div>
+        <div class="li" style="padding:0;border:0"><div class="ico p">🎌</div><div class="grow"><p>Mau ikut simulasi ujian?</p><span>Ujian memakai portal terpisah. <span class="tag" title="1 Portal berbeda khusus simulasi ujian">1</span></span></div><button type="button" class="btn ghost sm" id="toPortal">Portal Ujian</button></div>
+      </div>
+      <p class="small muted" style="margin:0">Maksimal 5 percobaan login per menit.</p>
+    </form>
+  </div>
+</div>
+
+<!-- =================== PENDAFTARAN PUBLIK =================== -->
+<div class="auth" id="daftarPage" hidden>
+  <form class="card reg" id="daftarForm" novalidate>
+    <div class="page-head" style="margin-bottom:6px"><div><h1>Pendaftaran Calon Peserta</h1><p>Isi data diri, unduh 3 formulir, lalu unggah 12 berkas. Foto atau PDF, maksimal 2 MB per berkas.</p></div><span class="tag" title="2.a Opsi berkas yang harus diunggah">2.a</span></div>
+    <div id="daftarBody" class="stack">
+      <div class="grid g3" style="gap:12px">
+        <div class="field"><label for="dNama">Nama lengkap</label><input class="input" id="dNama" value="Rina Oktaviani"></div>
+        <div class="field"><label for="dNik">NIK (16 digit)</label><input class="input num" id="dNik" value="1671046203050002" inputmode="numeric"></div>
+        <div class="field"><label for="dTtl">Tempat, tanggal lahir</label><input class="input" id="dTtl" value="Palembang, 22 Maret 2005"></div>
+        <div class="field"><label for="dHp">No. WhatsApp</label><input class="input" id="dHp" value="0812 7788 1203"></div>
+        <div class="field"><label for="dEmail">Email (dipakai untuk login)</label><input class="input" id="dEmail" value="rina.okta@email.com"></div>
+        <div class="field"><label for="dProg">Program</label><select class="input" id="dProg"><option>SSW · Kaigo</option><option>SSW · Pengolahan makanan</option><option>SSW · Konstruksi</option><option>SSW · Pertanian</option><option>SSW · Peternakan</option></select></div>
+      </div>
+      <div class="card" style="box-shadow:none;background:var(--cream)">
+        <div class="card-head"><h2>Formulir yang perlu diunduh</h2><span class="small muted">Isi, tanda tangan, lalu unggah di daftar berkas</span></div>
+        <div class="grid g3" style="gap:10px">
+          <button type="button" class="dl"><span class="ico">⬇</span><span><b>Surat izin orang tua</b><small>DOCX · 24 KB</small></span></button>
+          <button type="button" class="dl"><span class="ico">⬇</span><span><b>Surat pernyataan</b><small>DOCX · 21 KB</small></span></button>
+          <button type="button" class="dl"><span class="ico">⬇</span><span><b>Surat pembayaran</b><small>DOCX · 19 KB</small></span></button>
+        </div>
+      </div>
+      <div>
+        <div class="card-head"><h2>Berkas</h2><span class="badge b-orange num" id="regCount">0 / 10 wajib</span></div>
+        <div id="regDocs"></div>
+      </div>
+      <div class="err" id="regErr" hidden></div>
+      <label class="mk-check"><input type="checkbox" id="dSetuju" checked> Data dan berkas yang saya kirim benar.</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between"><button type="button" class="btn ghost" data-back>← Kembali ke login</button><button type="submit" class="btn sakura">Kirim pendaftaran</button></div>
+    </div>
+    <div id="daftarDone" class="stack" hidden style="text-align:center;align-items:center;padding:20px 0">
+      <div class="ico g" style="width:56px;height:56px;font-size:24px">✓</div>
+      <h2 style="font-size:1.2rem;margin:0">Pendaftaran terkirim</h2>
+      <p class="muted" style="max-width:46ch">Nomor pendaftaran <b class="num" style="color:var(--ink)">REG-2026-119</b>. Admin akan memeriksa berkas, termasuk barcode Kartu Keluarga, lalu menghubungi lewat WhatsApp.</p>
+      <button type="button" class="btn" data-back>Kembali ke login</button>
+    </div>
+  </form>
+</div>
+
+<!-- =================== LOGIN PORTAL UJIAN =================== -->
+<div class="auth dark" id="portalLogin" hidden>
+  <form class="p-login" id="portalForm" novalidate>
+    <div class="p-brand"><div class="logo" role="img" aria-label="Logo PT. Jakaruta Global Group"></div><div><p>JGG Virtual Test</p><span>Portal simulasi ujian <span class="tag" title="1 Portal berbeda khusus simulasi ujian">1</span></span></div></div>
+    <div><h1>Masuk ke ruang ujian</h1><p class="small" style="color:#a9b7cf;margin:0">JLPT · J-Test · NAT-Test · JFT-Basic · SSW</p></div>
+    <div class="err" id="ptErr" hidden></div>
+    <div class="field"><label for="ptUser">No. peserta atau email</label><input class="input lg" id="ptUser" autocomplete="username" placeholder="JGG-2026-014"></div>
+    <div class="field"><label for="ptPass">Password</label><input class="input lg" id="ptPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <button class="btn sakura lgbtn" type="submit">Masuk</button>
+    <button type="button" class="btn ghost sm" id="ptQuick" style="align-self:flex-start">Demo: isi akun Rizky Pratama</button>
+    <div class="p-rules">
+      <p><b>Sebelum mulai</b></p>
+      <ul>
+        <li>Pakai satu perangkat. Login di perangkat lain menutup sesi ini.</li>
+        <li>Siapkan headset untuk choukai. Audio hanya bisa diputar sesuai batas.</li>
+        <li>Nilai muncul setelah dikoreksi admin. Benar/salah tidak ditampilkan.</li>
+      </ul>
+    </div>
+    <button type="button" class="linkbtn light" id="toLms">← Ke aplikasi belajar (LMS)</button>
+  </form>
+</div>
+
+<!-- =================== SHELL APLIKASI (Peserta / Sensei / Admin) =================== -->
+<div class="shell" id="appShell" hidden>
+  <aside class="sidebar">
+    <div class="sb-brand"><div class="logo" role="img" aria-label="Logo PT. Jakaruta Global Group"></div><div><p>JGG Learning</p><span>PT. Jakaruta Global Group</span><span id="sbRole" class="sb-role">Peserta</span></div></div>
+    <nav class="sb-nav" id="sbNav" aria-label="Menu"></nav>
+    <div class="sb-foot"><button type="button" class="sb-out" data-logout="lms">⎋ Keluar</button><span>Data contoh untuk mockup</span></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb" id="crumb">Beranda / <b>Dashboard</b></div>
+      <div class="user-chip"><div class="avatar" id="avInit">RP</div><div class="txt"><p id="avName">Rizky Pratama</p><span id="avSub">Basic · Minna I-B</span></div></div>
+    </div>
+    <div class="container">
+
+<!-- ============ PESERTA ============ -->
+<section class="screen" data-screen="p-dash">
+  <div class="page-head"><div><h1>Okaeri, Rizky さん</h1><p>Kurikulum Basic · Minna no Nihongo I · Kelas Minna I-B (Yamada Sensei)</p></div></div>
+  <div class="stack">
+    <div class="grid g4">
+      <div class="stat"><div class="ic">📘</div><div><b class="num">Bab 18 / 25</b><span>Minna I</span></div></div>
+      <div class="stat"><div class="ic g">✅</div><div><b class="num">92%</b><span>Kehadiran</span></div></div>
+      <div class="stat"><div class="ic p">✏️</div><div><b class="num">17 bab</b><span>Soal latihan selesai <span class="tag" title="3.c Menu Soal Latihan">3.c</span></span></div></div>
+      <div class="stat"><div class="ic o">✈️</div><div><b class="num">3 / 8</b><span>Progress to Japan <span class="tag" title="3.f Ganti nama, 8 tahap">3.f</span></span></div></div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <div class="card-head"><h2>Lanjutkan belajar</h2><button class="btn ghost sm" data-go="p-materi">Buka Materi</button></div>
+        <div class="list">
+          <div class="li"><div class="ico">▶</div><div class="grow"><p>Bab 18 · ～ことができます</p><span>Video 14 menit · PDF latihan</span></div><span class="badge b-orange">Sedang</span></div>
+          <div class="li"><div class="ico p">✏️</div><div class="grow"><p>Soal Latihan Bab 17</p><span>Skor terbaik 18/20 · tersedia s.d. 20 Okt</span></div><button class="btn sm" data-go="p-latihan">Kerjakan</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Oshirase terbaru <span class="tag" title="3.h Pengumuman satu arah">3.h</span></h2><button class="btn ghost sm" data-go="p-oshirase">Semua</button></div>
+        <div class="list">
+          <div class="li"><div class="ico r">📣</div><div class="grow"><p>Simulasi JLPT N4 Sabtu 10 Okt</p><span>Admin · 5 Okt</span></div></div>
+          <div class="li"><div class="ico">📣</div><div class="grow"><p>Libur kelas Kamis 8 Okt</p><span>Yamada Sensei · 4 Okt</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-materi" hidden>
+  <div class="page-head"><div><h1>Materi</h1><p>Bisa dibuka kapan saja dan berulang. Program berikutnya terbuka setelah kamu naik kelas.</p></div><span class="tag" title="3.b Materi per tab + lock">3.b</span></div>
+  <div class="card">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true">Minna I</button>
+      <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>Minna II</button>
+      <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>N3</button>
+      <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>JFT</button>
+      <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>SSW</button>
+    </div>
+    <div class="toolbar"><input class="input" id="srchMateri" placeholder="Cari bab atau pola kalimat…" aria-label="Cari materi"><span class="small muted num">17 dari 25 bab selesai</span><div class="bar" style="flex:1 1 120px;max-width:200px"><i style="width:68%"></i></div></div>
+    <div class="bab-grid" id="babMateri"></div>
+    <div class="note lockn" style="margin-top:14px">🔒 Minna II terkunci. Dibuka otomatis saat admin memindahkan kamu ke kelas Minna II.</div>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-latihan" hidden>
+  <div class="page-head"><div><h1>Soal Latihan</h1><p>Latihan per bab dari materi. Bisa diulang selama masih tersedia.</p></div><span class="tag" title="3.c Menu baru Soal Latihan">3.c</span></div>
+  <div class="split">
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true">Minna I · Bab 1–25</button>
+        <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>Minna II · Bab 26–50</button>
+        <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>N3</button>
+        <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>JFT Basic</button>
+        <button role="tab" aria-selected="false" class="locked"><span class="lock">🔒</span>SSW</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Bab</th><th class="r">Soal</th><th class="r">Skor terbaik</th><th class="r">Percobaan</th><th>Tersedia s.d. <span class="tag" title="Concern 4: batas waktu akses">C4</span></th><th></th></tr></thead>
+        <tbody>
+          <tr><td style="white-space:nowrap"><b>Bab 15</b><br><span class="small muted" style="font-family:'Noto Sans JP',var(--font)">～ています</span></td><td class="r num">20</td><td class="r num">20 / 20</td><td class="r num">3</td><td><span class="badge b-grey">Ditutup 6 Okt</span></td><td><button class="btn sm" disabled>Kerjakan</button></td></tr>
+          <tr><td style="white-space:nowrap"><b>Bab 16</b><br><span class="small muted" style="font-family:'Noto Sans JP',var(--font)">～て、～て</span></td><td class="r num">20</td><td class="r num">17 / 20</td><td class="r num">2</td><td class="num">13 Okt</td><td><button class="btn ghost sm">Ulangi</button></td></tr>
+          <tr><td style="white-space:nowrap"><b>Bab 17</b><br><span class="small muted" style="font-family:'Noto Sans JP',var(--font)">～ないでください</span></td><td class="r num">20</td><td class="r num">18 / 20</td><td class="r num">1</td><td class="num">20 Okt</td><td><button class="btn ghost sm">Ulangi</button></td></tr>
+          <tr><td style="white-space:nowrap"><b>Bab 18</b><br><span class="small muted" style="font-family:'Noto Sans JP',var(--font)">～ことができます</span></td><td class="r num">20</td><td class="r muted">–</td><td class="r num">0</td><td class="num">27 Okt</td><td><button class="btn sm">Kerjakan</button></td></tr>
+          <tr><td class="muted" style="white-space:nowrap"><b>Bab 19</b><br><span class="small muted" style="font-family:'Noto Sans JP',var(--font)">～たことがあります</span></td><td class="r num muted">20</td><td class="r muted">–</td><td class="r muted">–</td><td class="muted">Belum dibuka</td><td><span class="muted">🔒</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Hasil terakhir · Bab 17</h2><span class="tag" title="3.c Skor terlihat, benar/salah disembunyikan">3.c</span></div>
+      <div class="score"><b class="num">18</b><span>/ 20 poin</span></div>
+      <p class="small muted" style="margin-top:6px">Dikerjakan 5 Okt 2026, 19.42 · 12 menit</p>
+      <div class="hidden-box">🙈 <span>Jawaban benar/salah dan pembahasan tidak ditampilkan. Tanyakan soal yang sulit ke sensei di kelas.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-kelas" hidden>
+  <div class="page-head"><div><h1>Kelas Saya</h1><p>Minna I-B · Ruang 2 · Wali kelas Yamada Sensei</p></div></div>
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Jadwal <span class="tag" title="3.d Jadwal per tab / per minggu">3.d</span></h2></div>
+      <div class="tabs" role="tablist" id="weekTabs">
+        <button role="tab" aria-selected="false">Mg 39 · 21–25 Sep</button>
+        <button role="tab" aria-selected="false">Mg 40 · 28 Sep–2 Okt</button>
+        <button role="tab" aria-selected="true">Mg 41 · 5–9 Okt (ini)</button>
+        <button role="tab" aria-selected="false">Mg 42 · 12–16 Okt</button>
+      </div>
+      <div class="tbl-wrap"><table class="sched">
+        <thead><tr><th>Jam</th><th>Sen 5</th><th>Sel 6</th><th>Rab 7</th><th>Kam 8</th><th>Jum 9</th></tr></thead>
+        <tbody>
+          <tr><td class="num small">08.00–10.00</td><td><div class="slot"><b>Bunpou</b>Bab 18</div></td><td><div class="slot s2"><b>Kanji</b>Yamada</div></td><td><div class="slot"><b>Bunpou</b>Bab 18</div></td><td><span class="badge b-red">Libur</span></td><td><div class="slot s3"><b>Kaiwa</b>Tanaka</div></td></tr>
+          <tr><td class="num small">10.15–12.15</td><td><div class="slot s3"><b>Kaiwa</b>Tanaka</div></td><td><div class="slot"><b>Bunpou</b>Bab 19</div></td><td><div class="slot s4"><b>Choukai</b>Sato</div></td><td><span class="badge b-red">Libur</span></td><td><div class="slot s2"><b>Review mingguan</b>Yamada</div></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Catatan mingguan dari sensei <span class="tag" title="3.d Progress / catatan mingguan instruktur">3.d</span></h2><span class="small muted">Mg 41</span></div>
+      <div class="list">
+        <div class="li" style="align-items:flex-start"><div class="avatar" style="width:30px;height:30px;font-size:11px">YS</div><div class="grow"><p>Yamada Sensei · Progress Bab 17–18</p><span style="font-size:13px;color:var(--ink)">Pola ～ことができます sudah lancar dipakai. Kanji minggu ini (読・書・聞) masih tertukar bacaannya; ulangi kartu kanji 10 menit tiap malam. Kaiwa: jawaban jikoshoukai sudah lebih natural.</span></div><span class="badge b-green">Baik</span></div>
+        <div class="li" style="align-items:flex-start"><div class="avatar" style="width:30px;height:30px;font-size:11px">YS</div><div class="grow"><p>Mg 40 · Progress Bab 15–16</p><span>Bentuk te sudah benar 9/10. Terlambat 2 kali, tolong datang tepat waktu.</span></div><span class="badge b-orange">Perlu perhatian</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-sertifikat" hidden>
+  <div class="page-head"><div><h1>Sertifikat</h1><p>Sertifikat dari JGG dan sertifikat bahasa yang kamu miliki.</p></div></div>
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h2>Sertifikat bahasa milik saya <span class="tag" title="3.e Opsi unggah sertifikat bahasa">3.e</span></h2></div>
+        <div class="list">
+          <div class="li"><div class="ico g">📄</div><div class="grow"><p>JLPT N5 · Juli 2025</p><span>No. N5A12345678 · diunggah 2 Okt</span></div><span class="badge b-green">Terverifikasi</span></div>
+          <div class="li"><div class="ico o">📄</div><div class="grow"><p>JFT-Basic A2 · Agustus 2026</p><span>Skor 210 / 250 · diunggah 5 Okt</span></div><span class="badge b-orange">Menunggu cek admin</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Dari JGG</h2></div>
+        <div class="list"><div class="li"><div class="ico p">🏅</div><div class="grow"><p>Simulasi JLPT N5 · JGG-JLPT-2026-0041</p><span>Terbit 12 Agu 2026</span></div><button class="btn ghost sm">Lihat</button></div></div>
+      </div>
+    </div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Unggah sertifikat</h2>
+      <div class="field"><label for="cJenis">Jenis</label><select class="input" id="cJenis"><option>JLPT</option><option>J-Test</option><option>NAT-Test</option><option>JFT-Basic</option><option>SSW (Tokutei Ginou)</option></select></div>
+      <div class="grid g2" style="gap:10px"><div class="field"><label for="cLevel">Level / skor</label><input class="input" id="cLevel" value="N4"></div><div class="field"><label for="cTgl">Tanggal ujian</label><input class="input" id="cTgl" type="date" value="2026-07-05"></div></div>
+      <div class="field"><label for="cFile">File (PDF/JPG, maks 2 MB)</label><input class="input" id="cFile" type="file"></div>
+      <button class="btn sakura" type="submit">Kirim untuk diverifikasi</button>
+    </form>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-progress" hidden>
+  <div class="page-head"><div><h1>Progress to Japan</h1><p>Tahapan program dan dokumen. Diperbarui oleh admin dan sensei.</p></div><span class="tag" title="3.f Ganti nama Program Jepang">3.f</span></div>
+  <div class="stack">
+    <div class="card">
+      <div class="tl">
+        <div class="tl-step done"><div class="tl-c">✓</div><p>Pendaftaran</p><span>3 Feb 2026</span></div>
+        <div class="tl-step done"><div class="tl-c">✓</div><p>Belajar Jepang</p><span>Sejak 10 Feb</span></div>
+        <div class="tl-step done"><div class="tl-c">✓</div><p>12 Agu 2026 · Lulus N5</p><span>Target N4: Des <span class="tag" title="3.f Tryout JLPT → (tanggal) Lulus N4/N5">3.f</span></span></div>
+        <div class="tl-step cur"><div class="tl-c">4</div><p>Interview</p><span>Menunggu jadwal</span></div>
+        <div class="tl-step"><div class="tl-c">5</div><p>MCU</p></div>
+        <div class="tl-step"><div class="tl-c">6</div><p>Visa</p></div>
+        <div class="tl-step"><div class="tl-c">7</div><p>Keberangkatan</p></div>
+        <div class="tl-step"><div class="tl-c">8</div><p>Kepulangan</p><span><span class="tag" title="3.f Tahap ke-8">3.f</span></span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Dokumen</h2></div>
+      <div class="doc-row"><p>Paspor<span class="sub">C1234567 · berlaku s.d. 2031</span></p><span class="badge b-green">Selesai</span><span></span></div>
+      <div class="doc-row"><p>Sertifikat JLPT N5<span class="sub">Dari menu Sertifikat</span></p><span class="badge b-green">Selesai</span><span></span></div>
+      <div class="doc-row"><p>Hasil Interview</p><span class="badge b-grey">Belum</span><span></span></div>
+      <div class="doc-row"><p>Medical Check Up</p><span class="badge b-grey">Belum</span><span></span></div>
+    </div>
+    <div class="note info">ℹ️ Informasi job order tidak dikirim lewat aplikasi. PIC kamu akan menghubungi langsung. <span class="tag" title="4.c Job order bukan notifikasi peserta">4.c</span></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="p-bayar" hidden>
+  <div class="page-head"><div><h1>Pembayaran</h1><p>Tagihan pelatihan dan ujian berbayar.</p></div></div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Tagihan</th><th class="r">Nominal</th><th>Jatuh tempo</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Cicilan pelatihan 3 / 6</td><td class="r num">Rp3.500.000</td><td class="num">15 Okt 2026</td><td><span class="badge b-orange">Belum bayar</span></td><td><button class="btn sm">Bayar</button></td></tr>
+      <tr><td>Cicilan pelatihan 2 / 6</td><td class="r num">Rp3.500.000</td><td class="num">15 Agu 2026</td><td><span class="badge b-green">Lunas</span></td><td></td></tr>
+      <tr><td>Simulasi JLPT N4 · kode N4OKT</td><td class="r num">Rp50.000</td><td class="num">10 Okt 2026</td><td><span class="badge b-green">Lunas</span></td><td></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<section class="screen" data-screen="p-oshirase" hidden>
+  <div class="page-head"><div><h1>Oshirase <span class="muted" style="font-weight:500">お知らせ</span></h1><p>Pengumuman dari admin dan sensei. Hanya bisa dibaca.</p></div><span class="tag" title="3.h Pesan → pengumuman satu arah">3.h</span></div>
+  <div class="card"><div class="list">
+    <div class="li" style="align-items:flex-start"><div class="ico r">📣</div><div class="grow"><p>Simulasi JLPT N4 · Sabtu 10 Okt, 08.00</p><span style="color:var(--ink)">Datang 30 menit sebelum mulai. Kode ujian dibagikan di ruang ujian. Bawa headset sendiri bila ada.</span><span style="display:block;margin-top:3px">Admin · untuk semua peserta · 5 Okt</span></div></div>
+    <div class="li" style="align-items:flex-start"><div class="ico">📣</div><div class="grow"><p>Libur kelas Kamis 8 Okt</p><span style="color:var(--ink)">Kelas Minna I-B libur. Pengganti hari Sabtu 17 Okt pukul 09.00.</span><span style="display:block;margin-top:3px">Yamada Sensei · kelas Minna I-B · 4 Okt</span></div></div>
+    <div class="li" style="align-items:flex-start"><div class="ico g">📣</div><div class="grow"><p>Materi Bab 18 sudah terbit</p><span>Yamada Sensei · kelas Minna I-B · 2 Okt</span></div></div>
+  </div>
+  <div class="note lockn" style="margin-top:10px">Tidak ada tombol balas. Pertanyaan disampaikan langsung ke sensei atau PIC.</div></div>
+</section>
+
+<!-- ============ SENSEI ============ -->
+<section class="screen" data-screen="s-catatan" hidden>
+  <div class="page-head"><div><h1>Catatan Mingguan</h1><p>Kelas Minna I-B · Mg 41 (5–9 Okt). Catatan tampil di Kelas Saya peserta.</p></div><span class="tag" title="3.d Catatan mingguan instruktur">3.d</span></div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Peserta</th><th class="r">Hadir</th><th>Bab</th><th>Penilaian</th><th style="min-width:280px">Catatan untuk peserta</th></tr></thead>
+    <tbody>
+      <tr><td>Rizky Pratama</td><td class="r num">4/4</td><td>18</td><td><select class="input" aria-label="Penilaian Rizky"><option>Baik</option><option>Cukup</option><option>Perlu perhatian</option></select></td><td><textarea class="input" aria-label="Catatan Rizky">Pola ～ことができます sudah lancar. Kanji 読・書・聞 masih tertukar.</textarea></td></tr>
+      <tr><td>Siti Rahmawati</td><td class="r num">3/4</td><td>18</td><td><select class="input" aria-label="Penilaian Siti"><option>Baik</option><option selected>Cukup</option><option>Perlu perhatian</option></select></td><td><textarea class="input" aria-label="Catatan Siti" placeholder="Tulis catatan…"></textarea></td></tr>
+      <tr><td>Dimas Saputra</td><td class="r num">2/4</td><td>16</td><td><select class="input" aria-label="Penilaian Dimas"><option>Baik</option><option>Cukup</option><option selected>Perlu perhatian</option></select></td><td><textarea class="input" aria-label="Catatan Dimas">Tertinggal 2 bab. Ikut kelas susulan Sabtu.</textarea></td></tr>
+    </tbody>
+  </table></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn sakura">Simpan catatan Mg 41</button></div></div>
+</section>
+
+<section class="screen" data-screen="s-tambahan" hidden>
+  <div class="page-head"><div><h1>Materi Tambahan</h1><p>Materi milik Yamada Sensei untuk kelas yang diajar. Buka/tutup akses kapan saja.</p></div><span class="tag" title="5.a Materi tambahan per instruktur, buka/tutup">5.a</span></div>
+  <div class="split">
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>Materi</th><th>Kelas</th><th>Tayang s.d.</th><th>Akses</th></tr></thead>
+      <tbody>
+        <tr><td><b>Kartu kanji Bab 18</b><br><span class="small muted">PDF · 1,2 MB</span></td><td>Minna I-B</td><td class="num">20 Okt</td><td><label class="switch"><input type="checkbox" checked aria-label="Akses kartu kanji">Dibuka</label></td></tr>
+        <tr><td><b>Latihan jikoshoukai interview</b><br><span class="small muted">Video YouTube</span></td><td>Minna I-B, Minna II-A</td><td class="num">31 Okt</td><td><label class="switch"><input type="checkbox" checked aria-label="Akses jikoshoukai">Dibuka</label></td></tr>
+        <tr><td><b>Kuis kosakata dapur (kaigo)</b><br><span class="small muted">PDF · 640 KB</span></td><td>Minna I-B</td><td class="muted">–</td><td><label class="switch"><input type="checkbox" aria-label="Akses kuis dapur">Ditutup</label></td></tr>
+      </tbody>
+    </table></div></div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Tambah materi</h2>
+      <div class="field"><label for="mtJudul">Judul</label><input class="input" id="mtJudul" placeholder="mis. Rangkuman Bab 19"></div>
+      <div class="field"><label for="mtKelas">Kelas (hanya kelas yang Anda ajar)</label><select class="input" id="mtKelas"><option>Minna I-B</option><option>Minna II-A</option></select></div>
+      <div class="field"><label for="mtSd">Tayang sampai <span class="tag" title="Concern 4">C4</span></label><input class="input" id="mtSd" type="date" value="2026-10-27"></div>
+      <div class="note lockn">Materi pakem (Minna I, II, JFT, N3, SSW) hanya bisa diubah Admin Pendidikan.</div>
+      <button class="btn sakura" type="submit">Simpan</button>
+    </form>
+  </div>
+</section>
+
+<section class="screen" data-screen="s-batsu" hidden>
+  <div class="page-head"><div><h1>Catatan Batsu <span class="muted" style="font-weight:500">罰</span></h1><p>Catatan pelanggaran peserta. Hanya terlihat oleh sensei dan admin.</p></div><span class="tag" title="5.b / 4.d Catatan batsu">5.b</span></div>
+  <div class="split">
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>Tanggal</th><th>Peserta</th><th>Kategori</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr><td class="num">6 Okt</td><td>Dimas Saputra</td><td><span class="badge b-orange">Terlambat</span></td><td>Terlambat 25 menit tanpa kabar, ke-3 bulan ini</td></tr>
+        <tr><td class="num">2 Okt</td><td>Dimas Saputra</td><td><span class="badge b-red">Alpa</span></td><td>Tidak hadir kelas pagi</td></tr>
+        <tr><td class="num">29 Sep</td><td>Bayu Nugroho</td><td><span class="badge b-purple">Ponsel</span></td><td>Main ponsel saat choukai, sudah ditegur</td></tr>
+      </tbody>
+    </table></div></div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Catat pelanggaran</h2>
+      <div class="field"><label for="btPes">Peserta</label><select class="input" id="btPes"><option>Dimas Saputra</option><option>Rizky Pratama</option><option>Siti Rahmawati</option></select></div>
+      <div class="field"><label for="btKat">Kategori</label><select class="input" id="btKat"><option>Terlambat</option><option>Alpa</option><option>Ponsel</option><option>Seragam</option><option>Lainnya</option></select></div>
+      <div class="field"><label for="btKet">Keterangan</label><textarea class="input" id="btKet"></textarea></div>
+      <button class="btn sakura" type="submit">Simpan catatan</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="screen" data-screen="a-daftar" hidden>
+  <div class="page-head"><div><h1>Pendaftaran</h1><p>Calon peserta dan kelengkapan berkas.</p></div><span class="tag" title="2.a Berkas pendaftaran">2.a</span></div>
+  <div class="split">
+    <div class="card">
+      <div class="card-head"><h2>Rina Oktaviani · REG-2026-118</h2><span class="badge b-orange">9 / 12 berkas</span></div>
+      <div id="docList"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn">Lolos berkas</button><button class="btn ghost">Kirim pengingat</button></div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h2>Template formulir</h2></div>
+        <p class="small muted">Calon peserta mengunduh, mengisi, lalu mengunggah kembali.</p>
+        <div class="list">
+          <div class="li"><div class="ico">📄</div><div class="grow"><p>Surat izin orang tua</p><span>DOCX · 24 KB</span></div><button class="btn ghost sm">Ganti</button></div>
+          <div class="li"><div class="ico">📄</div><div class="grow"><p>Surat pernyataan</p><span>DOCX · 21 KB</span></div><button class="btn ghost sm">Ganti</button></div>
+          <div class="li"><div class="ico">📄</div><div class="grow"><p>Surat pembayaran</p><span>DOCX · 19 KB</span></div><button class="btn ghost sm">Ganti</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Antrean</h2></div>
+        <div class="list">
+          <div class="li"><div class="grow"><p>Rina Oktaviani</p><span>SMK · Kaigo</span></div><span class="badge b-orange">Berkas</span></div>
+          <div class="li"><div class="grow"><p>Fajar Hidayat</p><span>SMA · Konstruksi</span></div><span class="badge b-blue">Baru</span></div>
+          <div class="li"><div class="grow"><p>Nadia Putri</p><span>SMK · Pengolahan makanan</span></div><span class="badge b-green">Lolos berkas</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-materi" hidden>
+  <div class="page-head"><div><h1>Kelola Materi</h1><p>Materi pakem per kurikulum.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="tag" title="4.a Per tab, search, pakem">4.a</span><button class="btn sakura">+ Tambah bab</button></div></div>
+  <div class="card">
+    <div class="tabs" role="tablist"><button role="tab" aria-selected="true">Minna I</button><button role="tab" aria-selected="false">Minna II</button><button role="tab" aria-selected="false">N3</button><button role="tab" aria-selected="false">JFT</button><button role="tab" aria-selected="false">SSW</button><button role="tab" aria-selected="false">+ Kurikulum</button></div>
+    <div class="toolbar"><input class="input" placeholder="Cari judul atau bab…" aria-label="Cari materi admin"><select class="input" style="flex:0 1 180px" aria-label="Urutkan"><option>Urut: nomor bab</option><option>Urut: terakhir diubah</option><option>Urut: paling banyak diselesaikan</option></select></div>
+    <div class="note warn" style="margin-bottom:12px">🔒 Materi pakem. Hanya <b>Admin Pendidikan</b> yang bisa mengubah atau menghapus. Sensei hanya bisa melihat.</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Bab</th><th>Judul</th><th>Isi</th><th class="r">Selesai</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr><td class="num">16</td><td>～て、～て / ～から</td><td class="small">Video · PDF · Latihan 20 soal</td><td class="r num">38</td><td><span class="badge b-green">Terbit</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td class="num">17</td><td>～ないでください</td><td class="small">Video · PDF · Latihan 20 soal</td><td class="r num">31</td><td><span class="badge b-green">Terbit</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td class="num">18</td><td>～ことができます</td><td class="small">Video · PDF · Latihan 20 soal</td><td class="r num">12</td><td><span class="badge b-green">Terbit</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td class="num">19</td><td>～たことがあります</td><td class="small">Video · PDF</td><td class="r num">0</td><td><span class="badge b-grey">Draft</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-bank" hidden>
+  <div class="page-head"><div><h1>Bank Soal</h1><p>Soal latihan per materi dan soal ujian per jenis tes.</p></div><span class="tag" title="4.b Bank soal per tab sesuai materi">4.b</span></div>
+  <div class="card">
+    <div class="tabs" role="tablist"><button role="tab" aria-selected="true">Latihan · Minna I</button><button role="tab" aria-selected="false">Latihan · Minna II</button><button role="tab" aria-selected="false">Latihan · N3</button><button role="tab" aria-selected="false">Latihan · JFT Basic</button><button role="tab" aria-selected="false">Latihan · SSW</button><button role="tab" aria-selected="false">Ujian · per jenis tes</button></div>
+    <div class="toolbar"><input class="input" placeholder="Cari teks soal…" aria-label="Cari soal"><select class="input" style="flex:0 1 160px" aria-label="Filter bab"><option>Semua bab</option><option>Bab 17</option><option>Bab 18</option></select><button class="btn ghost sm">Import Excel</button></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Bab</th><th class="r">Soal aktif</th><th class="r">Draft</th><th>Tipe</th><th>Dipakai di latihan</th></tr></thead>
+      <tbody>
+        <tr><td>Bab 16</td><td class="r num">24</td><td class="r num">0</td><td class="small">Isian, ★ susun kalimat</td><td>Latihan Bab 16 (20 soal acak)</td></tr>
+        <tr><td>Bab 17</td><td class="r num">22</td><td class="r num">3</td><td class="small">Isian, bacaan</td><td>Latihan Bab 17 (20 soal acak)</td></tr>
+        <tr><td>Bab 18</td><td class="r num">20</td><td class="r num">5</td><td class="small">Isian, choukai</td><td>Latihan Bab 18 (20 soal acak)</td></tr>
+        <tr><td>Bab 19</td><td class="r num">8</td><td class="r num">12</td><td class="small">Isian</td><td class="muted">Belum cukup soal</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-koreksi" hidden>
+  <div class="page-head"><div><h1>Ujian &amp; Koreksi Nilai</h1><p>Simulasi JLPT N4 · kode N4OKT · 10 Okt 2026 · skala 0–180</p></div><span class="tag" title="1.b Skor per tipe, 1 poin, koreksi manual">1.b</span></div>
+  <div class="stack">
+    <div class="card">
+      <div class="card-head"><h2>Tampilan hasil ke peserta <span class="tag" title="1.d Nilai terlihat, benar/salah disembunyikan">1.d</span></h2></div>
+      <div style="display:flex;gap:22px;flex-wrap:wrap">
+        <label class="switch"><input type="checkbox" checked aria-label="Tampilkan nilai">Tampilkan nilai setelah dikoreksi</label>
+        <label class="switch"><input type="checkbox" aria-label="Tampilkan pembahasan">Tampilkan benar/salah &amp; pembahasan</label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Koreksi manual</h2><span class="small muted">Tiap soal 1 poin · 74 soal · nilai akhir maks 180</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Peserta</th><th class="r">Poin mentah</th><th class="r">Nilai akhir / 180</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Rizky Pratama</td><td class="r num">58 / 74</td><td class="r"><input class="input num" style="width:80px;text-align:right" value="132" aria-label="Nilai akhir Rizky"></td><td><span class="badge b-green">Dikoreksi</span></td></tr>
+          <tr><td>Siti Rahmawati</td><td class="r num">49 / 74</td><td class="r"><input class="input num" style="width:80px;text-align:right" value="" placeholder="–" aria-label="Nilai akhir Siti"></td><td><span class="badge b-orange">Menunggu koreksi</span></td></tr>
+          <tr><td>Dimas Saputra</td><td class="r num">33 / 74</td><td class="r"><input class="input num" style="width:80px;text-align:right" value="" placeholder="–" aria-label="Nilai akhir Dimas"></td><td><span class="badge b-orange">Menunggu koreksi</span></td></tr>
+        </tbody>
+      </table></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn sakura">Simpan &amp; terbitkan nilai</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-monitor" hidden>
+  <div class="page-head"><div><h1>Monitoring Portal Ujian</h1><p>Diperbarui tiap 30 detik · Sabtu 10 Okt 2026, 09.12</p></div><span class="tag" title="1.c Monitoring peserta portal">1.c</span></div>
+  <div class="stack">
+    <div class="grid g4">
+      <div class="stat"><div class="ic g">🟢</div><div><b class="num">41</b><span>Sedang mengerjakan</span></div></div>
+      <div class="stat"><div class="ic">✅</div><div><b class="num">6</b><span>Sudah selesai</span></div></div>
+      <div class="stat"><div class="ic o">⚠️</div><div><b class="num">2</b><span>Tidak aktif &gt; 3 menit</span></div></div>
+      <div class="stat"><div class="ic p">👥</div><div><b class="num">49 / 50</b><span>Login di portal <span class="tag" title="Concern 1: kapasitas 50 peserta">C1</span></span></div></div>
+    </div>
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>Peserta</th><th>Ujian</th><th>Bagian aktif</th><th class="r">Dijawab</th><th class="r">Sisa waktu</th><th>Terakhir aktif</th><th>IP</th></tr></thead>
+      <tbody>
+        <tr><td>Rizky Pratama</td><td>JLPT N4</td><td>Bunpou Dokkai</td><td class="r num">21 / 32</td><td class="r num">28:14</td><td><span class="badge b-green">baru saja</span></td><td class="num small">10.0.4.21</td></tr>
+        <tr><td>Siti Rahmawati</td><td>JLPT N4</td><td>Bunpou Dokkai</td><td class="r num">15 / 32</td><td class="r num">28:40</td><td><span class="badge b-green">12 dtk</span></td><td class="num small">10.0.4.22</td></tr>
+        <tr><td>Dimas Saputra</td><td>JLPT N4</td><td>Moji Goi</td><td class="r num">18 / 25</td><td class="r num">03:02</td><td><span class="badge b-orange">4 mnt</span></td><td class="num small">10.0.4.30</td></tr>
+        <tr><td>Fikri Ramadhan</td><td>J-Test E–F</td><td>Dokkai</td><td class="r num">40 / 60</td><td class="r num">35:51</td><td><span class="badge b-green">8 dtk</span></td><td class="num small">10.0.4.17</td></tr>
+        <tr><td>Wulan Sari</td><td>JFT Basic</td><td>Selesai</td><td class="r num">50 / 50</td><td class="r muted">–</td><td><span class="badge b-grey">09.05</span></td><td class="num small">10.0.4.12</td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-job" hidden>
+  <div class="page-head"><div><h1>Perusahaan &amp; Job Order</h1><p>Info job order dibagikan langsung oleh PIC, tidak dikirim sebagai notifikasi ke peserta.</p></div><span class="tag" title="4.c Perusahaan & Job Order">4.c</span></div>
+  <div class="card">
+    <div class="tabs" role="tablist" id="jobTabs"><button role="tab" aria-selected="false" data-jt="jo">Job order</button><button role="tab" aria-selected="true" data-jt="cad">Cadangan <span class="badge b-navy">Admin saja</span></button></div>
+    <div id="jt-jo" hidden><div class="tbl-wrap"><table>
+      <thead><tr><th>Kode</th><th>Perusahaan</th><th>Posisi</th><th class="r">Kuota</th><th>Interview</th><th>PIC</th></tr></thead>
+      <tbody>
+        <tr><td class="num">JO-2026-014</td><td>Sakura Kaigo Co. (Osaka)</td><td>Kaigo · SSW</td><td class="r num">6</td><td class="num">22 Okt (online)</td><td>Bu Dewi</td></tr>
+        <tr><td class="num">JO-2026-015</td><td>Hokkai Foods (Sapporo)</td><td>Pengolahan makanan</td><td class="r num">4</td><td class="num">3 Nov</td><td>Pak Aang</td></tr>
+      </tbody>
+    </table></div></div>
+    <div id="jt-cad"><p class="small muted">Peserta yang belum lolos interview, disimpan untuk job order berikutnya.</p><div class="tbl-wrap"><table>
+      <thead><tr><th>Peserta</th><th>Bidang</th><th>Interview terakhir</th><th>Catatan</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Andi Wijaya</td><td>Kaigo</td><td>JO-2026-011 · 18 Sep</td><td>Lancar, kurang di keigo</td><td><span class="badge b-purple">Cadangan 1</span></td></tr>
+        <tr><td>Maya Lestari</td><td>Pengolahan makanan</td><td>JO-2026-012 · 25 Sep</td><td>Kuota penuh</td><td><span class="badge b-purple">Cadangan 2</span></td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="a-laporan" hidden>
+  <div class="page-head"><div><h1>Laporan</h1><p>Rekap Oktober 2026</p></div></div>
+  <div class="stack">
+    <div class="grid g4">
+      <div class="stat"><div class="ic">🎓</div><div><b class="num">112</b><span>Peserta aktif</span></div></div>
+      <div class="stat"><div class="ic g">🏅</div><div><b class="num">27</b><span>Lulus N4/N5 tahun ini</span></div></div>
+      <div class="stat"><div class="ic o">✈️</div><div><b class="num">9</b><span>Siap berangkat</span></div></div>
+      <div class="stat"><div class="ic r">⚠️</div><div><b class="num">14</b><span>Catatan batsu bulan ini</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Catatan batsu per kelas <span class="tag" title="4.d Laporan catatan batsu">4.d</span></h2><span class="badge b-navy">Admin &amp; sensei</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kelas</th><th class="r">Terlambat</th><th class="r">Alpa</th><th class="r">Ponsel</th><th class="r">Lainnya</th><th>Peserta terbanyak</th></tr></thead>
+        <tbody>
+          <tr><td>Minna I-B</td><td class="r num">4</td><td class="r num">2</td><td class="r num">1</td><td class="r num">0</td><td>Dimas Saputra (3)</td></tr>
+          <tr><td>Minna II-A</td><td class="r num">2</td><td class="r num">1</td><td class="r num">0</td><td class="r num">1</td><td>Bayu Nugroho (2)</td></tr>
+          <tr><td>SSW Kaigo</td><td class="r num">1</td><td class="r num">0</td><td class="r num">2</td><td class="r num">0</td><td>–</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+<!-- ============ ADMIN PENDIDIKAN: DATA MASTER ============ -->
+<section class="screen" data-screen="ap-master" hidden>
+  <div class="page-head"><div><h1>Data Master Akademik</h1><p>Dasar untuk kelas, materi, soal latihan, dan ujian. Hanya Admin Pendidikan yang bisa mengubah.</p></div><span class="tag" title="Pembagian peran: master akademik dipegang Admin Pendidikan">Peran</span></div>
+  <div class="stack">
+    <div class="card">
+      <div class="tabs" role="tablist" data-tabgroup="mst">
+        <button role="tab" aria-selected="true" data-panel="mst-kur">Klasifikasi Kelas</button>
+        <button role="tab" aria-selected="false" data-panel="mst-uji">Klasifikasi Ujian</button>
+        <button role="tab" aria-selected="false" data-panel="mst-skor">Skor &amp; Batas Lulus</button>
+        <button role="tab" aria-selected="false" data-panel="mst-batsu">Kategori Batsu</button>
+      </div>
+
+      <div id="mst-kur" data-panelof="mst">
+        <div class="toolbar"><span class="small muted" style="flex:1 1 240px">Urutan menentukan lock: peserta harus naik kelas untuk membuka kurikulum berikutnya.</span><button class="btn sakura sm">+ Tambah kurikulum</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th class="r">Urutan</th><th>Kelompok</th><th>Kurikulum</th><th>Cakupan</th><th class="r">Kelas aktif</th><th class="r">Peserta</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="r num">1</td><td>Kelas Basic</td><td><b>Minna no Nihongo I</b></td><td class="num">Bab 1–25</td><td class="r num">3</td><td class="r num">54</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">2</td><td>Kelas Basic</td><td><b>Minna no Nihongo II</b></td><td class="num">Bab 26–50</td><td class="r num">2</td><td class="r num">31</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">3</td><td>Kelas JFT</td><td><b>JFT Basic</b></td><td>A1 · A2</td><td class="r num">1</td><td class="r num">12</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">4</td><td>Kelas N3</td><td><b>N3</b></td><td>Tata bahasa, kanji, dokkai</td><td class="r num">1</td><td class="r num">8</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">5</td><td>Kelas SSW</td><td><b>SSW · Kaigo</b></td><td>Kosakata &amp; praktik kerja</td><td class="r num">1</td><td class="r num">7</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">5</td><td>Kelas SSW</td><td><b>SSW · Pengolahan makanan</b></td><td>Kosakata &amp; praktik kerja</td><td class="r num">0</td><td class="r num">0</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td class="r num">5</td><td>Kelas SSW</td><td><b>SSW · Konstruksi</b></td><td>Kosakata &amp; praktik kerja</td><td class="r num">0</td><td class="r num">0</td><td><span class="badge b-grey">Nonaktif</span></td><td><button class="btn ghost sm">Aktifkan</button></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div id="mst-uji" data-panelof="mst" hidden>
+        <div class="toolbar"><span class="small muted" style="flex:1 1 240px">Jenis tes → level → bagian. Durasi standar bisa diubah per ujian.</span><button class="btn sakura sm">+ Tambah level</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Jenis tes</th><th>Level</th><th>Bagian</th><th class="r">Durasi standar</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><b>JLPT</b></td><td>N5 · N4 · N3 · N2 · N1</td><td>Moji Goi · Bunpou Dokkai · Choukai</td><td class="r num">25 / 55 / 35 mnt (N4)</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><b>J-Test</b></td><td>A–C · D–E · F–G</td><td>Bacaan · Choukai</td><td class="r num">80 / 45 mnt</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><b>NAT-Test</b></td><td>5Q · 4Q · 3Q · 2Q · 1Q</td><td>Moji Goi · Bunpou Dokkai · Choukai</td><td class="r num">25 / 50 / 30 mnt (4Q)</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><b>JFT-Basic</b></td><td>A1 · A2.1 · A2.2</td><td>Script &amp; Vocabulary · Conversation · Listening · Reading</td><td class="r num">60 mnt total</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><b>SSW</b></td><td>Konstruksi · Pertanian · Peternakan · Kaigo · Pengolahan makanan</td><td class="muted">Menunggu format ujian</td><td class="r muted">–</td><td><span class="badge b-orange">Draft</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div id="mst-skor" data-panelof="mst" hidden>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Jenis tes</th><th class="r">Skor maks</th><th class="r">Batas lulus simulasi</th><th>Penilaian</th><th>Disetujui</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><b>JLPT</b></td><td class="r num">180</td><td class="r num">90</td><td>1 poin/soal, dikoreksi manual</td><td><span class="badge b-green">Direktur · 2 Okt</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td><b>J-Test</b></td><td class="r num">350</td><td class="r num">200</td><td>1 poin/soal, dikoreksi manual</td><td><span class="badge b-green">Direktur · 2 Okt</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td><b>NAT-Test</b></td><td class="r num">180</td><td class="r num">100</td><td>1 poin/soal, dikoreksi manual</td><td><span class="badge b-green">Direktur · 2 Okt</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td><b>JFT-Basic</b></td><td class="r num">250</td><td class="r num">200</td><td>1 poin/soal, dikoreksi manual</td><td><span class="badge b-green">Direktur · 2 Okt</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+            <tr><td><b>SSW</b></td><td class="r muted">–</td><td class="r muted">–</td><td class="muted">Belum ditentukan</td><td><span class="badge b-orange">Menunggu persetujuan</span></td><td><button class="btn ghost sm">Isi</button></td></tr>
+          </tbody>
+        </table></div>
+        <div class="note warn" style="margin-top:12px">Angka skor dan batas lulus diisi setelah disetujui manajemen. Setiap perubahan tercatat di log.</div>
+      </div>
+
+      <div id="mst-batsu" data-panelof="mst" hidden>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Kategori</th><th>Contoh</th><th class="r">Dipakai bulan ini</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge b-orange">Terlambat</span></td><td>Datang lewat 10 menit tanpa kabar</td><td class="r num">7</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><span class="badge b-red">Alpa</span></td><td>Tidak hadir tanpa izin</td><td class="r num">3</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><span class="badge b-purple">Ponsel</span></td><td>Memakai ponsel saat kelas atau ujian</td><td class="r num">3</td><td><span class="badge b-green">Aktif</span></td></tr>
+            <tr><td><span class="badge b-blue">Seragam</span></td><td>Tidak memakai seragam/kartu peserta</td><td class="r num">1</td><td><span class="badge b-green">Aktif</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="note lockn" style="margin-top:12px">Data yang sudah dipakai kelas, materi, atau nilai tidak bisa dihapus. Gunakan Nonaktifkan agar riwayat tetap utuh.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Perubahan terakhir</h2><button class="btn ghost sm" data-go="ap-usulan">Usulan sensei (2)</button></div>
+      <div class="list">
+        <div class="li"><div class="ico o">✎</div><div class="grow"><p>Skor maks J-Test: 300 → 350</p><span>Sari Wulandari · Admin Pendidikan · 2 Okt, 14.20 · disetujui Direktur</span></div></div>
+        <div class="li"><div class="ico g">＋</div><div class="grow"><p>Kurikulum baru: SSW · Pengolahan makanan</p><span>Sari Wulandari · Admin Pendidikan · 1 Okt, 10.05</span></div></div>
+        <div class="li"><div class="ico k">⏸</div><div class="grow"><p>SSW · Konstruksi dinonaktifkan</p><span>Sari Wulandari · Admin Pendidikan · 30 Sep, 16.40</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="ap-usulan" hidden>
+  <div class="page-head"><div><h1>Usulan dari Sensei</h1><p>Sensei tidak bisa mengubah materi pakem langsung. Usulan masuk ke sini untuk ditinjau.</p></div><span class="tag" title="Sensei: usulkan perubahan, bukan ubah langsung">Peran</span></div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Tanggal</th><th>Sensei</th><th>Materi</th><th>Usulan</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <tr><td class="num">6 Okt</td><td>Yamada Sensei</td><td>Minna I · Bab 18</td><td>Tambah 5 soal choukai ～ことができます; soal no. 7 kuncinya keliru</td><td><span class="badge b-orange">Menunggu</span></td><td style="white-space:nowrap"><button class="btn sm">Terima</button> <button class="btn ghost sm">Tolak</button></td></tr>
+      <tr><td class="num">4 Okt</td><td>Tanaka Sensei</td><td>Minna II · Bab 27</td><td>Video penjelasan ～が見えます kurang jelas audionya</td><td><span class="badge b-orange">Menunggu</span></td><td style="white-space:nowrap"><button class="btn sm">Terima</button> <button class="btn ghost sm">Tolak</button></td></tr>
+      <tr><td class="num">28 Sep</td><td>Sato Sensei</td><td>JFT Basic · Listening</td><td>Ganti audio unit 3 dengan rekaman baru</td><td><span class="badge b-green">Diterima</span></td><td></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ============ SENSEI: MATERI PAKEM (LIHAT) ============ -->
+<section class="screen" data-screen="s-pakem" hidden>
+  <div class="page-head"><div><h1>Materi Pakem</h1><p>Hanya bisa dilihat. Untuk perbaikan, kirim usulan ke Admin Pendidikan.</p></div><span class="tag" title="4.a Materi pakem hanya diubah Admin Pendidikan">4.a</span></div>
+  <div class="split">
+    <div class="card">
+      <div class="tabs" role="tablist"><button role="tab" aria-selected="true">Minna I</button><button role="tab" aria-selected="false">Minna II</button><button role="tab" aria-selected="false">N3</button><button role="tab" aria-selected="false">JFT</button><button role="tab" aria-selected="false">SSW</button></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Bab</th><th>Judul</th><th>Isi</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="num">17</td><td>～ないでください</td><td class="small">Video · PDF · Latihan 20 soal</td><td><button class="btn ghost sm">Usulkan</button></td></tr>
+          <tr><td class="num">18</td><td>～ことができます</td><td class="small">Video · PDF · Latihan 20 soal</td><td><span class="badge b-orange">Usulan terkirim</span></td></tr>
+          <tr><td class="num">19</td><td>～たことがあります</td><td class="small">Video · PDF</td><td><button class="btn ghost sm">Usulkan</button></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Usulkan perubahan</h2>
+      <div class="field"><label for="usMat">Materi</label><select class="input" id="usMat"><option>Minna I · Bab 17</option><option>Minna I · Bab 19</option></select></div>
+      <div class="field"><label for="usIsi">Apa yang perlu diubah</label><textarea class="input" id="usIsi" placeholder="mis. kunci soal no. 4 seharusnya pilihan 2"></textarea></div>
+      <button class="btn sakura" type="submit">Kirim ke Admin Pendidikan</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ ADMIN OPERASIONAL: KELAS & JADWAL, OSHIRASE ============ -->
+<section class="screen" data-screen="ao-kelas" hidden>
+  <div class="page-head"><div><h1>Kelas &amp; Jadwal</h1><p>Admin operasional membuat kelas dan memilih kurikulumnya dari Data Master.</p></div><span class="tag" title="Admin operasional memakai, tidak mengubah, master akademik">Peran</span></div>
+  <div class="split">
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th>Kelas</th><th>Kurikulum</th><th>Wali kelas</th><th class="r">Peserta</th><th>Periode</th></tr></thead>
+      <tbody>
+        <tr><td><b>Minna I-A</b></td><td>Minna no Nihongo I</td><td>Tanaka Sensei</td><td class="r num">18</td><td class="num">Agu–Nov 2026</td></tr>
+        <tr><td><b>Minna I-B</b></td><td>Minna no Nihongo I</td><td>Yamada Sensei</td><td class="r num">20</td><td class="num">Sep–Des 2026</td></tr>
+        <tr><td><b>Minna II-A</b></td><td>Minna no Nihongo II</td><td>Sato Sensei</td><td class="r num">16</td><td class="num">Jul–Okt 2026</td></tr>
+        <tr><td><b>SSW Kaigo-1</b></td><td>SSW · Kaigo</td><td>Yamada Sensei</td><td class="r num">7</td><td class="num">Okt 2026–Jan 2027</td></tr>
+      </tbody>
+    </table></div></div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Buat kelas</h2>
+      <div class="field"><label for="kNama">Nama kelas</label><input class="input" id="kNama" value="Minna I-C"></div>
+      <div class="field"><label for="kKur">Kurikulum (dari Data Master)</label><select class="input" id="kKur"><option>Minna no Nihongo I</option><option>Minna no Nihongo II</option><option>JFT Basic</option><option>N3</option><option>SSW · Kaigo</option><option>SSW · Pengolahan makanan</option></select></div>
+      <div class="field"><label for="kWali">Wali kelas</label><select class="input" id="kWali"><option>Tanaka Sensei</option><option>Yamada Sensei</option><option>Sato Sensei</option></select></div>
+      <p class="small muted" style="margin:0">Kurikulum baru hanya bisa ditambah Admin Pendidikan.</p>
+      <button class="btn sakura" type="submit">Simpan kelas</button>
+    </form>
+  </div>
+</section>
+
+<section class="screen" data-screen="ao-oshirase" hidden>
+  <div class="page-head"><div><h1>Oshirase</h1><p>Pengumuman satu arah ke peserta. Peserta tidak bisa membalas.</p></div><span class="tag" title="3.h Pengumuman satu arah">3.h</span></div>
+  <div class="split">
+    <div class="card"><div class="list">
+      <div class="li"><div class="ico r">📣</div><div class="grow"><p>Simulasi JLPT N4 · Sabtu 10 Okt, 08.00</p><span>Semua peserta · 5 Okt · dibaca 98 dari 112</span></div></div>
+      <div class="li"><div class="ico">📣</div><div class="grow"><p>Libur kelas Kamis 8 Okt</p><span>Minna I-B · Yamada Sensei · 4 Okt · dibaca 19 dari 20</span></div></div>
+      <div class="li"><div class="ico g">📣</div><div class="grow"><p>Cicilan ke-3 jatuh tempo 15 Okt</p><span>Angkatan 4 · 1 Okt · dibaca 40 dari 46</span></div></div>
+    </div></div>
+    <form class="card stack" onsubmit="event.preventDefault()">
+      <h2 style="margin:0">Buat pengumuman</h2>
+      <div class="field"><label for="oJudul">Judul</label><input class="input" id="oJudul" placeholder="mis. Jadwal MCU gelombang 2"></div>
+      <div class="field"><label for="oTarget">Untuk</label><select class="input" id="oTarget"><option>Semua peserta</option><option>Kelas Minna I-B</option><option>Kelas SSW Kaigo-1</option><option>Angkatan 4</option></select></div>
+      <div class="field"><label for="oIsi">Isi</label><textarea class="input" id="oIsi"></textarea></div>
+      <button class="btn sakura" type="submit">Terbitkan</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ SUPERADMIN ============ -->
+<section class="screen" data-screen="su-users" hidden>
+  <div class="page-head"><div><h1>Pengguna</h1><p>Akun dan peran. Satu orang boleh memegang lebih dari satu peran.</p></div><div style="display:flex;gap:6px;align-items:center"><span class="tag" title="Superadmin: akun & peran">Peran</span><button class="btn sakura">+ Tambah pengguna</button></div></div>
+  <div class="card">
+    <div class="toolbar"><input class="input" placeholder="Cari nama atau email…" aria-label="Cari pengguna"><select class="input" style="flex:0 1 180px" aria-label="Filter peran"><option>Semua peran</option><option>Superadmin</option><option>Admin Pendidikan</option><option>Admin</option><option>Sensei</option><option>Direktur</option><option>Peserta</option></select></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Nama</th><th>Email</th><th>Peran</th><th>Login terakhir</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        <tr><td><b>Tim IT JGG</b></td><td>it@jgg.id</td><td><span class="badge b-navy">Superadmin</span></td><td class="num">7 Okt, 06.10</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td><b>Sari Wulandari</b></td><td>sari@jgg.id</td><td><span class="badge b-purple">Admin Pendidikan</span></td><td class="num">6 Okt, 16.42</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td><b>Dewi Anggraini</b></td><td>dewi@jgg.id</td><td><span class="badge b-blue">Admin</span></td><td class="num">6 Okt, 17.05</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td><b>Yamada Sensei</b></td><td>yamada@jgg.id</td><td><span class="badge b-green">Sensei</span></td><td class="num">6 Okt, 15.30</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td><b>Budi Hartono</b></td><td>direktur@jgg.id</td><td><span class="badge b-orange">Direktur</span></td><td class="num">5 Okt, 09.12</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+        <tr><td><b>Rizky Pratama</b></td><td>rizky@jgg.id</td><td><span class="badge b-grey">Peserta</span></td><td class="num">6 Okt, 19.42</td><td><span class="badge b-green">Aktif</span></td><td><button class="btn ghost sm">Ubah</button></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="screen" data-screen="su-akses" hidden>
+  <div class="page-head"><div><h1>Hak Akses per Peran</h1><p>Siapa boleh melakukan apa. Diubah hanya oleh Superadmin.</p></div><span class="tag" title="Pembagian 3 peran admin">Peran</span></div>
+  <div class="card"><div class="tbl-wrap"><table class="matrix">
+    <thead><tr><th>Fitur</th><th>Superadmin</th><th>Admin Pendidikan</th><th>Admin</th><th>Sensei</th><th>Direktur</th><th>Peserta</th></tr></thead>
+    <tbody id="aksesBody"></tbody>
+  </table></div>
+  <p class="small muted" style="margin:10px 0 0">✎ ubah · 👁 lihat · ✉ usulkan · – tidak ada akses</p></div>
+</section>
+
+<section class="screen" data-screen="su-log" hidden>
+  <div class="page-head"><div><h1>Log Perubahan</h1><p>Semua perubahan data master, nilai, dan hak akses.</p></div></div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Waktu</th><th>Pengguna</th><th>Peran</th><th>Perubahan</th><th>Nilai lama → baru</th></tr></thead>
+    <tbody>
+      <tr><td class="num">6 Okt, 16.42</td><td>Sari Wulandari</td><td>Admin Pendidikan</td><td>Nilai akhir Rizky Pratama · JLPT N4</td><td class="num">– → 132</td></tr>
+      <tr><td class="num">6 Okt, 11.03</td><td>Tim IT JGG</td><td>Superadmin</td><td>Peran Dewi Anggraini</td><td>Sensei → Admin</td></tr>
+      <tr><td class="num">2 Okt, 14.20</td><td>Sari Wulandari</td><td>Admin Pendidikan</td><td>Skor maks J-Test</td><td class="num">300 → 350</td></tr>
+      <tr><td class="num">1 Okt, 10.05</td><td>Sari Wulandari</td><td>Admin Pendidikan</td><td>Tambah kurikulum</td><td>– → SSW · Pengolahan makanan</td></tr>
+      <tr><td class="num">30 Sep, 16.40</td><td>Sari Wulandari</td><td>Admin Pendidikan</td><td>Status SSW · Konstruksi</td><td>Aktif → Nonaktif</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+
+    </div>
+  </div>
+</div>
+
+<!-- =================== PORTAL UJIAN (terpisah) =================== -->
+<div class="portal" id="portalShell" hidden>
+  <div class="p-top">
+    <div class="p-brand"><div class="logo" role="img" aria-label="Logo PT. Jakaruta Global Group"></div><div><p>JGG Virtual Test</p><span>Portal simulasi ujian · terpisah dari LMS <span class="tag" title="1 Portal berbeda khusus simulasi ujian">1</span></span></div></div>
+    <div class="p-nav"><button type="button" data-pt="pilih" aria-pressed="true">Mulai Ujian</button><button type="button" data-pt="nilai" aria-pressed="false">Nilai Saya</button><span class="p-user">Rizky Pratama</span><button type="button" data-logout="portal">Keluar</button></div>
+  </div>
+  <div class="p-body">
+    <section id="pt-pilih">
+      <div class="p-hero"><h1>Pilih jenis ujian</h1><p>Masukkan kode yang dibagikan pengawas di ruang ujian.</p></div>
+      <div class="type-grid" id="typeGrid" aria-label="Jenis ujian">
+        <button type="button" class="type" aria-pressed="true" data-t="0"><b>JLPT</b><span class="mx">Skor maks 180</span><small>N1 · N2 · N3 · N4 · N5</small></button>
+        <button type="button" class="type" aria-pressed="false" data-t="1"><b>J-Test</b><span class="mx">Skor maks 350</span><small>A–C (≈N1–N2) · D–E (≈N3–N4) · F–G (≈N5)</small></button>
+        <button type="button" class="type" aria-pressed="false" data-t="2"><b>NAT-Test</b><span class="mx">Skor maks 180</span><small>5Q · 4Q · 3Q · 2Q · 1Q</small></button>
+        <button type="button" class="type" aria-pressed="false" data-t="3"><b>JFT-Basic</b><span class="mx">Skor maks 250</span><small>A1 · A2.1 · A2.2</small></button>
+        <button type="button" class="type" aria-pressed="false" data-t="4"><b>SSW</b><span class="mx">Skor maks: menunggu</span><small>Konstruksi · Pertanian · Peternakan · Kaigo · Pengolahan makanan</small></button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2 id="tName">JLPT</h2><span class="tag" title="1.a Dikelompokkan per tipe ujian">1.a</span></div>
+        <div class="lv" id="tLevels"></div>
+        <form class="code-row" style="margin-top:14px" onsubmit="event.preventDefault()"><input class="input" id="examCode" value="N4OKT" aria-label="Kode ujian" maxlength="20"><button class="btn sakura" type="submit">Mulai ujian</button></form>
+        <p class="small muted" style="margin:10px 0 0">Kode hanya berlaku di jam ujian. Setelah ditutup, soal tidak bisa dibuka lagi. <span class="tag" title="Concern 4">C4</span></p>
+      </div>
+    </section>
+    <section id="pt-nilai" hidden>
+      <div class="p-hero"><h1>Nilai Saya</h1><p>Nilai tampil setelah dikoreksi admin. Jawaban benar/salah tidak ditampilkan.</p></div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><h2>Simulasi JLPT N4 · 10 Okt</h2><span class="badge b-green">Dikoreksi</span></div>
+          <div class="score"><b class="num">132</b><span>/ 180</span></div>
+          <div class="bar" style="margin:10px 0 6px"><i style="width:73%"></i></div>
+          <p class="small muted">Batas lulus simulasi 90 · <b style="color:var(--green)">Lulus</b></p>
+          <div class="hidden-box">🙈 <span>Rincian benar/salah dan pembahasan disembunyikan. <span class="tag" title="1.d">1.d</span></span></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>J-Test E–F · 3 Okt</h2><span class="badge b-orange">Menunggu koreksi</span></div>
+          <div class="score"><b class="num">–</b><span>/ 350</span></div>
+          <p class="small muted" style="margin-top:10px">Ujian sudah dikumpulkan 3 Okt, 11.40. Nilai akan muncul setelah admin selesai mengoreksi. <span class="tag" title="1.b Koreksi manual">1.b</span></p>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>JFT-Basic A2 · 19 Sep</h2><span class="badge b-green">Dikoreksi</span></div>
+          <div class="score"><b class="num">210</b><span>/ 250</span></div>
+          <div class="bar" style="margin:10px 0 0"><i style="width:84%"></i></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var MENUS = {
+    peserta: { name: 'Rizky Pratama', init: 'RP', sub: 'Basic · Minna I-B', role: 'Peserta', items: [
+      ['p-dash', '🏠', 'Dashboard', 0], ['p-materi', '📘', 'Materi', 1], ['p-latihan', '✏️', 'Soal Latihan', 1],
+      ['p-kelas', '🏫', 'Kelas Saya', 1], ['p-sertifikat', '🏅', 'Sertifikat', 1], ['p-progress', '✈️', 'Progress to Japan', 1],
+      ['p-bayar', '💳', 'Pembayaran', 0], ['p-oshirase', '📣', 'Oshirase', 1]] },
+    sensei: { name: 'Yamada Sensei', init: 'YS', sub: 'Wali kelas Minna I-B', role: 'Sensei', items: [
+      ['s-catatan', '🗒️', 'Catatan Mingguan', 1], ['s-tambahan', '📎', 'Materi Tambahan', 1], ['s-batsu', '⚠️', 'Catatan Batsu', 1],
+      ['s-pakem', '📘', 'Materi Pakem', 1]] },
+    pendidikan: { name: 'Sari Wulandari', init: 'SW', sub: 'Admin Pendidikan', role: 'Admin Pendidikan', items: [
+      ['ap-master', '🗃️', 'Data Master', 1], ['a-materi', '📘', 'Materi Pakem', 1], ['a-bank', '🗂️', 'Bank Soal', 1],
+      ['a-koreksi', '🧮', 'Ujian & Koreksi', 1], ['ap-usulan', '✉️', 'Usulan Sensei', 1], ['a-laporan', '📈', 'Laporan', 1]] },
+    admin: { name: 'Dewi Anggraini', init: 'DA', sub: 'Admin operasional', role: 'Admin', items: [
+      ['a-daftar', '📝', 'Pendaftaran', 1], ['ao-kelas', '🏫', 'Kelas & Jadwal', 1], ['ao-oshirase', '📣', 'Oshirase', 1],
+      ['a-monitor', '📡', 'Monitoring Portal', 1], ['a-job', '🏢', 'Perusahaan & Job Order', 1], ['a-laporan', '📈', 'Laporan', 1]] },
+    superadmin: { name: 'Tim IT JGG', init: 'IT', sub: 'Superadmin', role: 'Superadmin', items: [
+      ['su-users', '👥', 'Pengguna', 1], ['su-akses', '🔐', 'Hak Akses', 1], ['su-log', '🧾', 'Log Perubahan', 1]] },
+    direktur: { name: 'Budi Hartono', init: 'BH', sub: 'Direktur · hanya lihat', role: 'Direktur', items: [
+      ['a-laporan', '📈', 'Laporan', 0], ['a-monitor', '📡', 'Monitoring Portal', 0], ['su-log', '🧾', 'Log Perubahan', 1]] }
+  };
+  var nav = document.getElementById('sbNav');
+  var screens = document.querySelectorAll('.screen');
+  var current = 'peserta';
+
+  function show(id) {
+    screens.forEach(function (s) { s.hidden = s.dataset.screen !== id; });
+    nav.querySelectorAll('.sb-item').forEach(function (b) { b.classList.toggle('active', b.dataset.s === id); });
+    var m = MENUS[current].items.find(function (i) { return i[0] === id; });
+    document.getElementById('crumb').innerHTML = MENUS[current].role + ' / <b>' + (m ? m[2] : '') + '</b>';
+    window.scrollTo(0, 0);
+  }
+  // ---- Alur login: lms-login | daftar | app | portal-login | portal ----
+  var VIEWS = { 'lms-login': 'lmsLogin', 'daftar': 'daftarPage', 'app': 'appShell', 'portal-login': 'portalLogin', 'portal': 'portalShell' };
+  var session = { lms: null, portal: false };
+  function go(view) {
+    Object.keys(VIEWS).forEach(function (k) { document.getElementById(VIEWS[k]).hidden = k !== view; });
+    var side = (view === 'portal' || view === 'portal-login') ? 'portal' : 'lms';
+    document.querySelectorAll('#sideSeg button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.side === side); });
+    window.scrollTo(0, 0);
+  }
+  var ACCOUNTS = { 'rizky@jgg.id': 'peserta', 'jgg-2026-014': 'peserta', 'yamada@jgg.id': 'sensei', 'sari@jgg.id': 'pendidikan', 'dewi@jgg.id': 'admin', 'it@jgg.id': 'superadmin', 'direktur@jgg.id': 'direktur' };
+  var DEMO = { peserta: 'rizky@jgg.id', sensei: 'yamada@jgg.id', pendidikan: 'sari@jgg.id', admin: 'dewi@jgg.id', superadmin: 'it@jgg.id', direktur: 'direktur@jgg.id' };
+  function fail(id, msg) { var e = document.getElementById(id); e.textContent = msg; e.hidden = !msg; }
+  document.getElementById('lmsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u = document.getElementById('lmsEmail').value.trim().toLowerCase(), p = document.getElementById('lmsPass').value;
+    if (!u || !p) return fail('lmsErr', 'Isi email/NIS dan password.');
+    var role = ACCOUNTS[u];
+    if (!role) return fail('lmsErr', 'Email/NIS atau password salah. Coba akun demo di bawah.');
+    fail('lmsErr', ''); session.lms = role; setRole(role); go('app');
+  });
+  document.querySelectorAll('[data-quick]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.getElementById('lmsEmail').value = DEMO[b.dataset.quick];
+      document.getElementById('lmsPass').value = 'sakura2026';
+      document.getElementById('lmsForm').requestSubmit();
+    });
+  });
+  document.getElementById('portalForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u = document.getElementById('ptUser').value.trim().toLowerCase(), p = document.getElementById('ptPass').value;
+    if (!u || !p) return fail('ptErr', 'Isi nomor peserta/email dan password.');
+    if (ACCOUNTS[u] !== 'peserta') return fail('ptErr', 'Akun tidak terdaftar sebagai peserta ujian.');
+    fail('ptErr', ''); session.portal = true; go('portal');
+  });
+  document.getElementById('ptQuick').addEventListener('click', function () {
+    document.getElementById('ptUser').value = 'JGG-2026-014'; document.getElementById('ptPass').value = 'sakura2026';
+  });
+  document.querySelectorAll('[data-logout]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.logout === 'portal') { session.portal = false; go('portal-login'); }
+      else { session.lms = null; go('lms-login'); }
+    });
+  });
+  document.querySelectorAll('#sideSeg button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.side === 'portal') go(session.portal ? 'portal' : 'portal-login');
+      else go(session.lms ? 'app' : 'lms-login');
+    });
+  });
+  document.getElementById('resetBtn').addEventListener('click', function () { session = { lms: null, portal: false }; go('lms-login'); });
+  document.getElementById('toDaftar').addEventListener('click', function () { go('daftar'); });
+  document.getElementById('toPortal').addEventListener('click', function () { go(session.portal ? 'portal' : 'portal-login'); });
+  document.getElementById('toLms').addEventListener('click', function () { go(session.lms ? 'app' : 'lms-login'); });
+  document.querySelectorAll('[data-back]').forEach(function (b) { b.addEventListener('click', function () { go('lms-login'); }); });
+
+  // Pendaftaran publik: 12 berkas
+  var REG = [['KTP',1],['Akte kelahiran',1],['Kartu Keluarga (barcode harus terbaca)',1],['Ijazah SD',1],['Ijazah SMP',1],['Ijazah SMA/SMK/sederajat',1],['Ijazah terakhir',0],['Paspor',0],['Surat izin orang tua (dari formulir)',1],['Surat pernyataan (dari formulir)',1],['Surat pembayaran (dari formulir)',1],['Pas foto 3×4',1]];
+  var regDone = [1,1,1,1,1,1,0,0,1,0,1,0];
+  var regBox = document.getElementById('regDocs');
+  function renderReg() {
+    regBox.innerHTML = '';
+    var need = 0, have = 0;
+    REG.forEach(function (d, i) {
+      if (d[1]) { need++; if (regDone[i]) have++; }
+      var r = document.createElement('div'); r.className = 'doc-row';
+      r.innerHTML = '<p>' + d[0] + '<span class="sub">' + (d[1] ? 'Wajib' : 'Opsional') + (regDone[i] ? ' · berkas_' + (i + 1) + '.pdf' : '') + '</span></p>' +
+        '<span class="badge ' + (regDone[i] ? 'b-green">Terunggah' : d[1] ? 'b-red">Belum' : 'b-grey">Opsional') + '</span>' +
+        '<label class="btn ghost sm up">' + (regDone[i] ? 'Ganti' : 'Unggah') + '<input type="file" accept="image/*,.pdf" aria-label="Unggah ' + d[0] + '" data-i="' + i + '"></label>';
+      regBox.appendChild(r);
+    });
+    var c = document.getElementById('regCount');
+    c.textContent = have + ' / ' + need + ' wajib';
+    c.className = 'badge num ' + (have === need ? 'b-green' : 'b-orange');
+    return need - have;
+  }
+  regBox.addEventListener('change', function (e) { var i = e.target.dataset.i; if (i !== undefined && e.target.files.length) { regDone[+i] = 1; renderReg(); } });
+  renderReg();
+  document.getElementById('daftarForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var miss = REG.filter(function (d, i) { return d[1] && !regDone[i]; }).map(function (d) { return d[0].replace(/ \(.*\)/, ''); });
+    if (miss.length) return fail('regErr', 'Berkas wajib belum diunggah: ' + miss.join(', ') + '.');
+    if (!document.getElementById('dSetuju').checked) return fail('regErr', 'Centang pernyataan sebelum mengirim.');
+    fail('regErr', '');
+    document.getElementById('daftarBody').hidden = true; document.getElementById('daftarDone').hidden = false;
+  });
+
+  function setRole(r) {
+    current = r;
+    var M = MENUS[r];
+    document.getElementById('sbRole').textContent = M.role;
+    document.getElementById('avName').textContent = M.name;
+    document.getElementById('avInit').textContent = M.init;
+    document.getElementById('avSub').textContent = M.sub;
+    nav.innerHTML = '';
+    M.items.forEach(function (i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'sb-item'; b.dataset.s = i[0];
+      b.innerHTML = '<span class="ic">' + i[1] + '</span>' + i[2] + (i[3] ? '<span class="dot" title="Berubah sesuai notulen"></span>' : '');
+      b.addEventListener('click', function () { show(i[0]); });
+      nav.appendChild(b);
+    });
+    show(M.items[0][0]);
+    document.body.classList.toggle('readonly', r === 'direktur');
+  }
+  document.addEventListener('click', function (e) { var g = e.target.closest('[data-go]'); if (g) show(g.dataset.go); });
+  document.getElementById('tagToggle').addEventListener('change', function (e) { document.body.classList.toggle('hide-tags', !e.target.checked); });
+
+  // Tab sederhana (yang tidak terkunci bisa dipilih)
+  document.querySelectorAll('.tabs').forEach(function (t) {
+    t.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b || b.classList.contains('locked')) return;
+      t.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-selected', x === b); });
+      if (t.dataset.tabgroup && b.dataset.panel) document.querySelectorAll('[data-panelof="' + t.dataset.tabgroup + '"]').forEach(function (pn) { pn.hidden = pn.id !== b.dataset.panel; });
+      if (t.id === 'jobTabs') { document.getElementById('jt-jo').hidden = b.dataset.jt !== 'jo'; document.getElementById('jt-cad').hidden = b.dataset.jt !== 'cad'; }
+    });
+  });
+
+  // Bab materi Minna I
+  var bab = [['あいさつ','Perkenalan'],['これは～です','Kata tunjuk'],['ここ・そこ','Tempat'],['～時～分','Waktu'],['行きます','Kata kerja gerak'],['～ませんか','Ajakan'],['あげます・もらいます','Memberi/menerima'],['形容詞','Kata sifat'],['好き・上手','Suka & pandai'],['あります・います','Keberadaan'],['数え方','Cara menghitung'],['過去形','Bentuk lampau'],['～たいです','Keinginan'],['て形','Bentuk te'],['～ています','Sedang/keadaan'],['～て、～て','Urutan kegiatan'],['～ないでください','Larangan halus'],['～ことができます','Kemampuan'],['～たことがあります','Pengalaman'],['普通形','Bentuk biasa'],['～と思います','Pendapat'],['連体修飾','Klausa penjelas'],['～とき','Ketika'],['くれます','Diberi'],['～たら','Pengandaian']];
+  var g = document.getElementById('babMateri');
+  bab.forEach(function (x, i) {
+    var n = i + 1, cls = n <= 17 ? 'done' : n === 18 ? 'now' : n <= 20 ? '' : 'lk';
+    var st = n <= 17 ? '✓ Selesai' : n === 18 ? 'Sedang dipelajari' : n <= 20 ? 'Terbuka' : '🔒 Selesaikan bab sebelumnya';
+    var d = document.createElement('div'); d.className = 'bab ' + cls;
+    d.innerHTML = '<b>Bab ' + n + '</b><p>' + x[1] + '</p><span class="jp">' + x[0] + '</span><span class="small muted">' + st + '</span>';
+    g.appendChild(d);
+  });
+  document.getElementById('srchMateri').addEventListener('input', function (e) {
+    var q = e.target.value.toLowerCase();
+    g.querySelectorAll('.bab').forEach(function (d) { d.hidden = q && d.textContent.toLowerCase().indexOf(q) < 0; });
+  });
+
+  // 12 berkas pendaftaran
+  var docs = [['KTP','Wajib','ok'],['Akte kelahiran','Wajib','ok'],['Kartu Keluarga','Wajib · barcode harus terbaca','cek'],['Ijazah SD','Wajib','ok'],['Ijazah SMP','Wajib','ok'],['Ijazah SMA/SMK/sederajat','Wajib','ok'],['Ijazah terakhir','Opsional','na'],['Paspor','Opsional','na'],['Surat izin orang tua','Wajib · dari template','ok'],['Surat pernyataan','Wajib · dari template','miss'],['Surat pembayaran','Wajib · dari template','ok'],['Pas foto 3×4','Wajib','miss']];
+  var map = { ok: ['b-green','Ada'], cek: ['b-orange','Cek barcode'], na: ['b-grey','Tidak diunggah'], miss: ['b-red','Belum'] };
+  var dl = document.getElementById('docList');
+  docs.forEach(function (d) {
+    var r = document.createElement('div'); r.className = 'doc-row';
+    r.innerHTML = '<p>' + d[0] + '<span class="sub">' + d[1] + '</span></p><span class="badge ' + map[d[2]][0] + '">' + map[d[2]][1] + '</span>' +
+      (d[2] === 'ok' || d[2] === 'cek' ? '<button class="btn ghost sm">Lihat</button>' : '<span></span>');
+    dl.appendChild(r);
+  });
+
+  // Portal: jenis ujian
+  var TYPES = [['JLPT',['N1','N2','N3','N4','N5']],['J-Test',['A–C (≈N1–N2)','D–E (≈N3–N4)','F–G (≈N5)']],['NAT-Test',['5Q (N5)','4Q (N4)','3Q (N3)','2Q (N2)','1Q (N1)']],['JFT-Basic',['A1','A2.1','A2.2']],['SSW',['Konstruksi','Pertanian','Peternakan','Kaigo','Pengolahan makanan','dst.']]];
+  function pickType(i) {
+    document.querySelectorAll('#typeGrid .type').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.t === i); });
+    document.getElementById('tName').textContent = TYPES[i][0] + ' · level tersedia';
+    document.getElementById('tLevels').innerHTML = TYPES[i][1].map(function (l) { return '<span>' + l + '</span>'; }).join('');
+  }
+  document.querySelectorAll('#typeGrid .type').forEach(function (b) { b.addEventListener('click', function () { pickType(+b.dataset.t); }); });
+  pickType(0);
+  document.querySelectorAll('.p-nav button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.p-nav button').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+      document.getElementById('pt-pilih').hidden = b.dataset.pt !== 'pilih';
+      document.getElementById('pt-nilai').hidden = b.dataset.pt !== 'nilai';
+    });
+  });
+
+  var AKSES = [
+    ['Peran & hak akses pengguna', 'e','-','-','-','-','-'],
+    ['Data master akademik (kelas, ujian, skor)', 'v','e','v','v','v','-'],
+    ['Materi & soal pakem', 'v','e','-','u','-','-'],
+    ['Materi tambahan per kelas', '-','v','-','e','-','-'],
+    ['Koreksi nilai ujian', '-','e','-','-','v','-'],
+    ['Pendaftaran & berkas', '-','v','e','-','v','-'],
+    ['Kelas & jadwal', '-','v','e','v','v','-'],
+    ['Pembayaran', '-','-','e','-','v','v'],
+    ['Perusahaan, job order & Cadangan', '-','-','e','-','v','-'],
+    ['Oshirase (pengumuman)', '-','e','e','e','-','v'],
+    ['Catatan batsu', '-','e','v','e','v','-'],
+    ['Monitoring portal ujian', 'v','v','e','-','v','-'],
+    ['Log perubahan', 'v','v','-','-','v','-']];
+  var SYM = { e: '<span class="badge b-green">✎ ubah</span>', v: '<span class="badge b-blue">👁 lihat</span>', u: '<span class="badge b-orange">✉ usulkan</span>', '-': '<span class="muted">–</span>' };
+  document.getElementById('aksesBody').innerHTML = AKSES.map(function (r) { return '<tr><td><b>' + r[0] + '</b></td>' + r.slice(1).map(function (x) { return '<td>' + SYM[x] + '</td>'; }).join('') + '</tr>'; }).join('');
+  setRole('peserta');
+  go('lms-login');
+})();
+</script>
+</body>
+</html>
