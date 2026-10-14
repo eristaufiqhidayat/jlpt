@@ -7,6 +7,7 @@ use App\Enums\ExamStatus;
 use App\Enums\QuestionType;
 use App\Enums\Role;
 use App\Models\Classroom;
+use App\Models\Curriculum;
 use App\Models\Exam;
 use App\Models\Material;
 use App\Models\Message;
@@ -111,7 +112,12 @@ class DemoSeeder extends Seeder
         StudentProfile::updateOrCreate(['user_id' => $student->id], [
             'nis' => '2026001', 'level_id' => $level->id, 'program_name' => 'Tokutei Ginou – Kaigo', 'joined_at' => now()->subMonths(4)->toDateString(),
         ]);
+        $minna1 = Curriculum::where('code', 'MINNA1')->first();
+        $minna2 = Curriculum::where('code', 'MINNA2')->first();
         $class = Classroom::firstOrCreate(['name' => 'N4-A'], ['level_id' => $level->id, 'sensei_id' => $sensei->id, 'is_active' => true]);
+        if ($minna1 && ! $class->curriculum_id) {
+            $class->update(['curriculum_id' => $minna1->id]); // peserta demo di Minna I → Minna II terkunci
+        }
         $class->students()->syncWithoutDetaching([$student->id]);
 
         if (! $class->sessions()->exists()) {
@@ -128,18 +134,29 @@ class DemoSeeder extends Seeder
 
         if (! Material::exists()) {
             $items = [
-                ['Bab 5 – Partikel', 'Partikel で dan に', 'Bunpou', "で menandai tempat kegiatan, に menandai tujuan/keberadaan.\n{図書館|としょかん}で べんきょうします。", $exam->id],
-                ['Bab 5 – Partikel', 'Partikel を dan が', 'Bunpou', 'を menandai objek; が menandai subjek/yang disukai.', null],
-                ['Bab 6 – Kanji', 'Kanji waktu: 時・分・半', 'Kanji', '{時|じ}、{分|ふん}、{半|はん}', null],
+                [5, 'Partikel', 'Partikel で dan に', 'Bunpou', "で menandai tempat kegiatan, に menandai tujuan/keberadaan.\n{図書館|としょかん}で べんきょうします。", $exam->id],
+                [5, 'Partikel', 'Partikel を dan が', 'Bunpou', 'を menandai objek; が menandai subjek/yang disukai.', null],
+                [6, 'Kanji', 'Kanji waktu: 時・分・半', 'Kanji', '{時|じ}、{分|ふん}、{半|はん}', null],
             ];
-            foreach ($items as $i => [$chapter, $title, $category, $desc, $examId]) {
+            foreach ($items as $i => [$chapterNo, $chapter, $title, $category, $desc, $examId]) {
                 Material::create([
+                    'curriculum_id' => $minna1?->id, 'chapter_no' => $chapterNo,
                     'level_id' => $level->id, 'chapter' => $chapter, 'title' => $title, 'category' => $category,
                     'description' => $desc, 'duration_minutes' => 15, 'sort_order' => $i, 'exam_id' => $examId,
                     'status' => 'published', 'created_by' => $sensei->id,
                 ]);
             }
         }
+
+        // Contoh materi Minna II (terkunci untuk peserta demo) dan materi tambahan sensei untuk kelas N4-A.
+        Material::firstOrCreate(['title' => 'Bentuk biasa (普通形)'], [
+            'kind' => Material::CORE, 'curriculum_id' => $minna2?->id, 'chapter_no' => 26, 'chapter' => '～んです',
+            'category' => 'Bunpou', 'description' => '行く → 行くんです', 'duration_minutes' => 15, 'status' => 'published', 'created_by' => $sensei->id,
+        ]);
+        Material::firstOrCreate(['title' => 'Kartu kanji minggu ini'], [
+            'kind' => Material::EXTRA, 'classroom_id' => $class->id, 'category' => 'Kanji', 'description' => '{読|よ}む・{書|か}く・{聞|き}く',
+            'available_until' => today()->addWeeks(2)->toDateString(), 'status' => 'published', 'created_by' => $sensei->id,
+        ]);
 
         foreach (['pendaftaran' => 'selesai', 'belajar' => 'proses'] as $stage => $status) {
             ProgramStage::updateOrCreate(['student_id' => $student->id, 'stage' => $stage], ['status' => $status, 'date' => now()->subMonths(4)->toDateString()]);

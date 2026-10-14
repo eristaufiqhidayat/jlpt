@@ -374,3 +374,6 @@ input[type=file] { font-size: 12.5px; }
 .demo-login p { margin: 0 0 8px; font-size: 12px; color: #7a5a12; }
 .demo-login-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 .demo-login-btns form { margin: 0; }
+.tabs a.locked { color: #a3a9b6; }
+.locked-box { text-align: center; padding: 28px 20px; }
+.locked-box h2 { margin: 6px 0; }

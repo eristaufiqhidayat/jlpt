@@ -130,8 +130,9 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 | Student | Dashboard | Level, kehadiran, materi selesai, sertifikat, tahapan Program Jepang, materi terbaru, jadwal hari ini |
 | Student | Hasil ujian | Tombol Lihat Pembahasan (kunci + pembahasan), Download Sertifikat (bila lulus), Ulangi Ujian (bila ujian masih dibuka) |
 | Student | Materi / Kelas Saya / Program Jepang | Belajar per bab + tandai selesai; jadwal & riwayat kehadiran; status tahapan & dokumen (hanya lihat) |
+| Student | Materi (lock) | Tab per kurikulum. Terbuka: kurikulum kelasnya dan semua sebelumnya; sesudahnya terkunci (🔒) sampai naik kelas. Lock juga berlaku untuk file materi. Tab "Dari sensei" untuk materi tambahan kelasnya |
 | Student | Sertifikat | Sertifikat digital: cetak/simpan PDF (A4 landscape), tautan verifikasi publik `/verifikasi/{token}`, bagikan |
-| Sensei & admin | Materi | Tambah/edit materi per level & bab: YouTube/upload video, PDF, PPT, latihan soal, draft/terbit |
+| Admin Pendidikan & sensei | Materi | Tab per kurikulum + cari/urutkan. **Materi pakem** (kurikulum + nomor bab) hanya diubah Admin Pendidikan; **materi tambahan** dibuat sensei untuk kelas yang dipegangnya, dibuka/ditutup lewat status, dengan masa tayang opsional. Admin hanya melihat |
 | Sensei & admin | Kelas & Jadwal | Kelas, peserta, jadwal (bisa berulang mingguan), absensi per sesi |
 | Sensei, admin, direktur | Program Jepang | Monitoring semua peserta; sensei/admin mengubah status tahap & mengunggah dokumen, direktur hanya lihat |
 | Direktur & admin | Laporan | Peserta aktif, kelas aktif, lulus per tahun, siap berangkat; grafik peserta per level, tren kelulusan 3 tahun, rekap tahapan; filter tahun/level/kelas; cetak |

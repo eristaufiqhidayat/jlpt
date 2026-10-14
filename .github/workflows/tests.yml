@@ -46,4 +46,16 @@ jobs:
         run: php artisan key:generate
 
       - name: Execute tests
-        run: php artisan test
+        shell: bash
+        run: |
+          set +e
+          php artisan test --no-ansi 2>&1 | tee test-output.txt
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            # Tampilkan ringkasan kegagalan sebagai annotation agar terbaca di halaman PR.
+            # Mulai dari detail kegagalan pertama ("FAILED ..."), bukan daftar tes yang lulus.
+            msg=$(sed -n '/^ *FAILED /,$p' test-output.txt | grep -v '^\s*$' | head -c 4000 | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            [ -z "$msg" ] && msg=$(tail -c 4000 test-output.txt | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=php artisan test gagal::${msg}"
+          fi
+          exit "$status"
