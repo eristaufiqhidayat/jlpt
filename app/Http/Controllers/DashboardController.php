@@ -33,6 +33,7 @@ class DashboardController extends Controller
             Role::Sensei => $this->sensei($user),
             Role::Student => $this->student($user),
             Role::Director => redirect()->route('reports'),
+            Role::EducationAdmin => redirect()->route('manage.master.index'),
         };
     }
 

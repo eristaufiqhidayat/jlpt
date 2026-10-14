@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=5">
     @stack('head')
 </head>
 <body>
@@ -17,7 +17,7 @@
     $user = auth()->user();
     $role = $user->role->value;
     $initials = $user->initials();
-    $roleLabel = ['admin' => 'Administrator', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur'][$role];
+    $roleLabel = ['admin' => 'Administrator', 'education_admin' => 'Admin Pendidikan', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur'][$role] ?? $user->role->label();
     $subLabel = $role === 'student' && $user->profile?->level ? 'Peserta · '.$user->profile->level->code : $roleLabel;
     $unread = $user->inbox()->whereNull('read_at')->count();
     $item = fn ($label, $icon, $route, $patterns, $count = 0) => [$label, $icon, route($route), request()->routeIs(...(array) $patterns), $count];
@@ -37,17 +37,24 @@
     } elseif ($role === 'director') {
         $groups[''] = [
             $item('Laporan', '📈', 'reports', 'reports'),
+            $item('Data Master', '🗃️', 'manage.master.index', 'manage.master.*'),
             $item('Program Jepang', '✈️', 'manage.program.index', 'manage.program.*'),
             $item('Pesan', '✉️', 'messages.index', 'messages.*', $unread),
             $item('Profil', '👤', 'profile.edit', 'profile.*'),
         ];
     } else {
-        $groups[''] = [$item('Dashboard', '🏠', 'dashboard', 'dashboard')];
+        $groups[''] = $role === 'education_admin'
+            ? [$item('Data Master', '🗃️', 'manage.master.index', 'manage.master.*')]
+            : [$item('Dashboard', '🏠', 'dashboard', 'dashboard')];
         $groups['Pembelajaran'] = [
             $item('Materi', '📘', 'manage.materials.index', 'manage.materials.*'),
             $item('Kelas & Jadwal', '🏫', 'manage.classes.index', ['manage.classes.*', 'manage.sessions.*']),
             $item('Program Jepang', '✈️', 'manage.program.index', 'manage.program.*'),
         ];
+        if ($role !== 'education_admin') {
+            // Admin Pendidikan sudah punya Data Master di urutan pertama
+            array_unshift($groups['Pembelajaran'], $item('Data Master', '🗃️', 'manage.master.index', 'manage.master.*'));
+        }
         $groups['Ujian'] = [
             $item('Bank Soal', '🗂️', 'sensei.questions.index', 'sensei.questions.*'),
             $item('Bacaan & Audio', '🎧', 'sensei.passages.index', 'sensei.passages.*'),
@@ -55,6 +62,9 @@
             $item('Penilaian Esai', '✍️', 'sensei.grading.index', 'sensei.grading.*'),
             $item('Arsip Lama', '📦', 'sensei.legacy.index', 'sensei.legacy.*'),
         ];
+        if ($role === 'education_admin') {
+            $groups['Administrasi'] = [$item('Laporan', '📈', 'reports', 'reports')];
+        }
         if ($role === 'admin') {
             $groups['Administrasi'] = [
                 $item('User', '👥', 'admin.users.index', 'admin.users.*'),

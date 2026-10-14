@@ -10,8 +10,18 @@ class Section extends Model
 {
     protected $fillable = [
         'level_id', 'code', 'name', 'sort_order',
-        'default_duration_minutes', 'default_question_count',
+        'default_duration_minutes', 'default_question_count', 'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    public function masterLabel(): string
+    {
+        return trim(($this->level?->masterLabel() ?? '').' · '.$this->name, ' ·');
+    }
 
     public function level(): BelongsTo
     {

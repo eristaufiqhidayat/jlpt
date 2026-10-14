@@ -27,7 +27,7 @@ class GradingController extends Controller
             ->paginate(20)->withQueryString();
 
         $exams = Exam::query()
-            ->when(! $request->user()->isAdmin(), fn ($q) => $q->where('sensei_id', $request->user()->id))
+            ->when(! $request->user()->isAcademicAdmin(), fn ($q) => $q->where('sensei_id', $request->user()->id))
             ->orderByDesc('id')->get(['id', 'title', 'code']);
 
         return view('sensei.grading.index', compact('items', 'exams'));
@@ -57,7 +57,7 @@ class GradingController extends Controller
         return AttemptQuestion::query()
             ->whereNull('correct_option_id')
             ->whereHas('attemptSection', fn ($q) => $q->whereNotNull('submitted_at'))
-            ->when(! $request->user()->isAdmin(), fn ($q) => $q->whereHas(
+            ->when(! $request->user()->isAcademicAdmin(), fn ($q) => $q->whereHas(
                 'attemptSection.attempt.exam', fn ($e) => $e->where('sensei_id', $request->user()->id)
             ));
     }

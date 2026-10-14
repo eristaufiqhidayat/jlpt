@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Classroom;
+use App\Models\Curriculum;
 use App\Models\ClassSession;
 use App\Models\Level;
 use App\Models\User;
@@ -22,7 +23,7 @@ class ClassroomController extends Controller
     public function index(): View
     {
         return view('manage.classes.index', [
-            'classrooms' => Classroom::with(['level', 'sensei:id,name'])->withCount('students')
+            'classrooms' => Classroom::with(['level', 'curriculum:id,name', 'sensei:id,name'])->withCount('students')
                 ->withCount(['sessions as upcoming_count' => fn ($q) => $q->where('date', '>=', today())])
                 ->orderByDesc('is_active')->orderBy('name')->get(),
         ]);
@@ -145,6 +146,9 @@ class ClassroomController extends Controller
         return view('manage.classes.form', [
             'class' => $class,
             'levels' => Level::with('testType')->get(),
+            // Hanya kurikulum aktif, ditambah kurikulum kelas ini bila sudah dinonaktifkan.
+            'curricula' => Curriculum::where(fn ($q) => $q->where('is_active', true)->orWhere('id', $class->curriculum_id))
+                ->orderBy('sort_order')->orderBy('name')->get(),
             'senseis' => $this->senseis(),
         ]);
     }
@@ -159,6 +163,7 @@ class ClassroomController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:60'],
             'level_id' => ['nullable', 'exists:levels,id'],
+            'curriculum_id' => ['nullable', 'exists:curricula,id'],
             'sensei_id' => ['nullable', Rule::exists('users', 'id')->whereIn('role', ['sensei', 'admin'])],
             'description' => ['nullable', 'string', 'max:2000'],
         ], [], ['name' => 'nama kelas']);

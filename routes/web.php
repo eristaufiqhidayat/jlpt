@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Manage\ClassroomController;
+use App\Http\Controllers\Manage\MasterDataController;
 use App\Http\Controllers\Manage\MaterialController;
 use App\Http\Controllers\Manage\ProgramController;
 use App\Http\Controllers\Manage\ReportController;
@@ -64,14 +65,26 @@ Route::middleware('auth')->group(function () {
     });
 
     // ---------------- Laporan & monitoring (direktur, admin; sensei untuk monitoring) ----------------
-    Route::middleware('role:director,admin')->get('/laporan', ReportController::class)->name('reports');
-    Route::middleware('role:director,admin,sensei')->prefix('manage')->name('manage.')->group(function () {
+    Route::middleware('role:director,admin,education_admin')->get('/laporan', ReportController::class)->name('reports');
+    Route::middleware('role:director,admin,education_admin,sensei')->prefix('manage')->name('manage.')->group(function () {
+        // Data master akademik: semua staf boleh melihat
+        Route::get('master', [MasterDataController::class, 'index'])->name('master.index');
         Route::get('program', [ProgramController::class, 'index'])->name('program.index');
         Route::get('program/{student}', [ProgramController::class, 'show'])->name('program.show');
     });
 
-    // ---------------- Materi, kelas, program (sensei & admin) ----------------
-    Route::middleware('role:sensei,admin')->prefix('manage')->name('manage.')->group(function () {
+    // ---------------- Data master akademik: hanya Admin Pendidikan yang boleh mengubah ----------------
+    Route::middleware('role:education_admin')->prefix('manage/master')->name('manage.master.')
+        ->where(['entity' => implode('|', MasterDataController::ENTITIES), 'id' => '[0-9]+'])->group(function () {
+            Route::get('{entity}/create', [MasterDataController::class, 'create'])->name('create');
+            Route::post('{entity}', [MasterDataController::class, 'store'])->name('store');
+            Route::get('{entity}/{id}/edit', [MasterDataController::class, 'edit'])->name('edit');
+            Route::put('{entity}/{id}', [MasterDataController::class, 'update'])->name('update');
+            Route::post('{entity}/{id}/toggle', [MasterDataController::class, 'toggle'])->name('toggle');
+        });
+
+    // ---------------- Materi, kelas, program (sensei, admin, Admin Pendidikan) ----------------
+    Route::middleware('role:sensei,admin,education_admin')->prefix('manage')->name('manage.')->group(function () {
         Route::resource('materials', MaterialController::class)->except(['show']);
         Route::resource('classes', ClassroomController::class)->except(['destroy']);
         Route::post('classes/{class}/students', [ClassroomController::class, 'addStudents'])->name('classes.students.add');
@@ -83,8 +96,8 @@ Route::middleware('auth')->group(function () {
         Route::put('program/{student}', [ProgramController::class, 'update'])->name('program.update');
     });
 
-    // ---------------- Sensei (admin juga boleh) ----------------
-    Route::middleware('role:sensei,admin')->prefix('sensei')->name('sensei.')->group(function () {
+    // ---------------- Sensei (admin dan Admin Pendidikan juga boleh) ----------------
+    Route::middleware('role:sensei,admin,education_admin')->prefix('sensei')->name('sensei.')->group(function () {
         // Import harus didaftarkan sebelum resource agar "questions/import" tidak dianggap {question}
         Route::get('questions/import', [QuestionImportController::class, 'create'])->name('questions.import');
         Route::get('questions/import/template', [QuestionImportController::class, 'template'])->name('questions.import.template');

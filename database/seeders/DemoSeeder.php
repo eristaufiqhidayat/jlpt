@@ -17,11 +17,12 @@ use App\Models\Level;
 use App\Models\Passage;
 use App\Models\Question;
 use App\Models\User;
+use App\Models\ViolationCategory;
 use Illuminate\Database\Seeder;
 
 /**
  * Data contoh untuk development (hanya dijalankan di APP_ENV=local):
- * sensei@example.com / student@example.com (password: password),
+ * sensei@example.com / student@example.com / pendidikan@example.com (password: password),
  * beberapa soal N4, dan satu ujian gratis berkode DEMON4.
  */
 class DemoSeeder extends Seeder
@@ -37,6 +38,15 @@ class DemoSeeder extends Seeder
         User::firstOrCreate(['email' => 'direktur@example.com'], [
             'name' => 'Demo Direktur', 'password' => 'password', 'role' => Role::Director,
         ]);
+        User::firstOrCreate(['email' => 'pendidikan@example.com'], [
+            'name' => 'Demo Admin Pendidikan', 'password' => 'password', 'role' => Role::EducationAdmin,
+        ]);
+
+        // Contoh kategori batsu (pelanggaran); isi sebenarnya ditentukan Admin Pendidikan.
+        foreach ([['Terlambat', 'Datang lewat 10 menit tanpa kabar', 'warn'], ['Alpa', 'Tidak hadir tanpa izin', 'err'],
+            ['Ponsel', 'Memakai ponsel saat kelas atau ujian', 'info'], ['Seragam', 'Tidak memakai seragam/kartu peserta', 'grey']] as $i => [$name, $desc, $color]) {
+            ViolationCategory::firstOrCreate(['name' => $name], ['description' => $desc, 'color' => $color, 'sort_order' => $i + 1]);
+        }
 
         $level = Level::whereHas('testType', fn ($q) => $q->where('code', 'JLPT'))
             ->where('code', 'N4')->with('sections')->firstOrFail();

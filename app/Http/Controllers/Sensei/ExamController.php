@@ -29,7 +29,7 @@ class ExamController extends Controller
     {
         $exams = Exam::with(['level.testType', 'sensei:id,name'])
             ->withCount('attempts')
-            ->when(! $request->user()->isAdmin(), fn ($q) => $q->where('sensei_id', $request->user()->id))
+            ->when(! $request->user()->isAcademicAdmin(), fn ($q) => $q->where('sensei_id', $request->user()->id))
             ->latest('id')->paginate(25);
 
         return view('sensei.exams.index', ['exams' => $exams]);
@@ -81,7 +81,7 @@ class ExamController extends Controller
 
         return view('sensei.exams.form', [
             'exam' => $exam,
-            'levels' => $this->levels(),
+            'levels' => $this->levels($exam->level_id),
             'level' => $exam->level,
             'rows' => $this->sectionRows($exam->level, $exam),
         ]);
@@ -174,13 +174,15 @@ class ExamController extends Controller
 
     private function authorizeExam(Request $request, Exam $exam): void
     {
-        abort_unless($request->user()->isAdmin() || $exam->sensei_id === $request->user()->id, 403);
+        abort_unless($request->user()->isAcademicAdmin() || $exam->sensei_id === $request->user()->id, 403);
     }
 
-    private function levels(): Collection
+    /** Level yang bisa dipilih: yang aktif dan punya bagian aktif, ditambah level ujian yang sedang diedit. */
+    private function levels(?int $keepLevelId = null): Collection
     {
         return Level::with('testType')
-            ->whereHas('sections')
+            ->where(fn ($q) => $q->where(fn ($a) => $a->where('is_active', true)->whereHas('sections', fn ($s) => $s->where('is_active', true)))
+                ->when($keepLevelId, fn ($w) => $w->orWhere('id', $keepLevelId)))
             ->get()
             ->sortBy(fn ($l) => [$l->testType->is_active ? 0 : 1, $l->testType->sort_order, $l->sort_order])
             ->values();
@@ -193,7 +195,8 @@ class ExamController extends Controller
         $existing = $exam?->sections->keyBy('section_id') ?? collect();
         $available = $this->availableCounts($level->sections->pluck('id'));
 
-        return $level->sections->map(fn ($s) => (object) [
+        // Bagian nonaktif tidak ditawarkan untuk ujian baru, tetapi tetap tampil bila sudah dipakai ujian ini.
+        return $level->sections->filter(fn ($s) => $s->is_active || $existing->has($s->id))->values()->map(fn ($s) => (object) [
             'section' => $s,
             'enabled' => $exam ? $existing->has($s->id) : true,
             'duration' => $existing->get($s->id)?->duration_minutes ?? $s->default_duration_minutes,
@@ -239,12 +242,20 @@ class ExamController extends Controller
         ], ['title' => 'judul', 'level_id' => 'level']);
 
         $level = Level::with('sections')->findOrFail($data['level_id']);
+        // Level nonaktif tidak bisa dipakai untuk ujian baru (ujian lama di level itu tetap bisa diedit).
+        if (! $level->is_active && $exam?->level_id !== $level->id) {
+            throw ValidationException::withMessages(['level_id' => 'Level ini sudah dinonaktifkan Admin Pendidikan.']);
+        }
         if ($exam && $exam->level_id !== $level->id && $exam->attempts()->exists()) {
             throw ValidationException::withMessages(['level_id' => 'Level tidak bisa diganti karena ujian sudah pernah dikerjakan.']);
         }
 
         $sections = [];
+        $used = $exam ? $exam->sections()->pluck('section_id')->flip() : collect();
         foreach ($level->sections as $s) {
+            if (! $s->is_active && ! $used->has($s->id)) {
+                continue; // bagian nonaktif tidak bisa ditambahkan ke ujian
+            }
             $row = $data['sections'][$s->id] ?? null;
             if (! $row || empty($row['enabled'])) {
                 continue;
