@@ -97,6 +97,31 @@ class MaterialController extends Controller
             ->with('success', "Materi \"{$material->title}\" tersimpan.");
     }
 
+    /**
+     * Lihat materi untuk mengajar: tampilan sama seperti peserta (video, PDF, PPT, ringkasan), tanpa lock.
+     * Semua staf boleh melihat materi pakem; materi tambahan hanya yang terlihat di daftarnya
+     * (sensei: miliknya atau kelas yang dipegang). Tombol Edit hanya muncul bagi yang berhak mengubah.
+     */
+    public function show(Request $request, Material $material): View
+    {
+        $user = $request->user();
+        if ($material->isExtra()) {
+            abort_unless($this->extrasQuery($user)->whereKey($material->id)->exists(), 403, 'Materi tambahan ini milik kelas lain.');
+        }
+
+        $siblings = Material::where('kind', $material->kind)
+            ->when($material->isExtra(), fn ($q) => $q->where('classroom_id', $material->classroom_id),
+                fn ($q) => $q->where('curriculum_id', $material->curriculum_id)->where('chapter_no', $material->chapter_no)->where('chapter', $material->chapter))
+            ->orderBy('sort_order')->orderBy('id')->get(['id', 'title', 'category', 'status']);
+
+        return view('manage.materials.show', [
+            'material' => $material->load('files', 'exam', 'level', 'curriculum', 'classroom', 'author:id,name'),
+            'siblings' => $siblings,
+            'editable' => $material->isEditableBy($user),
+            'tab' => $this->tabOf($material),
+        ]);
+    }
+
     public function edit(Request $request, Material $material): View
     {
         abort_unless($material->isEditableBy($request->user()), 403, $this->denyMessage($material));

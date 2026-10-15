@@ -95,7 +95,7 @@ Route::middleware('auth')->group(function () {
 
     // ---------------- Materi, kelas, program (sensei, admin, Admin Pendidikan) ----------------
     Route::middleware('role:sensei,admin,education_admin')->prefix('manage')->name('manage.')->group(function () {
-        Route::resource('materials', MaterialController::class)->except(['show']);
+        Route::resource('materials', MaterialController::class); // show = lihat/pakai untuk mengajar (semua staf, tanpa lock)
         Route::resource('classes', ClassroomController::class)->except(['destroy']);
         Route::post('classes/{class}/students', [ClassroomController::class, 'addStudents'])->name('classes.students.add');
         Route::delete('classes/{class}/students/{student}', [ClassroomController::class, 'removeStudent'])->name('classes.students.remove');
