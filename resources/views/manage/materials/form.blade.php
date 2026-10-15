@@ -61,10 +61,9 @@
             <div class="hint">Furigana: <code>{漢字|かんじ}</code>, garis bawah: <code>__kata__</code>.</div></div>
         <div class="field"><label for="video_url">Tautan video (YouTube)</label><input id="video_url" name="video_url" type="url" value="{{ old('video_url', $material->video_url) }}" placeholder="https://www.youtube.com/watch?v=...">
             @error('video_url')<div class="error-text">{{ $message }}</div>@enderror</div>
-        @php
-            $maxMb = fn ($kb) => $kb >= 1024 ? round($kb / 1024).' MB' : $kb.' KB';
-            $fileLabels = ['video' => 'Video (mp4/webm/mov)', 'pdf' => 'File PDF', 'ppt' => 'File PPT/PPTX'];
-        @endphp
+        {{-- Jangan pakai blok @ php…@ endphp di file ini: template sudah memakai @ php(...) satu baris, keduanya tidak boleh dicampur. --}}
+        @php($maxMb = fn ($kb) => $kb >= 1024 ? round($kb / 1024).' MB' : $kb.' KB')
+        @php($fileLabels = ['video' => 'Video (mp4/webm/mov)', 'pdf' => 'File PDF', 'ppt' => 'File PPT/PPTX'])
         @foreach (\App\Models\MaterialFile::TYPES as $type => [$typeLabel, $icon, $mimes, $maxKb, $accept])
             @php($existing = $material->exists ? $material->filesOfType($type) : collect())
             <div class="field file-group">
