@@ -43,7 +43,7 @@
                 @php($editable = $m->isEditableBy(auth()->user()))
                 <tr>
                     @if ($isExtraTab)
-                        <td><strong>{{ $m->title }}</strong>@if ($m->category)<br><small>{{ $m->category }}</small>@endif</td>
+                        <td><a href="{{ route('manage.materials.show', $m) }}"><strong>{{ $m->title }}</strong></a>@if ($m->category)<br><small>{{ $m->category }}</small>@endif</td>
                         <td>{{ $m->classroom?->name ?? '–' }}</td>
                         <td>{{ $m->author?->name ?? '–' }}</td>
                         <td>@if ($m->available_until){{ $m->available_until->translatedFormat('d M Y') }}@unless ($m->isAvailable()) <span class="badge">lewat</span>@endunless @else – @endif</td>
@@ -51,20 +51,19 @@
                         <td>{!! $m->status === 'published' ? '<span class="badge ok">Dibuka</span>' : '<span class="badge">Ditutup</span>' !!}</td>
                     @else
                         <td class="num">{{ $m->chapter_no ?? '–' }}</td>
-                        <td><strong>{{ $m->title }}</strong>@if ($m->chapter)<br><small>{{ $m->chapter }}</small>@endif</td>
+                        <td><a href="{{ route('manage.materials.show', $m) }}"><strong>{{ $m->title }}</strong></a>@if ($m->chapter)<br><small>{{ $m->chapter }}</small>@endif</td>
                         <td style="white-space:nowrap">@if ($m->video_url || $m->hasFiles('video'))🎬@if ($m->filesOfType('video')->count() > 1)×{{ $m->filesOfType('video')->count() }}@endif @endif @if ($m->hasFiles('pdf'))📄@if ($m->filesOfType('pdf')->count() > 1)×{{ $m->filesOfType('pdf')->count() }}@endif @endif @if ($m->hasFiles('ppt'))📊@if ($m->filesOfType('ppt')->count() > 1)×{{ $m->filesOfType('ppt')->count() }}@endif @endif @if ($m->exam_id)✏️ @endif</td>
                         <td>{{ $m->level?->code ?? 'Semua' }}</td>
                         <td class="num">{{ $m->completed_by_count }}</td>
                         <td>{!! $m->status === 'published' ? '<span class="badge ok">Terbit</span>' : '<span class="badge">Draft</span>' !!}</td>
                     @endif
                     <td class="actions">
+                        <a class="btn small" href="{{ route('manage.materials.show', $m) }}">Lihat</a>
                         @if ($editable)
                             <a class="btn small secondary" href="{{ route('manage.materials.edit', $m) }}">Edit</a>
                             <form method="POST" action="{{ route('manage.materials.destroy', $m) }}" style="display:inline" onsubmit="return confirm('Hapus materi ini beserta filenya?')">
                                 @csrf @method('DELETE') <button class="btn small danger">Hapus</button>
                             </form>
-                        @else
-                            <span class="muted" style="font-size:12px">lihat saja</span>
                         @endif
                     </td>
                 </tr>
