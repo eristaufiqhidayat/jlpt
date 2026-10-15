@@ -34,7 +34,7 @@ class ChunkedUploadTest extends TestCase
         return $head.str_repeat('A', max(0, $length - strlen($head)));
     }
 
-    private function json(User $user)
+    private function asJson(User $user)
     {
         return $this->actingAs($user)->withHeaders(['Accept' => 'application/json']);
     }
@@ -42,10 +42,10 @@ class ChunkedUploadTest extends TestCase
     /** Unggah isi file lengkap dalam beberapa potongan; kembalikan id upload. */
     private function uploadInChunks(User $user, string $name, string $bytes, int $chunk = 1000): string
     {
-        $id = $this->json($user)->post(route('manage.uploads.start'), ['name' => $name, 'size' => strlen($bytes)])
+        $id = $this->asJson($user)->post(route('manage.uploads.start'), ['name' => $name, 'size' => strlen($bytes)])
             ->assertCreated()->json('id');
         for ($offset = 0; $offset < strlen($bytes); $offset += $chunk) {
-            $this->json($user)->post(route('manage.uploads.chunk', $id), [
+            $this->asJson($user)->post(route('manage.uploads.chunk', $id), [
                 'offset' => $offset,
                 'chunk' => UploadedFile::fake()->createWithContent('chunk', substr($bytes, $offset, $chunk)),
             ])->assertOk();
@@ -56,9 +56,9 @@ class ChunkedUploadTest extends TestCase
 
     public function test_start_rejects_unsupported_or_too_large_files(): void
     {
-        $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'virus.exe', 'size' => 10])->assertUnprocessable();
-        $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'besar.pdf', 'size' => 51 * 1024 * 1024])->assertUnprocessable();
-        $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'video.mp4', 'size' => 400 * 1024 * 1024])
+        $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'virus.exe', 'size' => 10])->assertUnprocessable();
+        $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'besar.pdf', 'size' => 51 * 1024 * 1024])->assertUnprocessable();
+        $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'video.mp4', 'size' => 400 * 1024 * 1024])
             ->assertCreated()->assertJson(['type' => 'video', 'chunk_size' => ChunkedUploads::CHUNK_SIZE, 'received' => 0]);
     }
 
@@ -74,37 +74,37 @@ class ChunkedUploadTest extends TestCase
     public function test_wrong_offset_returns_conflict_with_server_position(): void
     {
         $bytes = $this->pdfBytes(2000);
-        $id = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 2000])->json('id');
-        $this->json($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', substr($bytes, 0, 1000))])->assertOk();
+        $id = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 2000])->json('id');
+        $this->asJson($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', substr($bytes, 0, 1000))])->assertOk();
 
         // Potongan pertama dikirim ulang (mis. setelah jeda): server tidak menambah, memberi tahu posisinya.
-        $this->json($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', substr($bytes, 0, 1000))])
+        $this->asJson($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', substr($bytes, 0, 1000))])
             ->assertStatus(409)->assertJson(['received' => 1000, 'complete' => false]);
     }
 
     public function test_content_must_match_extension(): void
     {
         $fake = str_repeat('bukan pdf ', 100);
-        $id = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'palsu.pdf', 'size' => strlen($fake)])->json('id');
+        $id = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'palsu.pdf', 'size' => strlen($fake)])->json('id');
 
-        $this->json($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', $fake)])
+        $this->asJson($this->edu)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', $fake)])
             ->assertUnprocessable();
         Storage::disk('local')->assertMissing("tmp-uploads/{$id}/data");
     }
 
     public function test_upload_belongs_to_its_uploader_only(): void
     {
-        $id = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 100])->json('id');
+        $id = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 100])->json('id');
         $other = User::factory()->create(['role' => Role::Sensei]);
 
-        $this->json($other)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', 'x')])->assertNotFound();
-        $this->json($other)->delete(route('manage.uploads.destroy', $id))->assertNotFound();
+        $this->asJson($other)->post(route('manage.uploads.chunk', $id), ['offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('c', 'x')])->assertNotFound();
+        $this->asJson($other)->delete(route('manage.uploads.destroy', $id))->assertNotFound();
     }
 
     public function test_admin_and_students_cannot_upload(): void
     {
         foreach ([Role::Admin, Role::Student, Role::Director] as $role) {
-            $this->json(User::factory()->create(['role' => $role]))->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 10])->assertForbidden();
+            $this->asJson(User::factory()->create(['role' => $role]))->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 10])->assertForbidden();
         }
     }
 
@@ -130,7 +130,7 @@ class ChunkedUploadTest extends TestCase
 
     public function test_unfinished_or_foreign_uploads_are_rejected_on_save(): void
     {
-        $unfinished = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 5000])->json('id');
+        $unfinished = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 5000])->json('id');
         $foreign = $this->uploadInChunks(User::factory()->create(['role' => Role::EducationAdmin]), 'b.pdf', $this->pdfBytes(1500));
 
         foreach ([$unfinished, $foreign] as $id) {
@@ -155,13 +155,13 @@ class ChunkedUploadTest extends TestCase
 
     public function test_cancel_and_prune_remove_temporary_files(): void
     {
-        $id = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 100])->json('id');
-        $this->json($this->edu)->delete(route('manage.uploads.destroy', $id))->assertOk();
+        $id = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'a.pdf', 'size' => 100])->json('id');
+        $this->asJson($this->edu)->delete(route('manage.uploads.destroy', $id))->assertOk();
         Storage::disk('local')->assertMissing("tmp-uploads/{$id}/meta.json");
 
-        $old = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'lama.pdf', 'size' => 100])->json('id');
+        $old = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'lama.pdf', 'size' => 100])->json('id');
         $this->travel(25)->hours();
-        $fresh = $this->json($this->edu)->post(route('manage.uploads.start'), ['name' => 'baru.pdf', 'size' => 100])->json('id');
+        $fresh = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'baru.pdf', 'size' => 100])->json('id');
 
         $this->artisan('uploads:prune')->assertSuccessful();
         Storage::disk('local')->assertMissing("tmp-uploads/{$old}/meta.json");
