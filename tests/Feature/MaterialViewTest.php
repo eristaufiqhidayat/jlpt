@@ -76,7 +76,7 @@ class MaterialViewTest extends TestCase
         $this->actingAs($sensei)->get(route('manage.materials.index', ['tab' => $this->minna1->id]))->assertOk()
             ->assertSee(route('manage.materials.show', $m1))
             ->assertDontSee(route('manage.materials.edit', $m1))
-            ->assertDontSee(route('manage.materials.destroy', $m1));
+            ->assertDontSee('Hapus materi ini'); // form hapus (URL-nya sama dengan Lihat, beda method)
     }
 
     public function test_education_admin_sees_edit_button_on_view_page(): void
