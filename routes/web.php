@@ -10,6 +10,7 @@ use App\Http\Controllers\Manage\MasterDataController;
 use App\Http\Controllers\Manage\MaterialController;
 use App\Http\Controllers\Manage\ProgramController;
 use App\Http\Controllers\Manage\ReportController;
+use App\Http\Controllers\Manage\UploadController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Student\LearningController;
@@ -84,6 +85,13 @@ Route::middleware('auth')->group(function () {
             Route::put('{entity}/{id}', [MasterDataController::class, 'update'])->name('update');
             Route::post('{entity}/{id}/toggle', [MasterDataController::class, 'toggle'])->name('toggle');
         });
+
+    // ---------------- Upload bertahap file materi (yang boleh membuat materi) ----------------
+    Route::middleware(['role:sensei,education_admin', 'throttle:600,1'])->prefix('manage/uploads')->name('manage.uploads.')->group(function () {
+        Route::post('/', [UploadController::class, 'start'])->name('start');
+        Route::post('{upload}/chunk', [UploadController::class, 'chunk'])->name('chunk');
+        Route::delete('{upload}', [UploadController::class, 'destroy'])->name('destroy');
+    });
 
     // ---------------- Materi, kelas, program (sensei, admin, Admin Pendidikan) ----------------
     Route::middleware('role:sensei,admin,education_admin')->prefix('manage')->name('manage.')->group(function () {

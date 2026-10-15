@@ -62,32 +62,65 @@
         <div class="field"><label for="video_url">Tautan video (YouTube)</label><input id="video_url" name="video_url" type="url" value="{{ old('video_url', $material->video_url) }}" placeholder="https://www.youtube.com/watch?v=...">
             @error('video_url')<div class="error-text">{{ $message }}</div>@enderror</div>
         {{-- Jangan pakai blok @ php…@ endphp di file ini: template sudah memakai @ php(...) satu baris, keduanya tidak boleh dicampur. --}}
-        @php($maxMb = fn ($kb) => $kb >= 1024 ? round($kb / 1024).' MB' : $kb.' KB')
-        @php($fileLabels = ['video' => 'Video (mp4/webm/mov)', 'pdf' => 'File PDF', 'ppt' => 'File PPT/PPTX'])
-        @foreach (\App\Models\MaterialFile::TYPES as $type => [$typeLabel, $icon, $mimes, $maxKb, $accept])
-            @php($existing = $material->exists ? $material->filesOfType($type) : collect())
-            <div class="field file-group">
-                <label for="{{ $type }}s">{{ $icon }} {{ $fileLabels[$type] }} <span class="muted" style="font-weight:400">· boleh lebih dari satu, maks. {{ \App\Models\MaterialFile::MAX_PER_TYPE }} file, {{ $maxMb($maxKb) }} per file</span></label>
-                @if ($existing->isNotEmpty())
-                    <ul class="file-list">
-                        @foreach ($existing as $f)
-                            <li>
-                                <a href="{{ route('media', $f->path) }}" target="_blank">{{ $f->label() }}</a>
-                                @if ($f->sizeLabel())<small class="muted">{{ $f->sizeLabel() }}</small>@endif
-                                <label class="check"><input type="checkbox" name="remove_files[]" value="{{ $f->id }}" @checked(in_array($f->id, old('remove_files', [])))> hapus</label>
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-                <input id="{{ $type }}s" name="{{ $type }}s[]" type="file" accept="{{ $accept }}" multiple data-file-list>
-                <ul class="file-list pending" hidden></ul>
-                <div class="hint">Pilih beberapa file sekaligus (Ctrl/Cmd + klik). @if ($existing->isNotEmpty()) File baru ditambahkan ke daftar di atas. @endif</div>
-                @error($type.'s')<div class="error-text">{{ $message }}</div>@enderror
-                @foreach ($errors->get($type.'s.*') as $messages)
+        @php($types = \App\Models\MaterialFile::TYPES)
+        @php($existingFiles = $material->exists ? $material->files : collect())
+        <div class="field">
+            <label>File materi <span class="muted" style="font-weight:400">· video, PDF, dan PPT; boleh lebih dari satu (maks. {{ \App\Models\MaterialFile::MAX_PER_TYPE }} file per jenis)</span></label>
+
+            @if ($existingFiles->isNotEmpty())
+                <ul class="file-list">
+                    @foreach ($existingFiles as $f)
+                        <li>
+                            <span>{{ $types[$f->type][1] }}</span>
+                            <a href="{{ route('media', $f->path) }}" target="_blank">{{ $f->label() }}</a>
+                            @if ($f->sizeLabel())<small class="muted">{{ $f->sizeLabel() }}</small>@endif
+                            <label class="check"><input type="checkbox" name="remove_files[]" value="{{ $f->id }}" data-type="{{ $f->type }}" @checked(in_array($f->id, old('remove_files', [])))> hapus</label>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            <div class="uploader" data-uploader
+                 data-start-url="{{ route('manage.uploads.start') }}"
+                 data-base-url="{{ url('manage/uploads') }}"
+                 data-max-bytes='@json(collect($types)->map(fn ($t) => $t[3] * 1024))'
+                 data-max-count="{{ \App\Models\MaterialFile::MAX_PER_TYPE }}"
+                 data-existing='@json($existingFiles->countBy('type'))'>
+                <div class="uploader-drop" data-drop>
+                    <p class="uploader-drop-title">Seret &amp; lepas file di sini, atau</p>
+                    <button type="button" class="btn secondary" data-browse>📁 Browse</button>
+                    <input type="file" multiple hidden accept=".mp4,.webm,.mov,.pdf,.ppt,.pptx,video/mp4,video/webm,video/quicktime,application/pdf">
+                    <p class="uploader-hint">Video MP4/WEBM/MOV maks. 500 MB · PDF maks. 50 MB · PPT/PPTX maks. 100 MB</p>
+                </div>
+                <ul class="uploader-list" data-list></ul>
+                <div class="uploader-footer" data-footer hidden>
+                    <span class="muted" data-summary></span>
+                    <div class="uploader-footer-btns">
+                        <button type="button" class="btn small" data-upload-all>⬆ Upload semua</button>
+                        <button type="button" class="btn small secondary" data-pause-all>⏸ Jeda semua</button>
+                        <button type="button" class="btn small danger" data-cancel-all>✕ Batalkan semua</button>
+                    </div>
+                </div>
+                <div class="uploader-notice" data-notice hidden></div>
+                <div data-inputs></div>
+            </div>
+
+            {{-- Cadangan bila JavaScript mati: input file biasa per jenis. --}}
+            <noscript>
+                <style>.uploader { display: none; }</style>
+                @foreach ($types as $type => [$typeLabel, $icon, $mimes, $maxKb, $accept])
+                    <div class="field" style="margin-top:8px"><label for="{{ $type }}s">{{ $icon }} {{ $typeLabel }}</label>
+                        <input id="{{ $type }}s" name="{{ $type }}s[]" type="file" accept="{{ $accept }}" multiple></div>
+                @endforeach
+            </noscript>
+
+            @foreach (['uploads', 'videos', 'pdfs', 'ppts'] as $key)
+                @error($key)<div class="error-text">{{ $message }}</div>@enderror
+                @foreach ($errors->get($key.'.*') as $messages)
                     @foreach ($messages as $message)<div class="error-text">{{ $message }}</div>@endforeach
                 @endforeach
-            </div>
-        @endforeach
+            @endforeach
+        </div>
         <div class="row">
             <div class="field"><label for="exam_id">Latihan soal (ujian terbuka)</label>
                 <select id="exam_id" name="exam_id"><option value="">– tidak ada –</option>
@@ -100,23 +133,8 @@
                 </select></div>
         </div>
         <button class="btn">Simpan</button>
-        <p class="muted" style="font-size:12px;margin:10px 0 0">Unggahan besar butuh waktu; jangan tutup halaman sampai tersimpan. Batas total satu kali simpan mengikuti pengaturan server (post_max_size).</p>
     </form>
-    <script>
-        // Tampilkan nama file yang dipilih sebelum disimpan.
-        document.querySelectorAll('[data-file-list]').forEach(function (input) {
-            input.addEventListener('change', function () {
-                var list = input.nextElementSibling;
-                list.innerHTML = '';
-                Array.from(input.files).forEach(function (f) {
-                    var li = document.createElement('li');
-                    li.textContent = f.name + ' · ' + (f.size >= 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(f.size / 1024)) + ' KB') + ' (baru)';
-                    list.appendChild(li);
-                });
-                list.hidden = input.files.length === 0;
-            });
-        });
-    </script>
+    <script src="{{ asset('js/file-uploader.js') }}?v=1" defer></script>
     @if ($canChooseKind)
         <script>
             function setKind(kind) {
