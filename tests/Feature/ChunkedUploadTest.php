@@ -113,7 +113,7 @@ class ChunkedUploadTest extends TestCase
         $a = $this->uploadInChunks($this->edu, 'bunpou bab 18.pdf', $this->pdfBytes(2500));
         $b = $this->uploadInChunks($this->edu, 'kanji bab 18.pdf', $this->pdfBytes(1200));
 
-        $this->actingAs($this->edu)->post(route('manage.materials.store'), [
+        $this->flushHeaders()->actingAs($this->edu)->post(route('manage.materials.store'), [
             'kind' => 'core', 'title' => 'Bab 18', 'status' => 'published', 'uploads' => [$a, $b],
         ])->assertSessionHasNoErrors();
 
@@ -134,7 +134,7 @@ class ChunkedUploadTest extends TestCase
         $foreign = $this->uploadInChunks(User::factory()->create(['role' => Role::EducationAdmin]), 'b.pdf', $this->pdfBytes(1500));
 
         foreach ([$unfinished, $foreign] as $id) {
-            $this->actingAs($this->edu)->post(route('manage.materials.store'), [
+            $this->flushHeaders()->actingAs($this->edu)->post(route('manage.materials.store'), [
                 'kind' => 'core', 'title' => 'Coba', 'description' => 'isi', 'status' => 'published', 'uploads' => [$id],
             ])->assertSessionHasErrors('uploads');
         }
@@ -148,7 +148,7 @@ class ChunkedUploadTest extends TestCase
             $ids[] = $this->uploadInChunks($this->edu, "f{$i}.pdf", $this->pdfBytes(600), 600);
         }
 
-        $this->actingAs($this->edu)->post(route('manage.materials.store'), [
+        $this->flushHeaders()->actingAs($this->edu)->post(route('manage.materials.store'), [
             'kind' => 'core', 'title' => 'Kebanyakan', 'status' => 'published', 'uploads' => $ids,
         ])->assertSessionHasErrors('pdfs');
     }
