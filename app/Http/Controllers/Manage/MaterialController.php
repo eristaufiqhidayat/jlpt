@@ -10,6 +10,7 @@ use App\Models\Level;
 use App\Models\Material;
 use App\Models\MaterialFile;
 use App\Models\User;
+use App\Services\ChunkedUploads;
 use App\Services\MaterialAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -195,6 +196,8 @@ class MaterialController extends Controller
             ...$this->fileRules(),
             'remove_files' => ['nullable', 'array'],
             'remove_files.*' => ['integer'],
+            'uploads' => ['nullable', 'array', 'max:'.(MaterialFile::MAX_PER_TYPE * count(MaterialFile::TYPES))],
+            'uploads.*' => ['string'],
         ], [
             'classroom_id.required' => 'Pilih kelas tujuan materi tambahan.',
             'classroom_id.in' => 'Materi tambahan hanya untuk kelas yang Anda pegang.',
@@ -213,19 +216,22 @@ class MaterialController extends Controller
         // Jumlah file per jenis setelah hapus + tambah tidak boleh melebihi batas.
         $removed = collect($data['remove_files'] ?? [])->map(fn ($id) => (int) $id);
         $kept = $material ? $material->files()->whereNotIn('id', $removed)->get(['id', 'type']) : collect();
+        // File dari uploader bertahap (sudah di server, belum diklaim).
+        $uploaded = collect(app(ChunkedUploads::class)->completed($user, $data['uploads'] ?? []));
         foreach (MaterialFile::TYPES as $type => [$label]) {
-            $total = $kept->where('type', $type)->count() + count($request->file($type.'s', []));
+            $total = $kept->where('type', $type)->count() + count($request->file($type.'s', []))
+                + $uploaded->where('type', $type)->count();
             if ($total > MaterialFile::MAX_PER_TYPE) {
                 throw ValidationException::withMessages([$type.'s' => "Maksimal ".MaterialFile::MAX_PER_TYPE." file {$label} per materi."]);
             }
         }
 
-        $hasNewFiles = collect(array_keys(MaterialFile::TYPES))->contains(fn ($t) => $request->hasFile($t.'s'));
+        $hasNewFiles = $uploaded->isNotEmpty() || collect(array_keys(MaterialFile::TYPES))->contains(fn ($t) => $request->hasFile($t.'s'));
         $hasContent = filled($data['video_url'] ?? null) || filled($data['description'] ?? null) || $hasNewFiles || $kept->isNotEmpty();
         if (! $hasContent) {
             throw ValidationException::withMessages(['video_url' => 'Isi minimal satu: tautan video, file video/PDF/PPT, atau keterangan.']);
         }
-        unset($data['videos'], $data['pdfs'], $data['ppts'], $data['remove_files']);
+        unset($data['videos'], $data['pdfs'], $data['ppts'], $data['remove_files'], $data['uploads']);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         if ($isExtra) {
             $data['curriculum_id'] = null;
@@ -256,6 +262,7 @@ class MaterialController extends Controller
         $material->files()->whereIn('id', $remove->pluck('id'))->delete();
 
         $order = (int) $material->files()->max('sort_order');
+        app(ChunkedUploads::class)->claim($request->user(), (array) $request->input('uploads', []), $material, $order);
         foreach (array_keys(MaterialFile::TYPES) as $type) {
             foreach ($request->file($type.'s', []) as $file) {
                 $material->files()->create([
