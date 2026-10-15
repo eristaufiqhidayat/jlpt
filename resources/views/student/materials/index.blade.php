@@ -40,7 +40,7 @@
                         <div @class(['num', 'done' => $done->has($m->id)])>{{ $done->has($m->id) ? '✓' : $loop->iteration }}</div>
                         <div class="info"><p>{{ $m->title }}</p>
                             <span>{{ $m->category ?: 'Materi' }}@if ($m->duration_minutes) · {{ $m->duration_minutes }} menit @endif
-                                @if ($m->video_url || $m->video_path) · 🎬 video @endif @if ($m->pdf_path) · PDF @endif @if ($m->ppt_path) · PPT @endif @if ($m->exam_id) · latihan @endif
+                                @if ($m->video_url || $m->hasFiles('video')) · 🎬 video @endif @if ($m->hasFiles('pdf')) · PDF @endif @if ($m->hasFiles('ppt')) · PPT @endif @if ($m->exam_id) · latihan @endif
                                 @if ($m->available_until) · tersedia s.d. {{ $m->available_until->translatedFormat('d M Y') }} @endif
                             </span></div>
                         <span class="btn small secondary">{{ $done->has($m->id) ? 'Ulangi' : 'Mulai' }}</span>

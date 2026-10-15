@@ -25,7 +25,7 @@ class LearningController extends Controller
     {
         $user = $request->user();
         $unlocked = $access->unlockedCurriculumIds($user);
-        $materials = $access->visibleQuery($user)->orderBy('chapter_no')->orderBy('chapter')->orderBy('sort_order')->orderBy('id')->get();
+        $materials = $access->visibleQuery($user)->with('files:id,material_id,type')->orderBy('chapter_no')->orderBy('chapter')->orderBy('sort_order')->orderBy('id')->get();
         $done = $user->completedMaterials()->pluck('materials.id')->flip();
 
         $curricula = Curriculum::where(fn ($q) => $q->where('is_active', true)->orWhereIn('id', $unlocked))
@@ -92,7 +92,7 @@ class LearningController extends Controller
             ->latest('id')->take(4)->get();
 
         return view('student.materials.show', [
-            'material' => $material->load('exam', 'level', 'curriculum'),
+            'material' => $material->load('exam', 'level', 'curriculum', 'files'),
             'siblings' => $siblings,
             'others' => $others,
             'done' => $user->completedMaterials()->pluck('materials.id')->flip(),
