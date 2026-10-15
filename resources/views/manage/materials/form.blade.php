@@ -61,14 +61,32 @@
             <div class="hint">Furigana: <code>{漢字|かんじ}</code>, garis bawah: <code>__kata__</code>.</div></div>
         <div class="field"><label for="video_url">Tautan video (YouTube)</label><input id="video_url" name="video_url" type="url" value="{{ old('video_url', $material->video_url) }}" placeholder="https://www.youtube.com/watch?v=...">
             @error('video_url')<div class="error-text">{{ $message }}</div>@enderror</div>
-        @foreach (['video' => ['Upload video (mp4/webm, maks. 500 MB)', 'video_path', 'video/*'], 'pdf' => ['File PDF', 'pdf_path', 'application/pdf'], 'ppt' => ['File PPT/PPTX', 'ppt_path', '.ppt,.pptx,.pdf']] as $input => [$label, $col, $accept])
-            <div class="field"><label for="{{ $input }}">{{ $label }}</label>
-                <input id="{{ $input }}" name="{{ $input }}" type="file" accept="{{ $accept }}">
-                @if ($material->$col)
-                    <div class="hint">File sekarang: <a href="{{ route('media', $material->$col) }}" target="_blank">{{ basename($material->$col) }}</a>
-                        · <label class="check" style="display:inline-flex"><input type="checkbox" name="remove_{{ $input }}" value="1"> hapus</label></div>
+        @php
+            $maxMb = fn ($kb) => $kb >= 1024 ? round($kb / 1024).' MB' : $kb.' KB';
+            $fileLabels = ['video' => 'Video (mp4/webm/mov)', 'pdf' => 'File PDF', 'ppt' => 'File PPT/PPTX'];
+        @endphp
+        @foreach (\App\Models\MaterialFile::TYPES as $type => [$typeLabel, $icon, $mimes, $maxKb, $accept])
+            @php($existing = $material->exists ? $material->filesOfType($type) : collect())
+            <div class="field file-group">
+                <label for="{{ $type }}s">{{ $icon }} {{ $fileLabels[$type] }} <span class="muted" style="font-weight:400">· boleh lebih dari satu, maks. {{ \App\Models\MaterialFile::MAX_PER_TYPE }} file, {{ $maxMb($maxKb) }} per file</span></label>
+                @if ($existing->isNotEmpty())
+                    <ul class="file-list">
+                        @foreach ($existing as $f)
+                            <li>
+                                <a href="{{ route('media', $f->path) }}" target="_blank">{{ $f->label() }}</a>
+                                @if ($f->sizeLabel())<small class="muted">{{ $f->sizeLabel() }}</small>@endif
+                                <label class="check"><input type="checkbox" name="remove_files[]" value="{{ $f->id }}" @checked(in_array($f->id, old('remove_files', [])))> hapus</label>
+                            </li>
+                        @endforeach
+                    </ul>
                 @endif
-                @error($input)<div class="error-text">{{ $message }}</div>@enderror
+                <input id="{{ $type }}s" name="{{ $type }}s[]" type="file" accept="{{ $accept }}" multiple data-file-list>
+                <ul class="file-list pending" hidden></ul>
+                <div class="hint">Pilih beberapa file sekaligus (Ctrl/Cmd + klik). @if ($existing->isNotEmpty()) File baru ditambahkan ke daftar di atas. @endif</div>
+                @error($type.'s')<div class="error-text">{{ $message }}</div>@enderror
+                @foreach ($errors->get($type.'s.*') as $messages)
+                    @foreach ($messages as $message)<div class="error-text">{{ $message }}</div>@endforeach
+                @endforeach
             </div>
         @endforeach
         <div class="row">
@@ -83,7 +101,23 @@
                 </select></div>
         </div>
         <button class="btn">Simpan</button>
+        <p class="muted" style="font-size:12px;margin:10px 0 0">Unggahan besar butuh waktu; jangan tutup halaman sampai tersimpan. Batas total satu kali simpan mengikuti pengaturan server (post_max_size).</p>
     </form>
+    <script>
+        // Tampilkan nama file yang dipilih sebelum disimpan.
+        document.querySelectorAll('[data-file-list]').forEach(function (input) {
+            input.addEventListener('change', function () {
+                var list = input.nextElementSibling;
+                list.innerHTML = '';
+                Array.from(input.files).forEach(function (f) {
+                    var li = document.createElement('li');
+                    li.textContent = f.name + ' · ' + (f.size >= 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(f.size / 1024)) + ' KB') + ' (baru)';
+                    list.appendChild(li);
+                });
+                list.hidden = input.files.length === 0;
+            });
+        });
+    </script>
     @if ($canChooseKind)
         <script>
             function setKind(kind) {

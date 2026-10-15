@@ -140,11 +140,11 @@ class MaterialLockTest extends TestCase
         Storage::fake('local');
         $m2 = $this->core($this->minna2, 'Materi Minna Dua');
         Storage::disk('local')->put("materials/{$m2->id}/bab26.pdf", '%PDF-1.4');
-        $m2->update(['pdf_path' => "materials/{$m2->id}/bab26.pdf"]);
+        $path = $m2->files()->create(['type' => 'pdf', 'path' => "materials/{$m2->id}/bab26.pdf", 'original_name' => 'bab26.pdf'])->path;
 
-        $this->actingAs($this->studentIn($this->minna1))->get(route('media', $m2->pdf_path))->assertForbidden();
-        $this->actingAs($this->studentIn($this->minna2))->get(route('media', $m2->pdf_path))->assertOk();
-        $this->actingAs($this->user(Role::Sensei))->get(route('media', $m2->pdf_path))->assertOk();
+        $this->actingAs($this->studentIn($this->minna1))->get(route('media', $path))->assertForbidden();
+        $this->actingAs($this->studentIn($this->minna2))->get(route('media', $path))->assertOk();
+        $this->actingAs($this->user(Role::Sensei))->get(route('media', $path))->assertOk();
     }
 
     public function test_extra_material_is_only_for_its_class_and_respects_status_and_end_date(): void

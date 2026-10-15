@@ -10,15 +10,22 @@
         <div>
             @if ($material->youtubeEmbed())
                 <div class="video-frame"><iframe src="{{ $material->youtubeEmbed() }}" title="{{ $material->title }}" allowfullscreen allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>
-            @elseif ($material->video_path)
-                <div class="video-frame"><video controls controlsList="nodownload" preload="metadata" src="{{ route('media', $material->video_path) }}"></video></div>
             @elseif ($material->video_url)
                 <div class="card"><a href="{{ $material->video_url }}" target="_blank" rel="noopener">▶ Buka video materi</a></div>
             @endif
+            @php($videos = $material->filesOfType('video'))
+            @foreach ($videos as $video)
+                @if ($videos->count() > 1)<p class="video-title">🎬 {{ $loop->iteration }}. {{ $video->label() }}</p>@endif
+                <div class="video-frame"><video controls controlsList="nodownload" preload="metadata" src="{{ route('media', $video->path) }}"></video></div>
+            @endforeach
 
             <div class="resource-btns">
-                @if ($material->pdf_path)<a class="btn secondary" href="{{ route('media', $material->pdf_path) }}" target="_blank">📄 PDF Materi</a>@endif
-                @if ($material->ppt_path)<a class="btn secondary" href="{{ route('media', $material->ppt_path) }}">📊 Slide PPT</a>@endif
+                @foreach ($material->filesOfType('pdf') as $f)
+                    <a class="btn secondary" href="{{ route('media', $f->path) }}" target="_blank">📄 {{ $material->filesOfType('pdf')->count() > 1 ? $f->label() : 'PDF Materi' }}</a>
+                @endforeach
+                @foreach ($material->filesOfType('ppt') as $f)
+                    <a class="btn secondary" href="{{ route('media', $f->path) }}">📊 {{ $material->filesOfType('ppt')->count() > 1 ? $f->label() : 'Slide PPT' }}</a>
+                @endforeach
                 @if ($material->exam && $material->exam->isOpen())
                     <form method="POST" action="{{ route('student.join') }}" style="display:inline">
                         @csrf <input type="hidden" name="code" value="{{ $material->exam->code }}">

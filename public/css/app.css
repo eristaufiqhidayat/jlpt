@@ -377,3 +377,11 @@ input[type=file] { font-size: 12.5px; }
 .tabs a.locked { color: #a3a9b6; }
 .locked-box { text-align: center; padding: 28px 20px; }
 .locked-box h2 { margin: 6px 0; }
+
+/* ---------- Materi: daftar file ---------- */
+.file-list { list-style: none; margin: 4px 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.file-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfaf7; font-size: 13px; }
+.file-list li a { font-weight: 600; word-break: break-all; }
+.file-list li .check { margin-left: auto; }
+.file-list.pending li { background: var(--info-bg); border-style: dashed; }
+.video-title { margin: 14px 0 6px; font-weight: 700; font-size: 13px; }

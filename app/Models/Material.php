@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Material extends Model
 {
@@ -14,8 +16,7 @@ class Material extends Model
     public const EXTRA = 'extra'; // materi tambahan milik sensei untuk satu kelas
 
     protected $fillable = [
-        'level_id', 'chapter', 'title', 'category', 'description', 'video_url', 'video_path',
-        'pdf_path', 'ppt_path', 'duration_minutes', 'sort_order', 'exam_id', 'status', 'created_by',
+        'level_id', 'chapter', 'title', 'category', 'description', 'video_url', 'duration_minutes', 'sort_order', 'exam_id', 'status', 'created_by',
         'kind', 'curriculum_id', 'chapter_no', 'classroom_id', 'available_until',
     ];
 
@@ -24,6 +25,23 @@ class Material extends Model
     protected function casts(): array
     {
         return ['available_until' => 'date', 'chapter_no' => 'integer'];
+    }
+
+    /** File video/PDF/PPT, urut sesuai unggahan. */
+    public function files(): HasMany
+    {
+        return $this->hasMany(MaterialFile::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** File satu jenis (video|pdf|ppt); memakai relasi yang sudah dimuat bila ada. */
+    public function filesOfType(string $type): Collection
+    {
+        return $this->files->where('type', $type)->values();
+    }
+
+    public function hasFiles(?string $type = null): bool
+    {
+        return $type ? $this->files->contains('type', $type) : $this->files->isNotEmpty();
     }
 
     public function curriculum(): BelongsTo
@@ -116,7 +134,7 @@ class Material extends Model
         return match (true) {
             str_contains(strtolower((string) $this->category), 'kanji') => '字',
             str_contains(strtolower((string) $this->category), 'choukai'), str_contains(strtolower((string) $this->category), 'listening') => '🎧',
-            (bool) ($this->video_url || $this->video_path) => '🎬',
+            (bool) ($this->video_url || $this->hasFiles('video')) => '🎬',
             default => '📘',
         };
     }

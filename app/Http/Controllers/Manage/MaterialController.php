@@ -8,6 +8,7 @@ use App\Models\Curriculum;
 use App\Models\Exam;
 use App\Models\Level;
 use App\Models\Material;
+use App\Models\MaterialFile;
 use App\Models\User;
 use App\Services\MaterialAccess;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +49,7 @@ class MaterialController extends Controller
             default => Material::where('kind', Material::CORE)->where('curriculum_id', (int) $tab['key']),
         };
 
-        $materials = $query->with(['level.testType', 'curriculum:id,name', 'classroom:id,name', 'author:id,name'])->withCount('completedBy')
+        $materials = $query->with(['level.testType', 'curriculum:id,name', 'classroom:id,name', 'author:id,name', 'files:id,material_id,type'])->withCount('completedBy')
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w->where('title', 'like', '%'.$request->string('q').'%')
                 ->orWhere('chapter', 'like', '%'.$request->string('q').'%')->orWhere('chapter_no', (int) $request->query('q') ?: -1)))
             ->when($sort === 'bab', fn ($q) => $q->orderBy('chapter_no')->orderBy('chapter')->orderBy('sort_order')->orderBy('id'))
@@ -118,9 +119,7 @@ class MaterialController extends Controller
     {
         abort_unless($material->isEditableBy($request->user()), 403, $this->denyMessage($material));
 
-        foreach (['video_path', 'pdf_path', 'ppt_path'] as $c) {
-            $material->$c && Storage::disk('local')->delete($material->$c);
-        }
+        Storage::disk('local')->delete($material->files()->pluck('path')->all());
         $tab = $this->tabOf($material);
         $material->delete();
 
@@ -193,9 +192,9 @@ class MaterialController extends Controller
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
             'exam_id' => ['nullable', 'exists:exams,id'],
             'status' => ['required', 'in:draft,published'],
-            'video' => ['nullable', 'file', 'mimes:mp4,webm,mov', 'max:512000'],
-            'pdf' => ['nullable', 'file', 'mimes:pdf', 'max:51200'],
-            'ppt' => ['nullable', 'file', 'mimes:ppt,pptx,pdf', 'max:102400'],
+            ...$this->fileRules(),
+            'remove_files' => ['nullable', 'array'],
+            'remove_files.*' => ['integer'],
         ], [
             'classroom_id.required' => 'Pilih kelas tujuan materi tambahan.',
             'classroom_id.in' => 'Materi tambahan hanya untuk kelas yang Anda pegang.',
@@ -211,13 +210,22 @@ class MaterialController extends Controller
             }
         }
 
-        $hasContent = filled($data['video_url'] ?? null) || filled($data['description'] ?? null)
-            || $request->hasFile('video') || $request->hasFile('pdf') || $request->hasFile('ppt')
-            || ($material && ($material->video_path || $material->pdf_path || $material->ppt_path));
+        // Jumlah file per jenis setelah hapus + tambah tidak boleh melebihi batas.
+        $removed = collect($data['remove_files'] ?? [])->map(fn ($id) => (int) $id);
+        $kept = $material ? $material->files()->whereNotIn('id', $removed)->get(['id', 'type']) : collect();
+        foreach (MaterialFile::TYPES as $type => [$label]) {
+            $total = $kept->where('type', $type)->count() + count($request->file($type.'s', []));
+            if ($total > MaterialFile::MAX_PER_TYPE) {
+                throw ValidationException::withMessages([$type.'s' => "Maksimal ".MaterialFile::MAX_PER_TYPE." file {$label} per materi."]);
+            }
+        }
+
+        $hasNewFiles = collect(array_keys(MaterialFile::TYPES))->contains(fn ($t) => $request->hasFile($t.'s'));
+        $hasContent = filled($data['video_url'] ?? null) || filled($data['description'] ?? null) || $hasNewFiles || $kept->isNotEmpty();
         if (! $hasContent) {
             throw ValidationException::withMessages(['video_url' => 'Isi minimal satu: tautan video, file video/PDF/PPT, atau keterangan.']);
         }
-        unset($data['video'], $data['pdf'], $data['ppt']);
+        unset($data['videos'], $data['pdfs'], $data['ppts'], $data['remove_files']);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         if ($isExtra) {
             $data['curriculum_id'] = null;
@@ -228,18 +236,36 @@ class MaterialController extends Controller
         return $data;
     }
 
+    /** Aturan validasi file: videos[], pdfs[], ppts[] — beberapa file per jenis. */
+    private function fileRules(): array
+    {
+        $rules = [];
+        foreach (MaterialFile::TYPES as $type => [, , $mimes, $maxKb]) {
+            $rules[$type.'s'] = ['nullable', 'array', 'max:'.MaterialFile::MAX_PER_TYPE];
+            $rules[$type.'s.*'] = ['file', 'mimes:'.$mimes, 'max:'.$maxKb];
+        }
+
+        return $rules;
+    }
+
+    /** Hapus file yang dicentang, lalu simpan semua file baru (urutan sesuai pilihan). */
     private function saveFiles(Request $request, Material $material): void
     {
-        foreach (['video' => 'video_path', 'pdf' => 'pdf_path', 'ppt' => 'ppt_path'] as $input => $col) {
-            if ($request->boolean("remove_$input") && $material->$col) {
-                Storage::disk('local')->delete($material->$col);
-                $material->$col = null;
-            }
-            if ($request->hasFile($input)) {
-                $material->$col && Storage::disk('local')->delete($material->$col);
-                $material->$col = $request->file($input)->store("materials/{$material->id}", 'local');
+        $remove = $material->files()->whereIn('id', (array) $request->input('remove_files', []))->get();
+        Storage::disk('local')->delete($remove->pluck('path')->all());
+        $material->files()->whereIn('id', $remove->pluck('id'))->delete();
+
+        $order = (int) $material->files()->max('sort_order');
+        foreach (array_keys(MaterialFile::TYPES) as $type) {
+            foreach ($request->file($type.'s', []) as $file) {
+                $material->files()->create([
+                    'type' => $type,
+                    'path' => $file->store("materials/{$material->id}", 'local'),
+                    'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+                    'size' => $file->getSize(),
+                    'sort_order' => ++$order,
+                ]);
             }
         }
-        $material->save();
     }
 }
