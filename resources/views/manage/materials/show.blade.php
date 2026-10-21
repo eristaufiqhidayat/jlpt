@@ -39,6 +39,16 @@
                 <div class="video-frame"><video controls preload="metadata" src="{{ route('media', $video->path) }}"></video></div>
             @endforeach
 
+            @php($audios = $material->filesOfType('audio'))
+            @if ($audios->isNotEmpty())
+                <div class="card audio-list">
+                    <div class="card-head"><h2>🎧 Audio</h2></div>
+                    @foreach ($audios as $a)
+                        <div class="audio-item"><p>{{ $a->label() }}</p><audio controls preload="none" src="{{ route('media', $a->path) }}"></audio></div>
+                    @endforeach
+                </div>
+            @endif
+
             @php($docs = $material->files->whereIn('type', ['pdf', 'ppt']))
             @if ($docs->isNotEmpty() || $material->exam)
                 <div class="resource-btns">

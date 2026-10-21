@@ -19,6 +19,16 @@
                 <div class="video-frame"><video controls controlsList="nodownload" preload="metadata" src="{{ route('media', $video->path) }}"></video></div>
             @endforeach
 
+            @php($audios = $material->filesOfType('audio'))
+            @if ($audios->isNotEmpty())
+                <div class="card audio-list">
+                    <div class="card-head"><h2>🎧 Audio</h2></div>
+                    @foreach ($audios as $a)
+                        <div class="audio-item"><p>{{ $a->label() }}</p><audio controls preload="none" controlsList="nodownload" src="{{ route('media', $a->path) }}"></audio></div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="resource-btns">
                 @foreach ($material->filesOfType('pdf') as $f)
                     <a class="btn secondary" href="{{ route('media', $f->path) }}" target="_blank">📄 {{ $material->filesOfType('pdf')->count() > 1 ? $f->label() : 'PDF Materi' }}</a>

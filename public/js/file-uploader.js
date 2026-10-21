@@ -15,10 +15,11 @@
     var TYPES = {
         mp4: 'video', webm: 'video', mov: 'video',
         pdf: 'pdf',
-        ppt: 'ppt', pptx: 'ppt'
+        ppt: 'ppt', pptx: 'ppt',
+        mp3: 'audio', m4a: 'audio', wav: 'audio', ogg: 'audio'
     };
-    var ICONS = { video: '🎬', pdf: '📄', ppt: '📊' };
-    var LABELS = { video: 'Video', pdf: 'PDF', ppt: 'PPT' };
+    var ICONS = { video: '🎬', pdf: '📄', ppt: '📊', audio: '🎧' };
+    var LABELS = { video: 'Video', pdf: 'PDF', ppt: 'PPT', audio: 'Audio' };
 
     function human(bytes) {
         if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(1).replace('.', ',') + ' GB';
