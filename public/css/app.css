@@ -426,3 +426,19 @@ input[type=file] { font-size: 12.5px; }
 /* ---------- Materi: layar penuh untuk mengajar ---------- */
 .present-area:fullscreen { background: var(--cream, #f7f4ee); padding: 28px 40px; overflow-y: auto; font-size: 18px; }
 .present-area:fullscreen .video-frame { max-width: 1200px; margin-left: auto; margin-right: auto; }
+
+/* ---------- Tab berkelompok: kelompok tampil, kurikulum muncul saat hover/klik ---------- */
+.tab-group { position: relative; }
+.tab-group-btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 9px; border: 1px solid transparent; background: none; font: inherit; font-weight: 700; font-size: 13px; color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+.tab-group-btn small { display: inline-block; min-width: 20px; padding: 0 6px; border-radius: 999px; background: #dcd7cb; color: var(--ink-soft); font-size: 11px; line-height: 18px; text-align: center; }
+.tab-group-btn .caret { font-size: 10px; opacity: .7; }
+.tab-group-btn .tab-current { font-weight: 500; opacity: .85; }
+.tab-group:hover .tab-group-btn, .tab-group.open .tab-group-btn { background: var(--paper); color: var(--ink); border-color: var(--line); }
+.tab-group-btn.active, .tab-group:hover .tab-group-btn.active, .tab-group.open .tab-group-btn.active { background: var(--navy-900); color: #fff; border-color: var(--navy-900); box-shadow: 0 3px 10px rgba(11,31,58,.22); }
+.tab-group-btn.active small { background: var(--sakura-deep); color: #fff; }
+.tab-menu { display: none; position: absolute; top: 100%; left: 0; z-index: 30; min-width: 240px; margin-top: 4px; padding: 6px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 30px rgba(11,31,58,.16); }
+.tab-menu::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 8px; } /* jembatan hover agar menu tidak tertutup saat mouse turun */
+.tab-group:hover .tab-menu, .tab-group.open .tab-menu, .tab-group:focus-within .tab-menu { display: block; }
+.tabs .tab-menu a { display: flex; justify-content: space-between; width: 100%; border-radius: 8px; }
+.tabs .tab-menu a:hover { background: var(--cream); border-color: transparent; }
+.tabs .tab-menu a.active { background: var(--navy-900); color: #fff; box-shadow: none; }
