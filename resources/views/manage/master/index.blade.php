@@ -29,7 +29,7 @@
     {{-- ===================== Klasifikasi Kelas ===================== --}}
     @if ($tab === 'kelas')
         <div class="page-head" style="margin-bottom:12px">
-            <p>Urutan menentukan lock: peserta harus naik kelas untuk membuka kurikulum berikutnya. Kurikulum dipilih saat membuat kelas.</p>
+            <p>Urutan menentukan lock: peserta harus naik kelas untuk membuka kurikulum berikutnya. Kurikulum dipilih saat membuat kelas. Kurikulum "Terbuka untuk semua" (mis. Materi Umum) bisa dibuka semua peserta tanpa lock.</p>
             @if ($canEdit)<a class="btn" href="{{ route('manage.master.create', 'curriculum') }}">+ Tambah kurikulum</a>@endif
         </div>
         <div class="card flush">
@@ -39,7 +39,7 @@
                     <tr>
                         <td class="num">{{ $c->sort_order }}</td>
                         <td>{{ $c->group }}</td>
-                        <td><strong>{{ $c->name }}</strong><br><small>{{ $c->code }}</small></td>
+                        <td><strong>{{ $c->name }}</strong> @if ($c->is_open)<span class="badge ok">Terbuka untuk semua</span>@endif<br><small>{{ $c->code }}</small></td>
                         <td>{{ collect([$c->chapterRange(), $c->scope])->filter()->implode(' · ') ?: '–' }}</td>
                         <td class="num">{{ $c->active_classes_count }}</td>
                         <td class="num">{{ $studentsPerCurriculum[$c->id] ?? 0 }}</td>

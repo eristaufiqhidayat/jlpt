@@ -39,7 +39,11 @@ class MaterialController extends Controller
 
         $tabs = $curricula->map(fn ($c) => ['key' => (string) $c->id, 'group' => $c->group ?: 'Lainnya', 'label' => $c->name, 'count' => $counts[$c->id] ?? 0, 'inactive' => ! $c->is_active])
             ->filter(fn ($t) => ! $t['inactive'] || $t['count'] > 0)->values();
-        $tabs->push(['key' => 'umum', 'group' => null, 'label' => 'Materi umum', 'count' => Material::where('kind', Material::CORE)->whereNull('curriculum_id')->count(), 'inactive' => false]);
+        // Materi lama tanpa kurikulum (seharusnya sudah dipindah ke kurikulum terbuka "Materi Umum").
+        $legacy = Material::where('kind', Material::CORE)->whereNull('curriculum_id')->count();
+        if ($legacy > 0) {
+            $tabs->push(['key' => 'umum', 'group' => null, 'label' => 'Tanpa kurikulum', 'count' => $legacy, 'inactive' => false]);
+        }
         $tabs->push(['key' => 'tambahan', 'group' => null, 'label' => 'Materi tambahan', 'count' => $this->extrasQuery($user)->count(), 'inactive' => false]);
         $tab = $tabs->firstWhere('key', (string) $request->query('tab')) ?? $tabs->first();
         $sort = array_key_exists($request->query('sort'), self::SORTS) ? $request->query('sort') : 'bab';
@@ -261,6 +265,7 @@ class MaterialController extends Controller
         if ($isExtra) {
             $data['curriculum_id'] = null;
         } else {
+            $data['curriculum_id'] = $data['curriculum_id'] ?? Curriculum::defaultOpenId();
             $data['classroom_id'] = null;
         }
 

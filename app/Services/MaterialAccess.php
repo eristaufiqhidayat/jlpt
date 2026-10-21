@@ -17,12 +17,13 @@ use Illuminate\Support\Collection;
  * Materi bisa dibuka kapan saja dan berulang selama terbit dan belum lewat masa tayang.
  *
  * - Materi pakem berkurikulum : terbuka bila kurikulumnya terbuka.
- * - Materi umum (tanpa kurikulum): disaring per level peserta seperti sebelumnya.
+ * - Kurikulum terbuka (is_open, mis. Materi Umum): tanpa lock, untuk semua peserta, disaring per level materi.
+ * - Materi lama tanpa kurikulum: disaring per level peserta seperti sebelumnya.
  * - Materi tambahan sensei    : hanya untuk anggota kelas tujuan.
  */
 class MaterialAccess
 {
-    /** @var array<int, array{curricula: Collection, classes: Collection}> */
+    /** @var array<int, array{curricula: Collection, open: Collection, classes: Collection}> */
     private array $cache = [];
 
     /** Kelas yang diikuti peserta (aktif maupun sudah selesai). */
@@ -45,14 +46,17 @@ class MaterialAccess
     /** Semua materi yang boleh dibuka peserta: terbit, dalam masa tayang, dan lolos lock. */
     public function visibleQuery(User $student): Builder
     {
-        $curricula = $this->unlockedCurriculumIds($student);
-        $classes = $this->classroomIds($student);
+        $resolved = $this->resolve($student);
+        $locked = $resolved['curricula']->diff($resolved['open'])->values();
+        $open = $resolved['open'];
+        $classes = $resolved['classes'];
         $levelId = $student->profile?->level_id;
+        $byLevel = fn ($l) => $l->when($levelId, fn ($w) => $w->where(fn ($x) => $x->whereNull('level_id')->orWhere('level_id', $levelId)));
 
-        return Material::query()->published()->available()->where(function (Builder $q) use ($curricula, $classes, $levelId) {
-            $q->where(fn ($c) => $c->where('kind', Material::CORE)->whereIn('curriculum_id', $curricula))
-                ->orWhere(fn ($g) => $g->where('kind', Material::CORE)->whereNull('curriculum_id')
-                    ->when($levelId, fn ($l) => $l->where(fn ($x) => $x->whereNull('level_id')->orWhere('level_id', $levelId))))
+        return Material::query()->published()->available()->where(function (Builder $q) use ($locked, $open, $classes, $byLevel) {
+            $q->where(fn ($c) => $c->where('kind', Material::CORE)->whereIn('curriculum_id', $locked))
+                ->orWhere(fn ($o) => $byLevel($o->where('kind', Material::CORE)->whereIn('curriculum_id', $open)))
+                ->orWhere(fn ($g) => $byLevel($g->where('kind', Material::CORE)->whereNull('curriculum_id')))
                 ->orWhere(fn ($e) => $e->where('kind', Material::EXTRA)->whereIn('classroom_id', $classes));
         });
     }
@@ -70,17 +74,24 @@ class MaterialAccess
             ->pluck('id');
     }
 
-    /** @return array{curricula: Collection, classes: Collection} */
+    /** ID kurikulum terbuka (tanpa lock) yang aktif. */
+    public function openCurriculumIds(User $student): Collection
+    {
+        return $this->resolve($student)['open'];
+    }
+
+    /** @return array{curricula: Collection, open: Collection, classes: Collection} */
     private function resolve(User $student): array
     {
         return $this->cache[$student->id] ??= (function () use ($student) {
             $classes = $student->classrooms()->get(['classrooms.id', 'classrooms.curriculum_id']);
             $own = Curriculum::whereIn('id', $classes->pluck('curriculum_id')->filter())->get(['id', 'sort_order']);
 
+            $open = Curriculum::open()->active()->pluck('id');
             $curricula = $own->isEmpty() ? collect() : Curriculum::where('sort_order', '<', $own->max('sort_order'))
-                ->pluck('id')->merge($own->pluck('id'))->unique()->values();
+                ->pluck('id')->merge($own->pluck('id'));
 
-            return ['curricula' => $curricula, 'classes' => $classes->pluck('id')];
+            return ['curricula' => $curricula->merge($open)->unique()->values(), 'open' => $open, 'classes' => $classes->pluck('id')];
         })();
     }
 }

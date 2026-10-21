@@ -241,6 +241,9 @@ class MasterDataController extends Controller
                     'chapter_to' => ['label' => 'Bab sampai', 'type' => 'number', 'rules' => ['nullable', 'integer', 'min:1', 'max:999', 'gte:chapter_from', 'required_with:chapter_from']],
                     'sort_order' => ['label' => 'Urutan', 'type' => 'number', 'rules' => ['required', 'integer', 'min:0', 'max:999'],
                         'hint' => 'Angka kecil dibuka lebih dulu. Kurikulum sejajar (mis. bidang SSW) boleh memakai angka yang sama.'],
+                    'is_open' => ['label' => 'Akses peserta', 'type' => 'select', 'rules' => ['sometimes', 'required', 'boolean'],
+                        'options' => ['0' => 'Ikut lock (sesuai kelas & urutan)', '1' => 'Terbuka untuk semua peserta (tanpa lock)'],
+                        'hint' => 'Pilih "Terbuka" untuk materi yang boleh dibuka semua peserta, mis. Materi Umum. Materinya tetap bisa disaring per level.'],
                 ],
             ],
             'test-type' => [

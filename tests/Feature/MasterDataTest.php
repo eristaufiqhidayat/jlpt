@@ -45,7 +45,7 @@ class MasterDataTest extends TestCase
         $this->assertEqualsCanonicalizing(['A1', 'A2.1', 'A2.2'], TestType::where('code', 'JFT')->first()->levels->pluck('code')->all());
         $this->assertCount(5, TestType::where('code', 'SSW')->first()->levels);
 
-        $this->assertSame(9, Curriculum::count());
+        $this->assertSame(10, Curriculum::count()); // 9 kurikulum + Materi Umum (terbuka)
         $minna1 = Curriculum::where('code', 'MINNA1')->first();
         $this->assertSame([1, 25, 1], [$minna1->chapter_from, $minna1->chapter_to, $minna1->sort_order]);
         $this->assertSame([26, 50], [Curriculum::where('code', 'MINNA2')->value('chapter_from'), Curriculum::where('code', 'MINNA2')->value('chapter_to')]);
@@ -63,7 +63,7 @@ class MasterDataTest extends TestCase
         $this->assertSame(175, $jlpt->fresh()->max_score);
         $this->assertFalse($jlpt->fresh()->is_active);
         $this->assertSame(99, (int) $section->fresh()->default_duration_minutes);
-        $this->assertSame(9, Curriculum::count());
+        $this->assertSame(10, Curriculum::count()); // 9 kurikulum + Materi Umum (terbuka)
     }
 
     // ---------------- Akses per peran ----------------

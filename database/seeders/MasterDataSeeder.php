@@ -158,5 +158,10 @@ class MasterDataSeeder extends Seeder
                 'chapter_from' => $from, 'chapter_to' => $to, 'sort_order' => $order,
             ]);
         }
+
+        // Kurikulum terbuka untuk materi umum (tanpa lock).
+        Curriculum::firstOrCreate(['code' => 'UMUM'], [
+            'group' => 'Umum', 'name' => 'Materi Umum', 'scope' => 'Terbuka untuk semua peserta', 'sort_order' => 0, 'is_open' => true,
+        ]);
     }
 }

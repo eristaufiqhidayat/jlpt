@@ -15,6 +15,7 @@
         @foreach ($config['fields'] as $name => $field)
             @php
                 $value = old($name, $model->{$name} instanceof \DateTimeInterface ? $model->{$name}->format('Y-m-d') : $model->{$name});
+                $value = is_bool($value) ? (int) $value : $value; // pilihan ya/tidak memakai key 0/1
                 $required = in_array('required', $field['rules'], true) && ! ($field['readonly'] ?? false);
             @endphp
             <div class="field">
