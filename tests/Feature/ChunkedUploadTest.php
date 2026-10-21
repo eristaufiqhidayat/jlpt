@@ -173,4 +173,27 @@ class ChunkedUploadTest extends TestCase
         $this->actingAs($this->edu)->get(route('manage.materials.create'))->assertOk()
             ->assertSee('data-uploader', false)->assertSee('Upload semua')->assertSee('js/file-uploader.js');
     }
+
+    public function test_mp3_audio_can_be_uploaded_and_is_played_on_material_page(): void
+    {
+        $mp3 = "ID3\x03\x00\x00\x00\x00\x00\x00".str_repeat("\xFF\xFB\x90\x64".str_repeat("\x00", 413), 6);
+        $id = $this->uploadInChunks($this->edu, 'choukai bab 1.mp3', $mp3);
+
+        $this->flushHeaders()->actingAs($this->edu)->post(route('manage.materials.store'), [
+            'kind' => 'core', 'title' => 'Audio Bab 1', 'status' => 'published', 'uploads' => [$id],
+        ])->assertSessionHasNoErrors();
+
+        $m = Material::where('title', 'Audio Bab 1')->firstOrFail();
+        $this->assertSame(['audio'], $m->files->pluck('type')->all());
+        $this->actingAs($this->edu)->get(route('manage.materials.show', $m))->assertOk()
+            ->assertSee('choukai bab 1.mp3')->assertSee('<audio', false);
+    }
+
+    public function test_exe_renamed_to_mp3_is_rejected(): void
+    {
+        $id = $this->asJson($this->edu)->post(route('manage.uploads.start'), ['name' => 'lagu.mp3', 'size' => 600])->assertCreated()->json('id');
+        $this->asJson($this->edu)->post(route('manage.uploads.chunk', $id), [
+            'offset' => 0, 'chunk' => UploadedFile::fake()->createWithContent('chunk', "MZ\x90\x00".str_repeat("\x00", 56)."PE\x00\x00".str_repeat("A", 536)),
+        ])->assertUnprocessable();
+    }
 }

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** File video/PDF/PPT milik satu materi. Disimpan privat di storage/app/private/materials/{material_id}/. */
+/** File video/PDF/PPT/audio milik satu materi. Disimpan privat di storage/app/private/materials/{material_id}/. */
 class MaterialFile extends Model
 {
     /** jenis => [label, ikon, aturan mimes, ukuran maks KB, accept di input file] */
@@ -13,6 +13,7 @@ class MaterialFile extends Model
         'video' => ['Video', '🎬', 'mp4,webm,mov', 512000, 'video/mp4,video/webm,video/quicktime'],
         'pdf' => ['PDF', '📄', 'pdf', 51200, 'application/pdf'],
         'ppt' => ['PPT', '📊', 'ppt,pptx,pdf', 102400, '.ppt,.pptx,.pdf'],
+        'audio' => ['Audio', '🎧', 'mp3,m4a,wav,ogg', 102400, 'audio/mpeg,audio/mp4,audio/wav,audio/ogg'],
     ];
 
     /** Batas jumlah file per jenis dalam satu materi. */

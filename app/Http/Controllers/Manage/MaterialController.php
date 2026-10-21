@@ -260,7 +260,7 @@ class MaterialController extends Controller
         if (! $hasContent) {
             throw ValidationException::withMessages(['video_url' => 'Isi minimal satu: tautan video, file video/PDF/PPT, atau keterangan.']);
         }
-        unset($data['videos'], $data['pdfs'], $data['ppts'], $data['remove_files'], $data['uploads']);
+        unset($data['videos'], $data['pdfs'], $data['ppts'], $data['audios'], $data['remove_files'], $data['uploads']);
         $data['sort_order'] = $data['sort_order'] ?? 0;
         if ($isExtra) {
             $data['curriculum_id'] = null;
@@ -272,7 +272,7 @@ class MaterialController extends Controller
         return $data;
     }
 
-    /** Aturan validasi file: videos[], pdfs[], ppts[] — beberapa file per jenis. */
+    /** Aturan validasi file: videos[], pdfs[], ppts[], audios[] — beberapa file per jenis. */
     private function fileRules(): array
     {
         $rules = [];

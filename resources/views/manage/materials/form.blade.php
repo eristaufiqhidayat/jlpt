@@ -69,7 +69,7 @@
         @php($types = \App\Models\MaterialFile::TYPES)
         @php($existingFiles = $material->exists ? $material->files : collect())
         <div class="field">
-            <label>File materi <span class="muted" style="font-weight:400">· video, PDF, dan PPT; boleh lebih dari satu (maks. {{ \App\Models\MaterialFile::MAX_PER_TYPE }} file per jenis)</span></label>
+            <label>File materi <span class="muted" style="font-weight:400">· video, PDF, PPT, dan audio (MP3); boleh lebih dari satu (maks. {{ \App\Models\MaterialFile::MAX_PER_TYPE }} file per jenis)</span></label>
 
             @if ($existingFiles->isNotEmpty())
                 <ul class="file-list">
@@ -93,8 +93,8 @@
                 <div class="uploader-drop" data-drop>
                     <p class="uploader-drop-title">Seret &amp; lepas file di sini, atau</p>
                     <button type="button" class="btn secondary" data-browse>📁 Browse</button>
-                    <input type="file" multiple hidden accept=".mp4,.webm,.mov,.pdf,.ppt,.pptx,video/mp4,video/webm,video/quicktime,application/pdf">
-                    <p class="uploader-hint">Video MP4/WEBM/MOV maks. 500 MB · PDF maks. 50 MB · PPT/PPTX maks. 100 MB</p>
+                    <input type="file" multiple hidden accept=".mp4,.webm,.mov,.pdf,.ppt,.pptx,.mp3,.m4a,.wav,.ogg,video/mp4,video/webm,video/quicktime,application/pdf,audio/mpeg,audio/mp4,audio/wav,audio/ogg">
+                    <p class="uploader-hint">Video MP4/WEBM/MOV maks. 500 MB · PDF maks. 50 MB · PPT/PPTX maks. 100 MB · Audio MP3/M4A/WAV/OGG maks. 100 MB</p>
                 </div>
                 <ul class="uploader-list" data-list></ul>
                 <div class="uploader-footer" data-footer hidden>
@@ -118,7 +118,7 @@
                 @endforeach
             </noscript>
 
-            @foreach (['uploads', 'videos', 'pdfs', 'ppts'] as $key)
+            @foreach (['uploads', 'videos', 'pdfs', 'ppts', 'audios'] as $key)
                 @error($key)<div class="error-text">{{ $message }}</div>@enderror
                 @foreach ($errors->get($key.'.*') as $messages)
                     @foreach ($messages as $message)<div class="error-text">{{ $message }}</div>@endforeach
@@ -138,7 +138,7 @@
         </div>
         <button class="btn">Simpan</button>
     </form>
-    <script src="{{ asset('js/file-uploader.js') }}?v=1" defer></script>
+    <script src="{{ asset('js/file-uploader.js') }}?v=2" defer></script>
     @if ($canChooseKind)
         <script>
             function setKind(kind) {

@@ -88,7 +88,7 @@
                     @else
                         <td class="num">{{ $m->chapter_no ?? '–' }}</td>
                         <td><a href="{{ route('manage.materials.show', $m) }}"><strong>{{ $m->title }}</strong></a>@if ($m->chapter)<br><small>{{ $m->chapter }}</small>@endif</td>
-                        <td style="white-space:nowrap">@if ($m->video_url || $m->hasFiles('video'))🎬@if ($m->filesOfType('video')->count() > 1)×{{ $m->filesOfType('video')->count() }}@endif @endif @if ($m->hasFiles('pdf'))📄@if ($m->filesOfType('pdf')->count() > 1)×{{ $m->filesOfType('pdf')->count() }}@endif @endif @if ($m->hasFiles('ppt'))📊@if ($m->filesOfType('ppt')->count() > 1)×{{ $m->filesOfType('ppt')->count() }}@endif @endif @if ($m->exam_id)✏️ @endif</td>
+                        <td style="white-space:nowrap">@if ($m->video_url || $m->hasFiles('video'))🎬@if ($m->filesOfType('video')->count() > 1)×{{ $m->filesOfType('video')->count() }}@endif @endif @if ($m->hasFiles('pdf'))📄@if ($m->filesOfType('pdf')->count() > 1)×{{ $m->filesOfType('pdf')->count() }}@endif @endif @if ($m->hasFiles('ppt'))📊@if ($m->filesOfType('ppt')->count() > 1)×{{ $m->filesOfType('ppt')->count() }}@endif @endif @if ($m->hasFiles('audio'))🎧@if ($m->filesOfType('audio')->count() > 1)×{{ $m->filesOfType('audio')->count() }}@endif @endif @if ($m->exam_id)✏️ @endif</td>
                         <td>{{ $m->level?->code ?? 'Semua' }}</td>
                         <td class="num">{{ $m->completed_by_count }}</td>
                         <td>{!! $m->status === 'published' ? '<span class="badge ok">Terbit</span>' : '<span class="badge">Draft</span>' !!}</td>

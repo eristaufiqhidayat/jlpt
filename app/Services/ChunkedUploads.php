@@ -28,6 +28,7 @@ class ChunkedUploads
         'mp4' => 'video', 'webm' => 'video', 'mov' => 'video',
         'pdf' => 'pdf',
         'ppt' => 'ppt', 'pptx' => 'ppt',
+        'mp3' => 'audio', 'm4a' => 'audio', 'wav' => 'audio', 'ogg' => 'audio',
     ];
 
     /** MIME hasil deteksi isi file yang diterima per ekstensi (pptx sering terdeteksi sebagai zip). */
@@ -35,6 +36,10 @@ class ChunkedUploads
         'pptx' => ['application/zip', 'application/x-zip-compressed'],
         'ppt' => ['application/x-ole-storage', 'application/CDFV2', 'application/vnd.ms-office'],
         'mov' => ['video/mp4'],
+        'mp3' => ['audio/mpeg', 'audio/mp3', 'application/octet-stream'], // MP3 tanpa tag ID3 kadang tak terdeteksi
+        'm4a' => ['audio/mp4', 'audio/x-m4a', 'video/mp4'],
+        'wav' => ['audio/wav', 'audio/x-wav', 'audio/wave'],
+        'ogg' => ['audio/ogg', 'video/ogg', 'application/ogg'],
     ];
 
     private function disk()
@@ -53,7 +58,7 @@ class ChunkedUploads
         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         $type = self::EXTENSIONS[$ext] ?? null;
         if (! $type) {
-            throw ValidationException::withMessages(['name' => 'Jenis file tidak didukung. Gunakan MP4/WEBM/MOV, PDF, atau PPT/PPTX.']);
+            throw ValidationException::withMessages(['name' => 'Jenis file tidak didukung. Gunakan MP4/WEBM/MOV, PDF, PPT/PPTX, atau MP3/M4A/WAV/OGG.']);
         }
         [$label, , , $maxKb] = MaterialFile::TYPES[$type];
         if ($size < 1 || $size > $maxKb * 1024) {
