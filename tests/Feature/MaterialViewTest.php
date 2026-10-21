@@ -114,6 +114,6 @@ class MaterialViewTest extends TestCase
         $this->actingAs($this->user(Role::EducationAdmin))->get(route('manage.materials.index', ['tab' => $this->minna1->id]))->assertOk()
             ->assertSee('data-tab-group', false)
             ->assertSeeInOrder(['Kelas Basic', 'Minna no Nihongo I', 'Minna no Nihongo II', 'Kelas SSW', 'SSW · Kaigo', 'Materi umum'])
-            ->assertSee(route('manage.materials.index', ['tab' => $this->minna2->id, 'sort' => 'bab']), false);
+            ->assertSee(route('manage.materials.index', ['tab' => $this->minna2->id, 'sort' => 'bab']));
     }
 }
