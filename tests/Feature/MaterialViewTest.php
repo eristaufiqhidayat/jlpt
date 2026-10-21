@@ -113,7 +113,8 @@ class MaterialViewTest extends TestCase
 
         $this->actingAs($this->user(Role::EducationAdmin))->get(route('manage.materials.index', ['tab' => $this->minna1->id]))->assertOk()
             ->assertSee('data-tab-group', false)
-            ->assertSeeInOrder(['Kelas Basic', 'Minna no Nihongo I', 'Minna no Nihongo II', 'Kelas SSW', 'SSW · Kaigo', 'Materi umum'])
+            ->assertSeeInOrder(['Materi Umum', 'Kelas Basic', 'Minna no Nihongo I', 'Minna no Nihongo II', 'Kelas SSW', 'SSW · Kaigo', 'Materi tambahan'])
+            ->assertDontSee('Tanpa kurikulum')
             ->assertSee(route('manage.materials.index', ['tab' => $this->minna2->id, 'sort' => 'bab']));
     }
 }

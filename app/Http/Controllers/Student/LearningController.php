@@ -54,7 +54,7 @@ class LearningController extends Controller
         }
 
         // Tab awal: kurikulum kelas peserta saat ini (urutan terbesar yang terbuka).
-        $current = $curricula->filter(fn ($c) => $unlocked->contains($c->id))->sortBy('sort_order')->last();
+        $current = $curricula->filter(fn ($c) => $unlocked->contains($c->id) && ! $c->is_open)->sortBy('sort_order')->last();
         $tab = $tabs->firstWhere('key', $request->query('tab'))
             ?? ($current ? $tabs->firstWhere('key', $current->code) : null)
             ?? $tabs->firstWhere('locked', false) ?? $tabs->first();

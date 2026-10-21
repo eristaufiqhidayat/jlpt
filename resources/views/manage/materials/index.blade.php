@@ -14,9 +14,9 @@
     {{-- Tab per kelompok (Kelas Basic, Kelas SSW, ...). Arahkan mouse / klik kelompok untuk memilih kurikulumnya. --}}
     <nav class="tabs" aria-label="Kurikulum">
         @foreach ($tabs->groupBy(fn ($t) => $t['group'] ?? '#'.$t['key']) as $groupKey => $items)
-            @if (str_starts_with($groupKey, '#'))
+            @if (str_starts_with($groupKey, '#') || $items->count() === 1)
                 @foreach ($items as $t)
-                    <a href="{{ route('manage.materials.index', ['tab' => $t['key'], 'sort' => $sort]) }}" @class(['active' => $tab['key'] === $t['key']])
+                    <a href="{{ route('manage.materials.index', ['tab' => $t['key'], 'sort' => $sort]) }}" @class(['active' => $tab['key'] === $t['key'], 'locked' => $t['inactive']])
                        @if ($tab['key'] === $t['key']) aria-current="page" @endif>{{ $t['label'] }} <small>{{ $t['count'] }}</small></a>
                 @endforeach
             @else

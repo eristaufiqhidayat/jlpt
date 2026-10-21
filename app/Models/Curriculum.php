@@ -11,11 +11,14 @@ class Curriculum extends Model
 {
     protected $table = 'curricula';
 
-    protected $fillable = ['group', 'name', 'code', 'scope', 'chapter_from', 'chapter_to', 'sort_order', 'is_active'];
+    /** Nilai awal kurikulum baru: aktif dan ikut lock. */
+    protected $attributes = ['is_open' => false, 'is_active' => true];
+
+    protected $fillable = ['group', 'name', 'code', 'scope', 'chapter_from', 'chapter_to', 'sort_order', 'is_open', 'is_active'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'chapter_from' => 'integer', 'chapter_to' => 'integer', 'sort_order' => 'integer'];
+        return ['is_active' => 'boolean', 'is_open' => 'boolean', 'chapter_from' => 'integer', 'chapter_to' => 'integer', 'sort_order' => 'integer'];
     }
 
     public function classrooms(): HasMany
@@ -26,6 +29,18 @@ class Curriculum extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Kurikulum terbuka: tanpa lock, untuk semua peserta. */
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->where('is_open', true);
+    }
+
+    /** Kurikulum terbuka bawaan untuk materi pakem yang tidak dipilihkan kurikulum (mis. "Materi Umum"). */
+    public static function defaultOpenId(): ?int
+    {
+        return static::open()->active()->orderBy('sort_order')->orderBy('id')->value('id');
     }
 
     /** "Bab 1–25" atau null bila kurikulum tidak berbasis bab. */

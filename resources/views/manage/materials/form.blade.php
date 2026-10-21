@@ -23,15 +23,19 @@
         <div data-kind="core" @if ($kind !== 'core') hidden @endif>
             <div class="row">
                 <div class="field"><label for="curriculum_id">Kurikulum</label>
-                    <select id="curriculum_id" name="curriculum_id"><option value="">Materi umum (tanpa kurikulum)</option>
-                        @foreach ($curricula as $c)<option value="{{ $c->id }}" @selected((int) old('curriculum_id', $material->curriculum_id) === $c->id)>{{ $c->group }} · {{ $c->name }}@if ($c->chapterRange()) ({{ $c->chapterRange() }})@endif</option>@endforeach
+                    <select id="curriculum_id" name="curriculum_id">
+                        @foreach ($curricula->groupBy('group') as $groupName => $items)
+                            <optgroup label="{{ $groupName }}">
+                                @foreach ($items as $c)<option value="{{ $c->id }}" @selected((int) old('curriculum_id', $material->curriculum_id) === $c->id)>{{ $c->name }}@if ($c->chapterRange()) ({{ $c->chapterRange() }})@endif @if ($c->is_open) — terbuka untuk semua @endif</option>@endforeach
+                            </optgroup>
+                        @endforeach
                     </select>
-                    <div class="hint">Menentukan lock: peserta hanya membuka kurikulum kelasnya dan yang sebelumnya.</div></div>
+                    <div class="hint">Menentukan lock: peserta hanya membuka kurikulum kelasnya dan yang sebelumnya. Kurikulum "terbuka untuk semua" (mis. Materi Umum) tanpa lock. Diatur di Data Master.</div></div>
                 <div class="field" style="max-width:130px"><label for="chapter_no">Nomor bab</label><input id="chapter_no" name="chapter_no" type="number" min="1" max="999" value="{{ old('chapter_no', $material->chapter_no) }}"></div>
             </div>
             <div class="row">
                 <div class="field"><label for="chapter">Judul bab</label><input id="chapter" name="chapter" type="text" value="{{ old('chapter', $material->chapter) }}" placeholder="mis. ～ことができます"></div>
-                <div class="field"><label for="level_id">Level (untuk materi umum)</label>
+                <div class="field"><label for="level_id">Level (untuk kurikulum terbuka)</label>
                     <select id="level_id" name="level_id"><option value="">Semua level</option>
                         @foreach ($levels as $lv)<option value="{{ $lv->id }}" @selected((int) old('level_id', $material->level_id) === $lv->id)>{{ $lv->testType->code }} {{ $lv->code }}</option>@endforeach
                     </select></div>
