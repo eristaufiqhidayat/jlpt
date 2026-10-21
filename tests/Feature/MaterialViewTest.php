@@ -106,4 +106,14 @@ class MaterialViewTest extends TestCase
         $this->actingAs($this->user(Role::Admin))->get(route('manage.materials.show', $m1))->assertOk();
         $this->actingAs($this->user(Role::Student))->get(route('manage.materials.show', $m1))->assertForbidden();
     }
+
+    public function test_material_tabs_are_grouped_by_curriculum_group(): void
+    {
+        $this->core($this->minna1, 'Materi Minna Satu');
+
+        $this->actingAs($this->user(Role::EducationAdmin))->get(route('manage.materials.index', ['tab' => $this->minna1->id]))->assertOk()
+            ->assertSee('data-tab-group', false)
+            ->assertSeeInOrder(['Kelas Basic', 'Minna no Nihongo I', 'Minna no Nihongo II', 'Kelas SSW', 'SSW · Kaigo', 'Materi umum'])
+            ->assertSee(route('manage.materials.index', ['tab' => $this->minna2->id, 'sort' => 'bab']));
+    }
 }

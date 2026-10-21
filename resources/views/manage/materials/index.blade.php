@@ -11,12 +11,48 @@
         </div>
     </div>
 
+    {{-- Tab per kelompok (Kelas Basic, Kelas SSW, ...). Arahkan mouse / klik kelompok untuk memilih kurikulumnya. --}}
     <nav class="tabs" aria-label="Kurikulum">
-        @foreach ($tabs as $t)
-            <a href="{{ route('manage.materials.index', ['tab' => $t['key'], 'sort' => $sort]) }}" @class(['active' => $tab['key'] === $t['key'], 'locked' => $t['inactive']])
-               @if ($tab['key'] === $t['key']) aria-current="page" @endif>{{ $t['label'] }} <small class="muted">{{ $t['count'] }}</small></a>
+        @foreach ($tabs->groupBy(fn ($t) => $t['group'] ?? '#'.$t['key']) as $groupKey => $items)
+            @if (str_starts_with($groupKey, '#'))
+                @foreach ($items as $t)
+                    <a href="{{ route('manage.materials.index', ['tab' => $t['key'], 'sort' => $sort]) }}" @class(['active' => $tab['key'] === $t['key']])
+                       @if ($tab['key'] === $t['key']) aria-current="page" @endif>{{ $t['label'] }} <small>{{ $t['count'] }}</small></a>
+                @endforeach
+            @else
+                @php($current = $items->firstWhere('key', $tab['key']))
+                <div class="tab-group" data-tab-group>
+                    <button type="button" @class(['tab-group-btn', 'active' => $current]) aria-haspopup="true" aria-expanded="false">
+                        {{ $groupKey }}@if ($current)<span class="tab-current">· {{ $current['label'] }}</span>@endif
+                        <small>{{ $items->sum('count') }}</small><span class="caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="tab-menu" role="menu">
+                        @foreach ($items as $t)
+                            <a role="menuitem" href="{{ route('manage.materials.index', ['tab' => $t['key'], 'sort' => $sort]) }}" @class(['active' => $tab['key'] === $t['key'], 'locked' => $t['inactive']])
+                               @if ($tab['key'] === $t['key']) aria-current="page" @endif><span>{{ $t['label'] }}</span> <small>{{ $t['count'] }}</small></a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         @endforeach
     </nav>
+    <script>
+        // Klik kelompok untuk membuka daftar kurikulum (untuk layar sentuh); di desktop cukup arahkan mouse.
+        document.querySelectorAll('[data-tab-group]').forEach(function (group) {
+            var btn = group.querySelector('button');
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var open = !group.classList.contains('open');
+                document.querySelectorAll('[data-tab-group].open').forEach(function (g) { g.classList.remove('open'); g.querySelector('button').setAttribute('aria-expanded', 'false'); });
+                group.classList.toggle('open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        });
+        document.addEventListener('click', function () {
+            document.querySelectorAll('[data-tab-group].open').forEach(function (g) { g.classList.remove('open'); g.querySelector('button').setAttribute('aria-expanded', 'false'); });
+        });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') document.dispatchEvent(new Event('click')); });
+    </script>
 
     @if (! $isExtraTab && ! $canCreateCore)
         <div class="alert info">Mode baca: materi pakem hanya bisa diubah Admin Pendidikan.</div>

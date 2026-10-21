@@ -37,10 +37,10 @@ class MaterialController extends Controller
         $curricula = Curriculum::orderBy('sort_order')->orderBy('name')->get();
         $counts = Material::where('kind', Material::CORE)->selectRaw('curriculum_id, COUNT(*) as total')->groupBy('curriculum_id')->pluck('total', 'curriculum_id');
 
-        $tabs = $curricula->map(fn ($c) => ['key' => (string) $c->id, 'label' => $c->name, 'count' => $counts[$c->id] ?? 0, 'inactive' => ! $c->is_active])
+        $tabs = $curricula->map(fn ($c) => ['key' => (string) $c->id, 'group' => $c->group ?: 'Lainnya', 'label' => $c->name, 'count' => $counts[$c->id] ?? 0, 'inactive' => ! $c->is_active])
             ->filter(fn ($t) => ! $t['inactive'] || $t['count'] > 0)->values();
-        $tabs->push(['key' => 'umum', 'label' => 'Materi umum', 'count' => Material::where('kind', Material::CORE)->whereNull('curriculum_id')->count(), 'inactive' => false]);
-        $tabs->push(['key' => 'tambahan', 'label' => 'Materi tambahan', 'count' => $this->extrasQuery($user)->count(), 'inactive' => false]);
+        $tabs->push(['key' => 'umum', 'group' => null, 'label' => 'Materi umum', 'count' => Material::where('kind', Material::CORE)->whereNull('curriculum_id')->count(), 'inactive' => false]);
+        $tabs->push(['key' => 'tambahan', 'group' => null, 'label' => 'Materi tambahan', 'count' => $this->extrasQuery($user)->count(), 'inactive' => false]);
         $tab = $tabs->firstWhere('key', (string) $request->query('tab')) ?? $tabs->first();
         $sort = array_key_exists($request->query('sort'), self::SORTS) ? $request->query('sort') : 'bab';
 
