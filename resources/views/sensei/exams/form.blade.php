@@ -75,6 +75,13 @@
                     <div class="hint">Bila diisi, student melihat status "Lulus" / "Belum lulus" di halaman hasil.</div>
                 </div>
                 <div class="field">
+                    <label for="audience">Untuk siapa</label>
+                    <select id="audience" name="audience">
+                        @foreach (\App\Models\Exam::AUDIENCES as $key => $label)<option value="{{ $key }}" @selected(old('audience', $exam->audience ?: 'internal') === $key)>{{ $label }}</option>@endforeach
+                    </select>
+                    <div class="hint">Siswa LPK masuk lewat LMS; peserta tes umum (berbayar) lewat domain tes online. Kode ujian hanya bisa dipakai oleh akun yang sesuai.</div>
+                </div>
+                <div class="field">
                     <input type="hidden" name="is_paid" value="0">
                     <label class="check"><input type="checkbox" name="is_paid" value="1" id="is_paid" @checked(old('is_paid', $exam->is_paid))> Ujian berbayar</label>
                 </div>

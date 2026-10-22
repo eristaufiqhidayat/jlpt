@@ -22,6 +22,7 @@
     <div class="grid cols-4">
         <div class="stat"><div class="label">Kode ujian</div><div class="value code" style="font-size:1.6rem">{{ $exam->code }}</div></div>
         <div class="stat"><div class="label">Status</div><div class="value" style="font-size:1.2rem">@include('sensei.exams._status')</div></div>
+        <div class="stat"><div class="label">Untuk</div><div class="value" style="font-size:1rem">{{ $exam->audienceLabel() }}</div></div>
         <div class="stat"><div class="label">Biaya</div><div class="value" style="font-size:1.2rem">{{ $exam->is_paid ? 'Rp'.number_format($exam->price, 0, ',', '.') : 'Gratis' }}</div></div>
         <div class="stat"><div class="label">Total waktu</div><div class="value" style="font-size:1.2rem">{{ $exam->totalDurationMinutes() }} menit</div></div>
     </div>

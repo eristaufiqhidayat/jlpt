@@ -12,12 +12,16 @@ use App\Models\User;
  */
 class ExamAccessService
 {
-    public function findOpenExamByCode(string $code): Exam
+    public function findOpenExamByCode(string $code, ?User $user = null): Exam
     {
         $exam = Exam::with('sections')->where('code', strtoupper(trim($code)))->first();
 
         if (! $exam) {
             throw new ExamAccessException('Kode ujian tidak ditemukan.', 'not_found');
+        }
+
+        if ($user && ! $exam->isForUser($user)) {
+            throw new ExamAccessException($this->audienceMessage($user), 'audience');
         }
 
         if (! $exam->isOpen()) {
@@ -44,8 +48,12 @@ class ExamAccessService
      */
     public function ensureCanStart(User $student, Exam $exam): void
     {
-        if (! $student->isStudent() || ! $student->is_active) {
+        if (! $student->isExamTaker() || ! $student->is_active) {
             throw new ExamAccessException('Akun ini tidak bisa mengikuti ujian.');
+        }
+
+        if (! $exam->isForUser($student)) {
+            throw new ExamAccessException($this->audienceMessage($student), 'audience');
         }
 
         if (! $exam->isOpen()) {
@@ -59,5 +67,12 @@ class ExamAccessService
         if ($exam->sections->isEmpty()) {
             throw new ExamAccessException('Ujian ini belum memiliki bagian soal.', 'not_ready');
         }
+    }
+
+    private function audienceMessage(User $user): string
+    {
+        return $user->isTestTaker()
+            ? 'Kode ini untuk ujian internal siswa LPK, bukan untuk peserta tes umum.'
+            : 'Kode ini untuk ujian peserta tes umum (tes online), bukan untuk siswa LPK.';
     }
 }

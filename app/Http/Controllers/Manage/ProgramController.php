@@ -90,7 +90,7 @@ class ProgramController extends Controller
     public function document(Request $request, ProgramDocument $document): StreamedResponse
     {
         $user = $request->user();
-        abort_unless($document->student_id === $user->id || ! $user->isStudent(), 403);
+        abort_unless($document->student_id === $user->id || ! $user->isExamTaker(), 403);
         abort_unless($document->file_path && Storage::disk('local')->exists($document->file_path), 404);
 
         return Storage::disk('local')->response($document->file_path);

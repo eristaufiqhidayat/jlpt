@@ -448,3 +448,11 @@ input[type=file] { font-size: 12.5px; }
 .audio-list .audio-item:first-of-type { border-top: 0; }
 .audio-list .audio-item p { margin: 0 0 6px; font-weight: 700; font-size: 13px; }
 .audio-list audio { width: 100%; }
+
+/* ---------- Login domain tes online: aksen emas ---------- */
+.portal-chip { display: inline-block; margin-bottom: 8px; padding: 3px 12px; border-radius: 999px; background: var(--gold); color: var(--navy-900); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.portal-test .login-visual { background: linear-gradient(160deg, #0b1f3a 0%, #2a2410 100%); }
+.portal-test .login-tagline .en, .portal-test .login-quote { color: #f2d48a; }
+.portal-test .btn:not(.secondary) { background: var(--gold); color: var(--navy-900); }
+.portal-test .btn:not(.secondary):hover { background: #c2922c; }
+.portal-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }

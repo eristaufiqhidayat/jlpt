@@ -12,7 +12,14 @@ class Exam extends Model
 {
     protected $fillable = [
         'sensei_id', 'level_id', 'code', 'title', 'description', 'opens_at', 'closes_at',
-        'is_paid', 'price', 'pass_score', 'audio_play_limit', 'shuffle_options', 'show_result_immediately', 'status',
+        'is_paid', 'price', 'pass_score', 'audio_play_limit', 'shuffle_options', 'show_result_immediately', 'status', 'audience',
+    ];
+
+    /** Sasaran ujian => label. */
+    public const AUDIENCES = [
+        'internal' => 'Siswa LPK (LMS)',
+        'public' => 'Peserta tes umum (tes online)',
+        'both' => 'Keduanya',
     ];
 
     protected function casts(): array
@@ -33,6 +40,21 @@ class Exam extends Model
         static::creating(function (Exam $exam) {
             $exam->code ??= static::generateCode();
         });
+    }
+
+    /** Apakah akun ini boleh mengikuti ujian ini (siswa LPK vs peserta tes umum). */
+    public function isForUser(User $user): bool
+    {
+        return match ($this->audience ?: 'internal') {
+            'public' => $user->isTestTaker(),
+            'both' => $user->isExamTaker(),
+            default => $user->isStudent(),
+        };
+    }
+
+    public function audienceLabel(): string
+    {
+        return self::AUDIENCES[$this->audience ?: 'internal'] ?? $this->audience;
     }
 
     /** Kode akses 6 karakter tanpa huruf/angka yang mirip (0/O, 1/I). */
