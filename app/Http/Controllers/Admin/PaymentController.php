@@ -29,7 +29,7 @@ class PaymentController extends Controller
 
         return view('admin.payments.index', [
             'payments' => $payments,
-            'students' => User::where('role', Role::Student)->where('is_active', true)->orderBy('name')->get(['id', 'name', 'email']),
+            'students' => User::whereIn('role', [Role::Student, Role::TestTaker])->where('is_active', true)->orderBy('name')->get(['id', 'name', 'email']),
             'exams' => Exam::where('is_paid', true)->orderByDesc('id')->get(['id', 'title', 'code', 'price']),
             'statuses' => PaymentStatus::cases(),
         ]);
@@ -38,7 +38,7 @@ class PaymentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'student_id' => ['required', Rule::exists('users', 'id')->where('role', Role::Student->value)],
+            'student_id' => ['required', Rule::exists('users', 'id')->whereIn('role', [Role::Student->value, Role::TestTaker->value])],
             'exam_id' => ['required', Rule::exists('exams', 'id')->where('is_paid', true)],
             'amount' => ['required', 'integer', 'min:0'],
             'gateway_ref' => ['nullable', 'string', 'max:100'],

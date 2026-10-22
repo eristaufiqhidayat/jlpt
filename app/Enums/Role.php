@@ -9,6 +9,7 @@ enum Role: string
     case Sensei = 'sensei';
     case Student = 'student';
     case Director = 'director';
+    case TestTaker = 'test_taker'; // Peserta tes umum/berbayar: hanya di domain tes online
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum Role: string
             self::Sensei => 'Sensei (Instruktur)',
             self::Student => 'Peserta',
             self::Director => 'Direktur',
+            self::TestTaker => 'Peserta Tes',
         };
     }
 }

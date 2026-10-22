@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk · {{ config('app.brand') }}</title>
+    <title>{{ $testPortal ? 'Tes Online JLPT' : 'Masuk' }} · {{ config('app.brand') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=12">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=13">
 </head>
-<body>
+<body @class(['portal-test' => $testPortal])>
 <div class="login-wrap">
     <div class="login-visual">
         <div class="fuji" aria-hidden="true"></div>
@@ -23,11 +23,16 @@
                 </div>
             </div>
             <div class="login-tagline">
-                <p class="jp" lang="ja">日本へ、<br>ともに未来を</p>
-                <p class="en">Together to a Brighter Future</p>
+                @if ($testPortal)
+                    <p class="jp" lang="ja">日本語能力試験<br>オンライン模試</p>
+                    <p class="en">Tes Online JLPT · J-Test · NAT-Test</p>
+                @else
+                    <p class="jp" lang="ja">日本へ、<br>ともに未来を</p>
+                    <p class="en">Together to a Brighter Future</p>
+                @endif
             </div>
         </div>
-        <p class="login-quote">"Bersama Menggapai Masa Depan di Jepang"</p>
+        <p class="login-quote">{{ $testPortal ? 'Ukur kemampuan bahasa Jepang Anda dengan simulasi ujian resmi' : '"Bersama Menggapai Masa Depan di Jepang"' }}</p>
     </div>
 
     <div class="login-form-side">
@@ -36,8 +41,21 @@
                 <img src="{{ asset('images/logo-160.png') }}" alt="">
                 <strong>{{ config('app.brand') }}</strong>
             </div>
-            <h2>Masuk ke Sistem</h2>
-            <p class="sub">Silakan login untuk melanjutkan</p>
+            @if ($testPortal)
+                <span class="portal-chip">Tes Online</span>
+                <h2>Tes Online JLPT – Jakaruta Global Group</h2>
+                <p class="sub">Untuk peserta tes (umum/berbayar). Siswa LPK masuk lewat LMS.</p>
+            @else
+                <h2>LMS LPK Jakaruta Global Group</h2>
+                <p class="sub">Untuk siswa, sensei, dan staf.</p>
+            @endif
+
+            @if (session('wrong_portal'))
+                <div class="alert info portal-notice">
+                    {{ session('wrong_portal')['text'] }}
+                    <a class="btn small" href="{{ session('wrong_portal')['url'] }}">{{ session('wrong_portal')['label'] }} →</a>
+                </div>
+            @endif
 
             @if ($errors->any())
                 <div class="alert error">{{ $errors->first() }}</div>

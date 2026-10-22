@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Portal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +19,10 @@ class LoginController extends Controller
     public function create(): View
     {
         return view('auth.login', [
+            'testPortal' => Portal::isTest(),
             'demoRoles' => config('app.demo_login') ? collect(config('app.demo_accounts'))->keys()
-                ->map(fn ($role) => Role::tryFrom($role))->filter() : collect(),
+                ->map(fn ($role) => Role::tryFrom($role))->filter()
+                ->filter(fn (Role $role) => Portal::allowsRole($role))->values() : collect(),
         ]);
     }
 
@@ -40,6 +43,9 @@ class LoginController extends Controller
             'is_active' => true,
         ]);
         abort_unless($user->role === $roleEnum && $user->is_active, 403, 'Akun demo untuk peran ini tidak aktif atau perannya sudah diubah.');
+        if (! Portal::allows($user)) {
+            return redirect()->route('login')->with('wrong_portal', Portal::wrongPortalNotice($user));
+        }
 
         Auth::login($user);
         $request->session()->regenerate();
@@ -62,14 +68,21 @@ class LoginController extends Controller
             ]);
         }
 
-        if (! Auth::attempt($credentials + ['is_active' => true], $request->boolean('remember'))) {
+        if (! Auth::validate($credentials + ['is_active' => true])) {
             RateLimiter::hit($key);
             throw ValidationException::withMessages([
                 'email' => 'Email atau password salah, atau akun tidak aktif.',
             ]);
         }
-
         RateLimiter::clear($key);
+
+        // Password benar, tetapi akun ini milik domain lain (LMS vs tes online): arahkan ke domain yang benar.
+        $user = Auth::getLastAttempted();
+        if (! Portal::allows($user)) {
+            return back()->withInput($request->only('email'))->with('wrong_portal', Portal::wrongPortalNotice($user));
+        }
+
+        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));

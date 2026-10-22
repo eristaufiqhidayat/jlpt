@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Midtrans mengirim notifikasi tanpa token CSRF; keasliannya dicek lewat signature_key.
         $middleware->validateCsrfTokens(except: ['payments/midtrans/notification']);
 
+        // Akun hanya boleh dipakai di domain portalnya (LMS vs tes online).
+        $middleware->web(append: [\App\Http\Middleware\EnsurePortal::class]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
         ]);

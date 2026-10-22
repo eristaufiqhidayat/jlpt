@@ -130,17 +130,21 @@ Route::middleware('auth')->group(function () {
         Route::get('legacy/keys/{key}/audio', [LegacyArchiveController::class, 'audio'])->name('legacy.audio');
     });
 
-    // ---------------- Student ----------------
+    // ---------------- Student (LMS saja) ----------------
     Route::middleware('role:student')->group(function () {
-        Route::post('/exam/join', [AttemptController::class, 'join'])->name('student.join');
-        Route::get('/results', [AttemptController::class, 'index'])->name('student.results');
-        Route::get('/attempts/{attempt}/review', [AttemptController::class, 'review'])->name('student.attempts.review');
-        Route::get('/ujian', [AttemptController::class, 'exams'])->name('student.exams');
         Route::get('/materi', [LearningController::class, 'materials'])->name('student.materials');
         Route::get('/materi/{material}', [LearningController::class, 'material'])->name('student.materials.show');
         Route::post('/materi/{material}/selesai', [LearningController::class, 'completeMaterial'])->name('student.materials.complete');
         Route::get('/kelas', [LearningController::class, 'classes'])->name('student.classes');
         Route::get('/program-jepang', [LearningController::class, 'program'])->name('student.program');
+    });
+
+    // ---------------- Ujian: siswa LPK & peserta tes umum ----------------
+    Route::middleware('role:student,test_taker')->group(function () {
+        Route::post('/exam/join', [AttemptController::class, 'join'])->name('student.join');
+        Route::get('/results', [AttemptController::class, 'index'])->name('student.results');
+        Route::get('/attempts/{attempt}/review', [AttemptController::class, 'review'])->name('student.attempts.review');
+        Route::get('/ujian', [AttemptController::class, 'exams'])->name('student.exams');
         Route::get('/sertifikat', [CertificateController::class, 'index'])->name('student.certificates');
         Route::get('/pay/{code}', [StudentPaymentController::class, 'show'])->name('student.payments.show');
         Route::post('/pay/{code}', [StudentPaymentController::class, 'pay'])->name('student.payments.pay');

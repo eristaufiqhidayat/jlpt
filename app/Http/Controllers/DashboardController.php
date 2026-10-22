@@ -34,6 +34,7 @@ class DashboardController extends Controller
             Role::Student => $this->student($user),
             Role::Director => redirect()->route('reports'),
             Role::EducationAdmin => redirect()->route('manage.master.index'),
+            Role::TestTaker => redirect()->route('student.exams'),
         };
     }
 

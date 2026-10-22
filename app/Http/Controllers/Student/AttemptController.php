@@ -64,7 +64,7 @@ class AttemptController extends Controller
         $data = $request->validate(['code' => ['required', 'string', 'max:20']], [], ['code' => 'kode ujian']);
 
         try {
-            $exam = $this->access->findOpenExamByCode($data['code']);
+            $exam = $this->access->findOpenExamByCode($data['code'], $request->user());
             $attempt = $this->attempts->start($request->user(), $exam);
         } catch (ExamAccessException $e) {
             if ($e->reason === 'payment_required') {

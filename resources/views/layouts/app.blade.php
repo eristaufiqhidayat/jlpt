@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=12">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=13">
     @stack('head')
 </head>
 <body>
@@ -17,12 +17,20 @@
     $user = auth()->user();
     $role = $user->role->value;
     $initials = $user->initials();
-    $roleLabel = ['admin' => 'Administrator', 'education_admin' => 'Admin Pendidikan', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur'][$role] ?? $user->role->label();
+    $roleLabel = ['admin' => 'Administrator', 'education_admin' => 'Admin Pendidikan', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur', 'test_taker' => 'Peserta Tes'][$role] ?? $user->role->label();
     $subLabel = $role === 'student' && $user->profile?->level ? 'Peserta · '.$user->profile->level->code : $roleLabel;
     $unread = $user->inbox()->whereNull('read_at')->count();
     $item = fn ($label, $icon, $route, $patterns, $count = 0) => [$label, $icon, route($route), request()->routeIs(...(array) $patterns), $count];
     $groups = [];
-    if ($role === 'student') {
+    if ($role === 'test_taker') {
+        // Peserta tes umum (domain tes online): hanya ujian, nilai, sertifikat.
+        $groups[''] = [
+            $item('Tes Saya', '📝', 'student.exams', ['student.exams', 'student.attempts.show', 'student.payments.*']),
+            $item('Hasil Tes', '📊', 'student.results', ['student.results', 'student.attempts.result', 'student.attempts.review']),
+            $item('Sertifikat', '🏅', 'student.certificates', ['student.certificates', 'certificates.show']),
+            $item('Profil', '👤', 'profile.edit', 'profile.*'),
+        ];
+    } elseif ($role === 'student') {
         $groups[''] = [
             $item('Dashboard', '🏠', 'dashboard', 'dashboard'),
             $item('Materi', '📘', 'student.materials', 'student.materials*'),

@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -41,7 +42,7 @@ class ExamController extends Controller
         $level = $levels->firstWhere('id', $request->integer('level_id')) ?? $levels->first();
 
         return view('sensei.exams.form', [
-            'exam' => new Exam(['level_id' => $level?->id, 'status' => ExamStatus::Draft, 'is_paid' => false, 'show_result_immediately' => true]),
+            'exam' => new Exam(['level_id' => $level?->id, 'status' => ExamStatus::Draft, 'is_paid' => false, 'show_result_immediately' => true, 'audience' => 'internal']),
             'levels' => $levels,
             'level' => $level,
             'rows' => $level ? $this->sectionRows($level) : collect(),
@@ -225,6 +226,7 @@ class ExamController extends Controller
             'opens_at' => ['nullable', 'date'],
             'closes_at' => ['nullable', 'date', 'after:opens_at'],
             'is_paid' => ['boolean'],
+            'audience' => ['nullable', Rule::in(array_keys(Exam::AUDIENCES))],
             'price' => ['nullable', 'integer', 'min:0', 'required_if:is_paid,1'],
             'pass_score' => ['nullable', 'integer', 'min:1', 'max:100'],
             'audio_play_limit' => ['nullable', 'integer', 'min:1', 'max:5'],
@@ -275,6 +277,7 @@ class ExamController extends Controller
         }
 
         unset($data['sections']);
+        $data['audience'] = $data['audience'] ?? $exam?->audience ?? 'internal';
         $data['is_paid'] = $request->boolean('is_paid');
         $data['price'] = $data['is_paid'] ? (int) $data['price'] : 0;
         $data['shuffle_options'] = $request->boolean('shuffle_options');

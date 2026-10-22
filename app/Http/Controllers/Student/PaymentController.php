@@ -107,7 +107,7 @@ class PaymentController extends Controller
     private function findExam(string $code): Exam
     {
         $exam = Exam::where('code', strtoupper($code))->where('is_paid', true)->firstOrFail();
-        abort_unless($exam->isOpen(), 404);
+        abort_unless($exam->isOpen() && $exam->isForUser(request()->user()), 404);
 
         return $exam;
     }

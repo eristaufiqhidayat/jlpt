@@ -4,6 +4,7 @@
     <div class="page-head"><div><h1>Dashboard Admin</h1><p>Ringkasan aktivitas sistem ujian.</p></div></div>
     <div class="grid cols-3">
         <a class="stat" href="{{ route('admin.users.index', ['role' => 'student']) }}"><div class="ic">👥</div><div><p class="label">Peserta</p><p class="value">{{ $userCounts['student'] ?? 0 }}</p></div></a>
+        <a class="stat" href="{{ route('admin.users.index', ['role' => 'test_taker']) }}"><div class="ic">🎫</div><div><p class="label">Peserta Tes</p><p class="value">{{ $userCounts['test_taker'] ?? 0 }}</p></div></a>
         <a class="stat" href="{{ route('admin.users.index', ['role' => 'sensei']) }}"><div class="ic purple">🧑‍🏫</div><div><p class="label">Instruktur (sensei)</p><p class="value">{{ $userCounts['sensei'] ?? 0 }}</p></div></a>
         <a class="stat" href="{{ route('sensei.exams.index') }}"><div class="ic green">📝</div><div><p class="label">Ujian dibuka</p><p class="value">{{ $openExams }}</p></div></a>
         <div class="stat"><div class="ic orange">⏱</div><div><p class="label">Ujian dikerjakan hari ini</p><p class="value">{{ $attemptsToday }}</p></div></div>

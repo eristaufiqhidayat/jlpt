@@ -32,6 +32,7 @@ return [
         'education_admin' => 'pendidikan@example.com',
         'admin' => 'admin-demo@example.com',
         'director' => 'direktur@example.com',
+        'test_taker' => 'peserta-tes@example.com',
     ],
 
     /*

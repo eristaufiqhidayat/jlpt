@@ -94,6 +94,18 @@ class User extends Authenticatable
         return $this->hasMany(ExamAttempt::class, 'student_id');
     }
 
+    /** Peserta tes umum (domain tes online), bukan siswa LPK. */
+    public function isTestTaker(): bool
+    {
+        return $this->role === Role::TestTaker;
+    }
+
+    /** Boleh mengerjakan ujian: siswa LPK atau peserta tes umum. */
+    public function isExamTaker(): bool
+    {
+        return $this->isStudent() || $this->isTestTaker();
+    }
+
     public function isDirector(): bool
     {
         return $this->role === Role::Director;
