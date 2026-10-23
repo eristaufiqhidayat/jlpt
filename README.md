@@ -114,7 +114,7 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 | Role | Menu | Isi |
 |---|---|---|
 | Semua | `/login` | Login dengan email + password (maks. 5 percobaan/menit). Pengawas memakai halaman login yang sama dengan peserta (bisa di domain LMS maupun tes online) |
-| Pengawas (juga admin, Admin Pendidikan, sensei) | Pengawasan Ujian `/pengawas` | Siapa yang sudah masuk ujian (dan yang sudah login tapi belum memasukkan kode), sesi/bagian yang sedang dikerjakan per klasifikasi ujian, nomor soal yang sedang dibuka, jumlah terjawab, sisa waktu berjalan semua peserta, tanda online. Filter klasifikasi ujian / ujian / status / tanggal; data diperbarui otomatis tiap 10 detik |
+| Pengawas (juga admin, Admin Pendidikan, sensei) | Pengawasan Ujian `/pengawas` | Siapa yang sudah masuk ujian (dan yang sudah login tapi belum memasukkan kode), sesi/bagian yang sedang dikerjakan per klasifikasi ujian, nomor soal yang sedang dibuka, jumlah terjawab, sisa waktu berjalan semua peserta, tanda online. Filter klasifikasi ujian (satu jenis tes atau satu level, mis. JLPT N4) / ujian / status / tanggal; data diperbarui otomatis tiap 10 detik |
 | Admin | User | Tambah/edit admin, Admin Pendidikan, sensei, student, Pengawas; aktif/nonaktifkan; ganti password |
 | Admin Pendidikan | Data Master | Klasifikasi kelas, klasifikasi ujian (jenis tes → level → bagian), skor & batas lulus, kategori batsu. Hanya peran ini yang bisa menambah/mengubah/menonaktifkan (tidak ada hapus); staf lain hanya melihat. Setiap perubahan tercatat |
 | Admin | Pembayaran | Lihat semua transaksi (Midtrans & manual), catat pembayaran manual, ubah status |
@@ -124,7 +124,7 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 | Sensei & admin | Ujian | Buat ujian per level: durasi & jumlah soal per bagian, gratis/berbayar, batas putar audio, buka/tutup; lihat peserta & nilai; export nilai ke .xlsx |
 | Sensei & admin | Penilaian Esai | Nilai jawaban esai benar/salah + catatan |
 | Sensei & admin | Arsip Lama | Baca PDF lama, perbaiki kunci (E/F/Z/kosong); perbaikan tidak tertimpa impor ulang |
-| Student & Peserta Tes | Beranda / Ujian | Pilih **klasifikasi ujian** (dropdown dari Data Master) lalu masukkan kode ujian; kode yang tidak sesuai klasifikasinya ditolak. Lanjutkan ujian/pembayaran, riwayat nilai |
+| Student & Peserta Tes | Beranda / Ujian | Pilih **klasifikasi ujian** (dropdown dari Data Master → Klasifikasi Ujian: jenis tes → level aktif, mis. JLPT N5 / N4 / N3) lalu masukkan kode ujian; kode untuk level lain ditolak. Lanjutkan ujian/pembayaran, riwayat nilai |
 | Student | Pembayaran | Kode ujian berbayar → halaman bayar (Midtrans Snap: QRIS, VA, e-wallet) → langsung bisa mulai |
 | Student | Ujian | Satu soal per layar + navigasi nomor, timer per bagian, simpan otomatis, tanda ragu-ragu, audio dengan batas putar |
 | Student | Nilai & Riwayat | Semua ujian; halaman hasil dengan status Lulus/Belum lulus (bila ujian punya nilai minimal) dan rekap per bagian |

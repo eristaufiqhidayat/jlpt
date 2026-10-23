@@ -1,14 +1,18 @@
-{{-- Masuk ujian: pilih klasifikasi ujian dulu, lalu masukkan kode ujian. Butuh $testTypes. --}}
+{{-- Masuk ujian: pilih klasifikasi ujian (jenis tes → level, dari Data Master) dulu, lalu kode ujian. Butuh $classifications. --}}
 <form method="POST" action="{{ route('student.join') }}" class="join-form">
     @csrf
     <input type="hidden" name="with_type" value="1">
     <div class="field">
-        <label for="test_type_id">1. Klasifikasi ujian</label>
-        <select id="test_type_id" name="test_type_id" required
+        <label for="level_id">1. Klasifikasi ujian</label>
+        <select id="level_id" name="level_id" required
                 onchange="if(this.value)document.getElementById('code').focus()">
             <option value="">— Pilih klasifikasi ujian —</option>
-            @foreach ($testTypes as $t)
-                <option value="{{ $t->id }}" @selected((int) old('test_type_id') === $t->id)>{{ $t->name }}</option>
+            @foreach ($classifications as $type)
+                <optgroup label="{{ $type->name }}">
+                    @foreach ($type->levels as $level)
+                        <option value="{{ $level->id }}" @selected((int) old('level_id') === $level->id)>{{ \App\Support\ExamClassification::label($type, $level) }}</option>
+                    @endforeach
+                </optgroup>
             @endforeach
         </select>
     </div>

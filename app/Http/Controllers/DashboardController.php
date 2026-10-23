@@ -76,7 +76,7 @@ class DashboardController extends Controller
 
         return view('dashboard.student', [
             'level' => $user->profile?->level,
-            'testTypes' => \App\Http\Controllers\Student\AttemptController::testTypeOptions(),
+            'classifications' => \App\Support\ExamClassification::options(),
             'attendanceRate' => LearningController::attendanceRate($user->id),
             'materialsDone' => $doneMaterials,
             'materialsTotal' => $totalMaterials,
