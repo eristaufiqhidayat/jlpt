@@ -97,9 +97,15 @@ class ProctorTest extends TestCase
     {
         $proctor = $this->user(Role::Proctor, 'pengawas@x.test');
         $this->runningAttempt($this->jlptExam(), $this->user(Role::Student, 'siswa@x.test', 'Budi Santoso'));
+        $exam = $this->jlptExam();
+        $this->runningAttempt($exam, $this->user(Role::Student, 'lain@x.test', 'Ani Lestari'));
         $other = TestType::where('code', '!=', 'JLPT')->firstOrFail();
+        $otherLevel = Level::where('test_type_id', $exam->level->test_type_id)->whereKeyNot($exam->level_id)->firstOrFail();
 
-        $this->actingAs($proctor)->get(self::LMS.'/pengawas?test_type_id='.$other->id)->assertOk()->assertDontSee('Budi Santoso');
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas?klasifikasi=type:'.$other->id)->assertOk()->assertDontSee('Budi Santoso');
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas?klasifikasi=type:'.$exam->level->test_type_id)->assertOk()->assertSee('Budi Santoso');
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas?klasifikasi=level:'.$exam->level_id)->assertOk()->assertSee('Ani Lestari');
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas?klasifikasi=level:'.$otherLevel->id)->assertOk()->assertDontSee('Ani Lestari');
     }
 
     public function test_logged_in_participant_without_exam_is_listed_as_waiting(): void
@@ -135,22 +141,21 @@ class ProctorTest extends TestCase
         $taker = $this->user(Role::TestTaker, 'umum@x.test');
 
         $this->actingAs($taker)->get(self::TEST.'/ujian')->assertOk()
-            ->assertSeeInOrder(['Klasifikasi ujian', 'Kode ujian'])->assertSee('JLPT');
+            ->assertSeeInOrder(['Klasifikasi ujian', 'Kode ujian'])->assertSee('<optgroup label="JLPT">', false)->assertSee('JLPT N4');
     }
 
     public function test_join_requires_matching_classification(): void
     {
         $exam = $this->jlptExam('public');
         $taker = $this->user(Role::TestTaker, 'umum@x.test');
-        $jlpt = TestType::where('code', 'JLPT')->first();
-        $other = TestType::where('code', '!=', 'JLPT')->first();
+        $otherLevel = Level::where('test_type_id', $exam->level->test_type_id)->whereKeyNot($exam->level_id)->firstOrFail();
 
         $this->actingAs($taker)->from(self::TEST.'/ujian')->post(self::TEST.'/exam/join', ['with_type' => 1, 'code' => $exam->code])
-            ->assertSessionHasErrors('test_type_id');
-        $this->actingAs($taker)->from(self::TEST.'/ujian')->post(self::TEST.'/exam/join', ['with_type' => 1, 'test_type_id' => $other->id, 'code' => $exam->code])
-            ->assertSessionHas('error', fn ($e) => str_contains($e, 'tidak sesuai dengan klasifikasi'));
+            ->assertSessionHasErrors('level_id');
+        $this->actingAs($taker)->from(self::TEST.'/ujian')->post(self::TEST.'/exam/join', ['with_type' => 1, 'level_id' => $otherLevel->id, 'code' => $exam->code])
+            ->assertSessionHas('error', fn ($e) => str_contains($e, 'tidak sesuai dengan klasifikasi') && str_contains($e, 'JLPT '.$exam->level->code));
         // Klasifikasi cocok: lanjut ke pemeriksaan berikutnya (ujian ini belum punya bagian soal).
-        $this->actingAs($taker)->from(self::TEST.'/ujian')->post(self::TEST.'/exam/join', ['with_type' => 1, 'test_type_id' => $jlpt->id, 'code' => $exam->code])
+        $this->actingAs($taker)->from(self::TEST.'/ujian')->post(self::TEST.'/exam/join', ['with_type' => 1, 'level_id' => $exam->level_id, 'code' => $exam->code])
             ->assertSessionHas('error', fn ($e) => str_contains($e, 'belum memiliki bagian soal'));
     }
 

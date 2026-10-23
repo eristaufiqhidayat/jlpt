@@ -8,7 +8,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
-use App\Models\TestType;
+use App\Support\ExamClassification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +32,7 @@ class MonitorController extends Controller
 
         return view('proctor.index', $this->payload($filters) + [
             'filters' => $filters,
-            'testTypes' => TestType::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(['id', 'code', 'name']),
+            'classifications' => ExamClassification::options(),
             'exams' => $this->examOptions($filters),
         ]);
     }
@@ -50,19 +50,26 @@ class MonitorController extends Controller
         ]);
     }
 
-    /** @return array{test_type_id: ?int, exam_id: ?int, status: string, date: Carbon, is_today: bool} */
+    /**
+     * Klasifikasi dipilih sebagai "type:ID" (semua level satu jenis tes) atau "level:ID" (mis. JLPT N4).
+     *
+     * @return array{klasifikasi: ?string, test_type_id: ?int, level_id: ?int, exam_id: ?int, status: string, date: Carbon, is_today: bool}
+     */
     private function filters(Request $request): array
     {
         $data = $request->validate([
-            'test_type_id' => ['nullable', 'integer'],
+            'klasifikasi' => ['nullable', 'regex:/^(type|level):\d+$/'],
             'exam_id' => ['nullable', 'integer'],
             'status' => ['nullable', 'in:all,ongoing,finished'],
             'date' => ['nullable', 'date_format:Y-m-d'],
         ]);
+        [$kind, $id] = isset($data['klasifikasi']) ? explode(':', $data['klasifikasi']) : [null, null];
         $date = isset($data['date']) ? Carbon::createFromFormat('Y-m-d', $data['date'])->startOfDay() : today();
 
         return [
-            'test_type_id' => isset($data['test_type_id']) ? (int) $data['test_type_id'] : null,
+            'klasifikasi' => $data['klasifikasi'] ?? null,
+            'test_type_id' => $kind === 'type' ? (int) $id : null,
+            'level_id' => $kind === 'level' ? (int) $id : null,
             'exam_id' => isset($data['exam_id']) ? (int) $data['exam_id'] : null,
             'status' => $data['status'] ?? 'all',
             'date' => $date,
@@ -105,6 +112,7 @@ class MonitorController extends Controller
                 'sections.examSection.section:id,name',
             ])
             ->when($f['test_type_id'], fn ($q, $id) => $q->whereHas('exam.level', fn ($l) => $l->where('test_type_id', $id)))
+            ->when($f['level_id'], fn ($q, $id) => $q->whereHas('exam', fn ($e) => $e->where('level_id', $id)))
             ->when($f['exam_id'], fn ($q, $id) => $q->where('exam_id', $id))
             ->when($f['status'] === 'ongoing', fn ($q) => $q->where('status', AttemptStatus::Ongoing))
             ->when($f['status'] === 'finished', fn ($q) => $q->where('status', '!=', AttemptStatus::Ongoing))
@@ -126,7 +134,7 @@ class MonitorController extends Controller
      */
     private function waiting(array $f, Collection $attempts): Collection
     {
-        if (! $f['is_today'] || $f['test_type_id'] || $f['exam_id'] || $f['status'] === 'finished') {
+        if (! $f['is_today'] || $f['klasifikasi'] || $f['exam_id'] || $f['status'] === 'finished') {
             return collect();
         }
 
@@ -147,6 +155,7 @@ class MonitorController extends Controller
         return Exam::query()
             ->with('level:id,code,test_type_id')
             ->when($f['test_type_id'], fn ($q, $id) => $q->whereHas('level', fn ($l) => $l->where('test_type_id', $id)))
+            ->when($f['level_id'], fn ($q, $id) => $q->where('level_id', $id))
             ->where(fn ($q) => $q->where('status', ExamStatus::Open)
                 ->orWhereHas('attempts', fn ($a) => $a->whereDate('started_at', $f['date']))
                 ->orWhere('id', $f['exam_id'] ?? 0))

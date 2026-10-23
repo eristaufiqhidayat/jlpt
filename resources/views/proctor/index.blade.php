@@ -33,11 +33,16 @@
 
     <form method="GET" class="filters" id="pr-filters">
         <div class="field">
-            <label for="test_type_id">Klasifikasi ujian</label>
-            <select id="test_type_id" name="test_type_id" onchange="this.form.exam_id.value='';this.form.submit()">
+            <label for="klasifikasi">Klasifikasi ujian</label>
+            <select id="klasifikasi" name="klasifikasi" onchange="this.form.exam_id.value='';this.form.submit()">
                 <option value="">Semua klasifikasi</option>
-                @foreach ($testTypes as $t)
-                    <option value="{{ $t->id }}" @selected($filters['test_type_id'] === $t->id)>{{ $t->name }}</option>
+                @foreach ($classifications as $type)
+                    <optgroup label="{{ $type->name }}">
+                        <option value="type:{{ $type->id }}" @selected($filters['klasifikasi'] === 'type:'.$type->id)>{{ $type->name }} — semua level</option>
+                        @foreach ($type->levels as $level)
+                            <option value="level:{{ $level->id }}" @selected($filters['klasifikasi'] === 'level:'.$level->id)>{{ \App\Support\ExamClassification::label($type, $level) }}</option>
+                        @endforeach
+                    </optgroup>
                 @endforeach
             </select>
         </div>
