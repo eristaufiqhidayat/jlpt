@@ -51,7 +51,7 @@ class ProctorTest extends TestCase
     private function runningAttempt(Exam $exam, User $student): ExamAttempt
     {
         $section = $exam->level->sections()->orderBy('sort_order')->firstOrFail();
-        $examSection = ExamSection::create(['exam_id' => $exam->id, 'section_id' => $section->id, 'sort_order' => 1, 'duration_minutes' => 30, 'question_count' => 0]);
+        $examSection = ExamSection::firstOrCreate(['exam_id' => $exam->id, 'section_id' => $section->id], ['sort_order' => 1, 'duration_minutes' => 30, 'question_count' => 0]);
         $attempt = ExamAttempt::create(['exam_id' => $exam->id, 'student_id' => $student->id, 'started_at' => now()->subMinutes(10), 'status' => AttemptStatus::Ongoing]);
         AttemptSection::create([
             'exam_attempt_id' => $attempt->id, 'exam_section_id' => $examSection->id, 'sort_order' => 1, 'duration_minutes' => 30,
