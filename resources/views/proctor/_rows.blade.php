@@ -56,6 +56,9 @@
         <td>
             @if ($ongoing)
                 <span class="badge ok">Mengerjakan</span>
+            @elseif ($a->stopped_by)
+                <span class="badge err">Dihentikan</span>
+                <div class="pr-stop-reason">oleh {{ $a->stoppedBy?->name ?? 'pengawas' }}@if ($a->stop_reason) · {{ $a->stop_reason }}@endif</div>
             @elseif ($a->isPendingReview())
                 <span class="badge warn">Selesai · esai</span>
             @else
@@ -63,7 +66,17 @@
             @endif
             <div class="pr-sub muted">Masuk {{ $a->started_at?->format('H:i') }}@if (! $ongoing && $a->finished_at) · selesai {{ $a->finished_at->format('H:i') }}@endif</div>
         </td>
+        <td class="actions">
+            @if ($ongoing)
+                <form method="POST" action="{{ route('proctor.attempts.stop', $a) }}" data-confirm-stop
+                      data-message="{{ 'Hentikan ujian '.$a->student->name.'? Jawaban yang sudah tersimpan langsung dinilai dan peserta tidak bisa melanjutkan.' }}">
+                    @csrf
+                    <input type="hidden" name="reason">
+                    <button class="btn small secondary" type="submit">⏹ Hentikan</button>
+                </form>
+            @endif
+        </td>
     </tr>
 @empty
-    <tr><td colspan="7" class="muted" style="text-align:center;padding:28px">Belum ada peserta yang masuk ujian untuk filter ini.</td></tr>
+    <tr><td colspan="8" class="muted" style="text-align:center;padding:28px">Belum ada peserta yang masuk ujian untuk filter ini.</td></tr>
 @endforelse

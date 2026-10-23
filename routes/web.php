@@ -72,6 +72,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:proctor,admin,education_admin,sensei')->prefix('pengawas')->name('proctor.')->group(function () {
         Route::get('/', [MonitorController::class, 'index'])->name('index');
         Route::get('/data', [MonitorController::class, 'data'])->middleware('throttle:60,1')->name('data');
+        Route::post('/attempts/{attempt}/stop', [MonitorController::class, 'stop'])->name('attempts.stop');
+        Route::post('/exams/{exam}/close', [MonitorController::class, 'closeExam'])->name('exams.close');
     });
 
     // ---------------- Laporan & monitoring (direktur, admin; sensei untuk monitoring) ----------------
