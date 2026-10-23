@@ -12,7 +12,7 @@ class ExamAttempt extends Model
     protected $fillable = [
         'exam_id', 'student_id', 'started_at', 'finished_at',
         'correct_count', 'question_count', 'score', 'status',
-        'current_question_no', 'last_seen_at',
+        'current_question_no', 'last_seen_at', 'stopped_by', 'stop_reason',
     ];
 
     protected function casts(): array
@@ -58,6 +58,11 @@ class ExamAttempt extends Model
     public function isPendingReview(): bool
     {
         return $this->status === AttemptStatus::PendingReview;
+    }
+
+    public function stoppedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'stopped_by');
     }
 
     public function certificate(): \Illuminate\Database\Eloquent\Relations\HasOne

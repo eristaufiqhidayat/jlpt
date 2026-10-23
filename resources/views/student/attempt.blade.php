@@ -150,9 +150,12 @@
             method: 'POST', keepalive: true,
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
             body: JSON.stringify({ no: current + 1 }),
+        }).then(res => {
+            // 409 = ujian sudah selesai/dihentikan pengawas: muat ulang ke halaman hasil.
+            if (res.status === 409 && !submitting) { submitting = true; location.reload(); }
         }).catch(() => {});
     }
-    report(); setInterval(report, 30000);
+    report(); setInterval(report, 15000);
     navs.forEach((a, i) => a.addEventListener('click', e => { e.preventDefault(); show(i); }));
     document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(parseInt(b.dataset.go, 10))));
     document.addEventListener('keydown', e => {

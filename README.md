@@ -114,7 +114,7 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 | Role | Menu | Isi |
 |---|---|---|
 | Semua | `/login` | Login dengan email + password (maks. 5 percobaan/menit). Pengawas memakai halaman login yang sama dengan peserta (bisa di domain LMS maupun tes online) |
-| Pengawas (juga admin, Admin Pendidikan, sensei) | Pengawasan Ujian `/pengawas` | Siapa yang sudah masuk ujian (dan yang sudah login tapi belum memasukkan kode), sesi/bagian yang sedang dikerjakan per klasifikasi ujian, nomor soal yang sedang dibuka, jumlah terjawab, sisa waktu berjalan semua peserta, tanda online. Filter klasifikasi ujian (satu jenis tes atau satu level, mis. JLPT N4) / ujian / status / tanggal; data diperbarui otomatis tiap 10 detik |
+| Pengawas (juga admin, Admin Pendidikan, sensei) | Pengawasan Ujian `/pengawas` | Siapa yang sudah masuk ujian (dan yang sudah login tapi belum memasukkan kode), sesi/bagian yang sedang dikerjakan per klasifikasi ujian, nomor soal yang sedang dibuka, jumlah terjawab, sisa waktu berjalan semua peserta, tanda online. Filter klasifikasi ujian (satu jenis tes atau satu level, mis. JLPT N4) / ujian / status / tanggal; data diperbarui otomatis tiap 10 detik. **Hentikan** ujian satu peserta, atau **Tutup ujian** (kode ditutup + semua yang masih mengerjakan dihentikan); jawaban tersimpan langsung dinilai, alasan & nama pengawas dicatat |
 | Admin | User | Tambah/edit admin, Admin Pendidikan, sensei, student, Pengawas; aktif/nonaktifkan; ganti password |
 | Admin Pendidikan | Data Master | Klasifikasi kelas, klasifikasi ujian (jenis tes → level → bagian), skor & batas lulus, kategori batsu. Hanya peran ini yang bisa menambah/mengubah/menonaktifkan (tidak ada hapus); staf lain hanya melihat. Setiap perubahan tercatat |
 | Admin | Pembayaran | Lihat semua transaksi (Midtrans & manual), catat pembayaran manual, ubah status |
@@ -169,7 +169,7 @@ Untuk production: ganti ke key production dan `MIDTRANS_IS_PRODUCTION=true`.
 ## Update dari versi sebelumnya
 
 ```bash
-php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan, data master akademik, kolom pengawasan ujian
+php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan, data master akademik, kolom pengawasan ujian & penghentian oleh pengawas
 php artisan db:seed --class=MasterDataSeeder   # klasifikasi kelas & ujian sesuai notulen; aman diulang, tidak menimpa perubahan
 php artisan optimize:clear
 ```
@@ -178,7 +178,7 @@ Peran **Admin Pendidikan** (`education_admin`) dibuat admin lewat menu User. Per
 punya akses yang sama dengan sensei/admin untuk materi, kelas, Pelatihan Soal, ujian (semua ujian), penilaian esai, dan laporan.
 
 Peran **Pengawas** (`proctor`) dibuat admin lewat menu User. Pengawas hanya melihat halaman Pengawasan Ujian (semua ujian),
-tidak bisa mengerjakan atau mengubah ujian. Nomor soal dan status online dikirim halaman ujian peserta setiap ganti soal dan
+tidak bisa mengerjakan atau mengubah isi ujian, tetapi bisa menghentikan peserta dan menutup ujian. Nomor soal dan status online dikirim halaman ujian peserta setiap ganti soal dan
 setiap 30 detik; peserta dianggap online bila sinyal terakhir kurang dari 90 detik.
 
 ## Tahap berikutnya

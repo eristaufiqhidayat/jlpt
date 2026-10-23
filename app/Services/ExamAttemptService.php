@@ -306,6 +306,35 @@ class ExamAttemptService
     }
 
     /**
+     * Pengawas menghentikan ujian peserta: semua bagian yang belum dikumpulkan dikumpulkan dan dinilai
+     * dengan jawaban yang sudah tersimpan (soal yang belum dijawab dihitung salah), lalu nilai keluar.
+     * Mengembalikan false bila ujian peserta ini sudah selesai.
+     */
+    public function stopAttempt(ExamAttempt $attempt, User $by, ?string $reason = null): bool
+    {
+        return DB::transaction(function () use ($attempt, $by, $reason) {
+            $attempt = ExamAttempt::whereKey($attempt->id)->lockForUpdate()->first();
+            if ($attempt->status !== AttemptStatus::Ongoing) {
+                return false;
+            }
+
+            // submitSection memulai bagian berikutnya; ulangi sampai semua bagian terkumpul.
+            while ($section = $attempt->sections()->whereNull('submitted_at')->orderBy('sort_order')->first()) {
+                $this->startSection($section);
+                $this->submitSection($section->fresh(), 'proctor');
+            }
+
+            $attempt->refresh();
+            if ($attempt->status === AttemptStatus::Ongoing) {
+                $this->finish($attempt); // mis. attempt tanpa bagian
+            }
+            $attempt->update(['stopped_by' => $by->id, 'stop_reason' => $reason ?: null]);
+
+            return true;
+        });
+    }
+
+    /**
      * Kumpulkan otomatis bagian yang waktunya sudah habis.
      * Dipanggil saat student kembali, dan oleh scheduler untuk student yang menutup browser.
      */

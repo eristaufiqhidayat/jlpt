@@ -18,6 +18,7 @@
     .pr-bar { height: 4px; background: #eeeae0; border-radius: 4px; margin-top: 5px; width: 70px; overflow: hidden; }
     .pr-bar span { display: block; height: 100%; background: var(--blue); }
     tr.pr-done td { opacity: .7; }
+    .pr-stop-reason { font-size: 11px; color: var(--sakura-deep); margin-top: 3px; }
     .pr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .pr-chip { background: #f6f4ee; border: 1px solid var(--line); border-radius: 20px; padding: 4px 10px; font-size: 12px; }
 </style>
@@ -77,10 +78,12 @@
         <div class="stat"><div class="ic purple">✓</div><div><p class="label">Sudah selesai</p><p class="value" data-stat="finished">{{ $stats['finished'] }}</p></div></div>
     </div>
 
+    <div id="pr-open-exams">@include('proctor._open_exams')</div>
+
     <div class="card flush">
         <div class="table-wrap"><table>
             <thead>
-                <tr><th>Peserta</th><th>Klasifikasi · Ujian</th><th>Sesi</th><th>No. soal</th><th>Terjawab</th><th>Sisa waktu</th><th>Status</th></tr>
+                <tr><th>Peserta</th><th>Klasifikasi · Ujian</th><th>Sesi</th><th>No. soal</th><th>Terjawab</th><th>Sisa waktu</th><th>Status</th><th></th></tr>
             </thead>
             <tbody id="pr-rows">@include('proctor._rows')</tbody>
         </table></div>
@@ -94,7 +97,7 @@
 <script>
 (function () {
     const dataUrl = @json(route('proctor.data')) + location.search;
-    const rows = document.getElementById('pr-rows'), waiting = document.getElementById('pr-waiting'), live = document.getElementById('pr-live');
+    const rows = document.getElementById('pr-rows'), openExams = document.getElementById('pr-open-exams'), waiting = document.getElementById('pr-waiting'), live = document.getElementById('pr-live');
     let offset = {{ now()->getTimestampMs() }} - Date.now(); // selisih jam server dan jam browser
 
     const fmt = s => { const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60; return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0'); };
@@ -118,6 +121,7 @@
             offset = data.now - Date.now();
             rows.innerHTML = data.rows;
             waiting.innerHTML = data.waiting;
+            openExams.innerHTML = data.openExams;
             Object.entries(data.stats).forEach(([k, v]) => { const el = document.querySelector(`[data-stat="${k}"]`); if (el) el.textContent = v; });
             live.classList.remove('paused'); live.textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
             tick();
@@ -126,6 +130,15 @@
         }
     }
     setInterval(refresh, 10000);
+
+    // ---- Hentikan peserta / tutup ujian: konfirmasi + alasan (opsional) ----
+    document.addEventListener('submit', e => {
+        const form = e.target.closest('form[data-confirm-stop]');
+        if (!form) return;
+        const reason = prompt(form.dataset.message + '\n\nAlasan (opsional):', form.dataset.default || '');
+        if (reason === null) { e.preventDefault(); return; }
+        form.querySelector('[name=reason]').value = reason.trim();
+    });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();
 </script>

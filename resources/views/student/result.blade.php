@@ -15,6 +15,10 @@
         </div>
     </div>
 
+    @if ($attempt->stopped_by)
+        <div class="alert info">Ujian ini dihentikan oleh pengawas{{ $attempt->stop_reason ? " ({$attempt->stop_reason})" : "" }}. Jawaban yang sudah tersimpan tetap dinilai.</div>
+    @endif
+
     @if (! $show)
         <div class="hasil-hero neutral">
             <div class="l"><div class="mark">✓</div><div><h2>Jawaban terkirim</h2><p>Nilai akan diumumkan oleh sensei.</p></div></div>
@@ -48,7 +52,7 @@
                 @foreach ($attempt->sections as $i => $s)
                     <div class="kompetensi-row">
                         <div class="lbl">{{ $s->examSection->section->name }}
-                            <small>{{ $s->correct_count }}/{{ $s->question_count }} benar @if ($s->submitted_by === 'timeout')· waktu habis @endif</small>
+                            <small>{{ $s->correct_count }}/{{ $s->question_count }} benar @if ($s->submitted_by === 'timeout')· waktu habis @elseif ($s->submitted_by === 'proctor')· dihentikan pengawas @endif</small>
                         </div>
                         <div class="kbar"><span style="width: {{ (float) $s->score }}%; background: {{ $colors[$i % count($colors)] }}"></span></div>
                         <div class="val">{{ number_format((float) $s->score, 0) }}</div>

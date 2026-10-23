@@ -10,6 +10,8 @@ use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Support\ExamClassification;
 use App\Models\User;
+use App\Services\ExamAttemptService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -34,20 +36,52 @@ class MonitorController extends Controller
             'filters' => $filters,
             'classifications' => ExamClassification::options(),
             'exams' => $this->examOptions($filters),
+            'openExams' => $this->openExams($filters),
         ]);
     }
 
     /** Data terbaru untuk pembaruan otomatis (AJAX). */
     public function data(Request $request): JsonResponse
     {
-        $payload = $this->payload($this->filters($request));
+        $filters = $this->filters($request);
+        $payload = $this->payload($filters);
 
         return response()->json([
+            'openExams' => view('proctor._open_exams', ['openExams' => $this->openExams($filters)])->render(),
             'now' => now()->getTimestampMs(),
             'stats' => $payload['stats'],
             'rows' => view('proctor._rows', $payload)->render(),
             'waiting' => view('proctor._waiting', $payload)->render(),
         ]);
+    }
+
+    /** Hentikan ujian satu peserta (mis. ketahuan curang atau minta berhenti). */
+    public function stop(Request $request, ExamAttempt $attempt, ExamAttemptService $service): RedirectResponse
+    {
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:255']], [], ['reason' => 'alasan']);
+        $name = $attempt->student->name;
+
+        return $service->stopAttempt($attempt, $request->user(), $data['reason'] ?? null)
+            ? back()->with('success', "Ujian {$name} dihentikan. Jawaban yang sudah tersimpan dinilai dan nilainya keluar.")
+            : back()->with('error', "Ujian {$name} sudah selesai sebelumnya.");
+    }
+
+    /**
+     * Tutup ujian: kode tidak bisa dipakai lagi, dan semua peserta yang masih mengerjakan dihentikan
+     * (jawaban tersimpan dinilai). Peserta yang sudah selesai tidak berubah.
+     */
+    public function closeExam(Request $request, Exam $exam, ExamAttemptService $service): RedirectResponse
+    {
+        $data = $request->validate(['reason' => ['nullable', 'string', 'max:255']], [], ['reason' => 'alasan']);
+        $exam->update(['status' => ExamStatus::Closed]);
+
+        $stopped = 0;
+        $exam->attempts()->where('status', AttemptStatus::Ongoing)->get()->each(function (ExamAttempt $attempt) use ($service, $request, $data, &$stopped) {
+            $stopped += (int) $service->stopAttempt($attempt, $request->user(), $data['reason'] ?? 'Ujian ditutup pengawas');
+        });
+
+        return back()->with('success', "Ujian \"{$exam->title}\" ({$exam->code}) ditutup."
+            .($stopped ? " {$stopped} peserta yang masih mengerjakan dihentikan dan dinilai." : ' Tidak ada peserta yang masih mengerjakan.'));
     }
 
     /**
@@ -104,6 +138,7 @@ class MonitorController extends Controller
         return ExamAttempt::query()
             ->with([
                 'student:id,name,email,role',
+                'stoppedBy:id,name',
                 'exam:id,title,code,level_id',
                 'exam.level:id,code,name,test_type_id',
                 'exam.level.testType:id,code,name',
@@ -147,6 +182,20 @@ class MonitorController extends Controller
             ->latest('last_login_at')
             ->limit(200)
             ->get(['id', 'name', 'email', 'role', 'last_login_at']);
+    }
+
+    /** Ujian yang sedang dibuka (sesuai filter) dan jumlah peserta yang masih mengerjakan, untuk tombol "Tutup ujian". */
+    private function openExams(array $f): Collection
+    {
+        return Exam::query()
+            ->with('level:id,code,test_type_id', 'level.testType:id,name')
+            ->where('status', ExamStatus::Open)
+            ->when($f['test_type_id'], fn ($q, $id) => $q->whereHas('level', fn ($l) => $l->where('test_type_id', $id)))
+            ->when($f['level_id'], fn ($q, $id) => $q->where('level_id', $id))
+            ->when($f['exam_id'], fn ($q, $id) => $q->whereKey($id))
+            ->withCount(['attempts as ongoing_count' => fn ($q) => $q->where('status', AttemptStatus::Ongoing)])
+            ->orderByDesc('ongoing_count')->orderBy('title')
+            ->get(['id', 'title', 'code', 'level_id']);
     }
 
     /** Pilihan ujian di filter: ujian yang dibuka atau yang punya peserta pada tanggal itu. */

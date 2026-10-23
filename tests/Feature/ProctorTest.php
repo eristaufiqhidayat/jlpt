@@ -51,7 +51,7 @@ class ProctorTest extends TestCase
     private function runningAttempt(Exam $exam, User $student): ExamAttempt
     {
         $section = $exam->level->sections()->orderBy('sort_order')->firstOrFail();
-        $examSection = ExamSection::create(['exam_id' => $exam->id, 'section_id' => $section->id, 'sort_order' => 1, 'duration_minutes' => 30, 'question_count' => 0]);
+        $examSection = ExamSection::firstOrCreate(['exam_id' => $exam->id, 'section_id' => $section->id], ['sort_order' => 1, 'duration_minutes' => 30, 'question_count' => 0]);
         $attempt = ExamAttempt::create(['exam_id' => $exam->id, 'student_id' => $student->id, 'started_at' => now()->subMinutes(10), 'status' => AttemptStatus::Ongoing]);
         AttemptSection::create([
             'exam_attempt_id' => $attempt->id, 'exam_section_id' => $examSection->id, 'sort_order' => 1, 'duration_minutes' => 30,
@@ -163,5 +163,67 @@ class ProctorTest extends TestCase
     {
         $this->actingAs($this->user(Role::Sensei, 'sensei@x.test'))->get(self::LMS.'/sensei/questions')->assertOk()
             ->assertSee('Pelatihan Soal')->assertDontSee('Bank Soal');
+    }
+
+    public function test_proctor_can_stop_one_participant(): void
+    {
+        $proctor = $this->user(Role::Proctor, 'pengawas@x.test', 'Pak Pengawas');
+        $student = $this->user(Role::Student, 'siswa@x.test', 'Budi Santoso');
+        $attempt = $this->runningAttempt($this->jlptExam(), $student);
+
+        $this->actingAs($proctor)->from(self::LMS.'/pengawas')
+            ->post(self::LMS.'/pengawas/attempts/'.$attempt->id.'/stop', ['reason' => 'Membuka ponsel'])
+            ->assertRedirect(self::LMS.'/pengawas')->assertSessionHas('success');
+
+        $attempt->refresh();
+        $this->assertSame(AttemptStatus::Finished, $attempt->status);
+        $this->assertSame($proctor->id, $attempt->stopped_by);
+        $this->assertSame('Membuka ponsel', $attempt->stop_reason);
+        $this->assertSame('proctor', $attempt->sections()->first()->submitted_by);
+
+        // Halaman ujian peserta mendapat 409 dan diarahkan ke hasil yang menyebut penghentian.
+        $this->actingAs($student)->postJson(self::LMS.'/attempts/'.$attempt->id.'/position', ['no' => 1])->assertStatus(409);
+        $this->actingAs($student)->get(self::LMS.'/attempts/'.$attempt->id)->assertRedirect();
+        $this->actingAs($student)->get(self::LMS.'/attempts/'.$attempt->id.'/result')->assertOk()->assertSee('dihentikan oleh pengawas')->assertSee('Membuka ponsel');
+
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas')->assertSee('Dihentikan')->assertSee('Pak Pengawas');
+        // Menghentikan lagi tidak mengubah apa-apa.
+        $this->actingAs($proctor)->post(self::LMS.'/pengawas/attempts/'.$attempt->id.'/stop')->assertSessionHas('error');
+    }
+
+    public function test_proctor_can_close_exam_and_stop_everyone_still_working(): void
+    {
+        $proctor = $this->user(Role::Proctor, 'pengawas@x.test');
+        $exam = $this->jlptExam();
+        $a1 = $this->runningAttempt($exam, $this->user(Role::Student, 's1@x.test'));
+        $a2 = $this->runningAttempt($exam, $this->user(Role::TestTaker, 's2@x.test'));
+        $otherExam = $this->jlptExam();
+        $other = $this->runningAttempt($otherExam, $this->user(Role::Student, 's3@x.test'));
+
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas')->assertSee('Ujian yang dibuka')->assertSee('Tutup ujian');
+
+        $this->actingAs($proctor)->from(self::LMS.'/pengawas')->post(self::LMS.'/pengawas/exams/'.$exam->id.'/close')
+            ->assertSessionHas('success', fn ($m) => str_contains($m, '2 peserta'));
+
+        $this->assertSame(ExamStatus::Closed, $exam->fresh()->status);
+        $this->assertSame(AttemptStatus::Finished, $a1->fresh()->status);
+        $this->assertSame(AttemptStatus::Finished, $a2->fresh()->status);
+        $this->assertSame('Ujian ditutup pengawas', $a1->fresh()->stop_reason);
+        $this->assertSame(AttemptStatus::Ongoing, $other->fresh()->status);
+
+        // Kode ujian yang ditutup tidak bisa dipakai lagi.
+        $this->actingAs($this->user(Role::Student, 's4@x.test'))->from(self::LMS.'/ujian')
+            ->post(self::LMS.'/exam/join', ['code' => $exam->code])->assertSessionHas('error', fn ($e) => str_contains($e, 'tidak dibuka'));
+    }
+
+    public function test_participants_cannot_stop_or_close(): void
+    {
+        $student = $this->user(Role::Student, 'siswa@x.test');
+        $exam = $this->jlptExam();
+        $attempt = $this->runningAttempt($exam, $student);
+
+        $this->actingAs($student)->post(self::LMS.'/pengawas/attempts/'.$attempt->id.'/stop')->assertForbidden();
+        $this->actingAs($student)->post(self::LMS.'/pengawas/exams/'.$exam->id.'/close')->assertForbidden();
+        $this->assertSame(AttemptStatus::Ongoing, $attempt->fresh()->status);
     }
 }
