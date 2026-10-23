@@ -17,7 +17,7 @@
     $user = auth()->user();
     $role = $user->role->value;
     $initials = $user->initials();
-    $roleLabel = ['admin' => 'Administrator', 'education_admin' => 'Admin Pendidikan', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur', 'test_taker' => 'Peserta Tes'][$role] ?? $user->role->label();
+    $roleLabel = ['admin' => 'Administrator', 'education_admin' => 'Admin Pendidikan', 'sensei' => 'Instruktur', 'student' => 'Peserta', 'director' => 'Direktur', 'test_taker' => 'Peserta Tes', 'proctor' => 'Pengawas Ujian'][$role] ?? $user->role->label();
     $subLabel = $role === 'student' && $user->profile?->level ? 'Peserta · '.$user->profile->level->code : $roleLabel;
     $unread = $user->inbox()->whereNull('read_at')->count();
     $item = fn ($label, $icon, $route, $patterns, $count = 0) => [$label, $icon, route($route), request()->routeIs(...(array) $patterns), $count];
@@ -28,6 +28,13 @@
             $item('Tes Saya', '📝', 'student.exams', ['student.exams', 'student.attempts.show', 'student.payments.*']),
             $item('Hasil Tes', '📊', 'student.results', ['student.results', 'student.attempts.result', 'student.attempts.review']),
             $item('Sertifikat', '🏅', 'student.certificates', ['student.certificates', 'certificates.show']),
+            $item('Profil', '👤', 'profile.edit', 'profile.*'),
+        ];
+    } elseif ($role === 'proctor') {
+        // Pengawas: hanya memantau ujian yang sedang berjalan.
+        $groups[''] = [
+            $item('Pengawasan Ujian', '👁️', 'proctor.index', 'proctor.*'),
+            $item('Pesan', '✉️', 'messages.index', 'messages.*', $unread),
             $item('Profil', '👤', 'profile.edit', 'profile.*'),
         ];
     } elseif ($role === 'student') {
@@ -64,9 +71,10 @@
             array_unshift($groups['Pembelajaran'], $item('Data Master', '🗃️', 'manage.master.index', 'manage.master.*'));
         }
         $groups['Ujian'] = [
-            $item('Bank Soal', '🗂️', 'sensei.questions.index', 'sensei.questions.*'),
+            $item('Pelatihan Soal', '🗂️', 'sensei.questions.index', 'sensei.questions.*'),
             $item('Bacaan & Audio', '🎧', 'sensei.passages.index', 'sensei.passages.*'),
             $item('Ujian', '📝', 'sensei.exams.index', 'sensei.exams.*'),
+            $item('Pengawasan', '👁️', 'proctor.index', 'proctor.*'),
             $item('Penilaian Esai', '✍️', 'sensei.grading.index', 'sensei.grading.*'),
             $item('Arsip Lama', '📦', 'sensei.legacy.index', 'sensei.legacy.*'),
         ];

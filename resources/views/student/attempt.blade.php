@@ -127,6 +127,7 @@
     const form = document.getElementById('exam-form');
     const token = document.querySelector('meta[name=csrf-token]').content;
     const answerUrl = @json(route('student.attempts.answer', $attempt));
+    const positionUrl = @json(route('student.attempts.position', $attempt));
     const cards = [...document.querySelectorAll('.q-card')];
     const navs = [...document.querySelectorAll('[data-nav]')];
     let remaining = {{ (int) $remaining }};
@@ -140,7 +141,18 @@
         current = i;
         cards[i].classList.add('current'); navs[i].classList.add('current');
         document.querySelector('.q-area').scrollTop = 0; window.scrollTo(0, 0);
+        report();
     }
+
+    // ---- Posisi soal untuk pengawas (nomor yang sedang dibuka + tanda online) ----
+    function report() {
+        fetch(positionUrl, {
+            method: 'POST', keepalive: true,
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            body: JSON.stringify({ no: current + 1 }),
+        }).catch(() => {});
+    }
+    report(); setInterval(report, 30000);
     navs.forEach((a, i) => a.addEventListener('click', e => { e.preventDefault(); show(i); }));
     document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(parseInt(b.dataset.go, 10))));
     document.addEventListener('keydown', e => {

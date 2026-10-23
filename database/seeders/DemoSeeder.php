@@ -23,7 +23,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Data contoh untuk development (hanya dijalankan di APP_ENV=local):
- * sensei@example.com / student@example.com / pendidikan@example.com (password: password),
+ * sensei@example.com / student@example.com / pendidikan@example.com / pengawas@example.com (password: password),
  * beberapa soal N4, dan satu ujian gratis berkode DEMON4.
  */
 class DemoSeeder extends Seeder
@@ -41,6 +41,9 @@ class DemoSeeder extends Seeder
         ]);
         User::firstOrCreate(['email' => 'pendidikan@example.com'], [
             'name' => 'Demo Admin Pendidikan', 'password' => 'password', 'role' => Role::EducationAdmin,
+        ]);
+        User::firstOrCreate(['email' => 'pengawas@example.com'], [
+            'name' => 'Demo Pengawas', 'password' => 'password', 'role' => Role::Proctor,
         ]);
 
         // Contoh kategori batsu (pelanggaran); isi sebenarnya ditentukan Admin Pendidikan.

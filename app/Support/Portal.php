@@ -40,9 +40,10 @@ class Portal
         return $role === Role::TestTaker ? self::TEST : self::LMS;
     }
 
+    /** Pengawas memantau siswa LPK dan peserta tes umum, jadi boleh masuk lewat kedua domain. */
     public static function allowsRole(Role $role, ?string $portal = null): bool
     {
-        return ! self::enabled() || self::forRole($role) === ($portal ?? self::current());
+        return ! self::enabled() || $role === Role::Proctor || self::forRole($role) === ($portal ?? self::current());
     }
 
     public static function allows(User $user, ?string $portal = null): bool

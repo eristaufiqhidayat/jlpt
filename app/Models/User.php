@@ -34,6 +34,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => Role::class,
             'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 
@@ -104,6 +105,11 @@ class User extends Authenticatable
     public function isExamTaker(): bool
     {
         return $this->isStudent() || $this->isTestTaker();
+    }
+
+    public function isProctor(): bool
+    {
+        return $this->role === Role::Proctor;
     }
 
     public function isDirector(): bool

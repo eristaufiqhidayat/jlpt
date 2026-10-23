@@ -49,6 +49,7 @@ class LoginController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->saveQuietly();
 
         return redirect()->route('dashboard');
     }
@@ -84,6 +85,7 @@ class LoginController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->saveQuietly();
 
         return redirect()->intended(route('dashboard'));
     }

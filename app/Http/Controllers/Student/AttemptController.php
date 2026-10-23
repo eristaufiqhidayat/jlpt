@@ -40,6 +40,7 @@ class AttemptController extends Controller
         $user = $request->user();
 
         return view('student.exams', [
+            'testTypes' => self::testTypeOptions(),
             'ongoing' => $user->attempts()->with('exam')->where('status', 'ongoing')->latest()->get(),
             'pendingPayments' => $user->payments()->with('exam')->where('status', 'pending')->where('expires_at', '>', now())->latest()->get(),
             'recent' => $user->attempts()->with('exam.level')->where('status', '!=', 'ongoing')->latest('finished_at')->take(5)->get(),
@@ -61,10 +62,17 @@ class AttemptController extends Controller
     /** Student memasukkan kode ujian. */
     public function join(Request $request): RedirectResponse
     {
-        $data = $request->validate(['code' => ['required', 'string', 'max:20']], [], ['code' => 'kode ujian']);
+        // Form utama mengirim with_type=1: klasifikasi wajib dipilih dulu. Tombol "Ulangi"/latihan tanpa klasifikasi tetap jalan.
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:20'],
+            'test_type_id' => ['nullable', 'required_if:with_type,1', 'integer', 'exists:test_types,id'],
+        ], [], ['code' => 'kode ujian', 'test_type_id' => 'klasifikasi ujian']);
 
         try {
             $exam = $this->access->findOpenExamByCode($data['code'], $request->user());
+            if (! empty($data['test_type_id']) && (int) $exam->level->test_type_id !== (int) $data['test_type_id']) {
+                throw new ExamAccessException('Kode ujian tidak sesuai dengan klasifikasi ujian yang dipilih ('.$exam->level->testType->name.').', 'type_mismatch');
+            }
             $attempt = $this->attempts->start($request->user(), $exam);
         } catch (ExamAccessException $e) {
             if ($e->reason === 'payment_required') {
@@ -131,7 +139,27 @@ class AttemptController extends Controller
             return response()->json(['ok' => false, 'reason' => $e->reason, 'message' => $e->getMessage()], 409);
         }
 
+        $attempt->forceFill(['last_seen_at' => now()])->saveQuietly();
+
         return response()->json(['ok' => true, 'remaining' => $item->attemptSection->fresh()->remainingSeconds()]);
+    }
+
+    /**
+     * Sinyal dari halaman ujian (AJAX): nomor soal yang sedang dibuka di bagian berjalan.
+     * Dipakai halaman Pengawas untuk menampilkan "sedang mengerjakan no." dan status online.
+     */
+    public function position(Request $request, ExamAttempt $attempt): JsonResponse
+    {
+        $this->authorizeOwner($request, $attempt);
+        $data = $request->validate(['no' => ['required', 'integer', 'min:1', 'max:1000']]);
+
+        if ($attempt->isFinished()) {
+            return response()->json(['ok' => false], 409);
+        }
+
+        $attempt->forceFill(['current_question_no' => $data['no'], 'last_seen_at' => now()])->saveQuietly();
+
+        return response()->json(['ok' => true]);
     }
 
     /** Kumpulkan bagian (tombol "Selesai" atau otomatis saat timer habis). */
@@ -221,6 +249,12 @@ class AttemptController extends Controller
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
         return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
+    }
+
+    /** Pilihan klasifikasi ujian (data master "Klasifikasi Ujian") untuk form masuk ujian. */
+    public static function testTypeOptions(): \Illuminate\Support\Collection
+    {
+        return \App\Models\TestType::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(['id', 'code', 'name']);
     }
 
     private function authorizeOwner(Request $request, ExamAttempt $attempt): void
