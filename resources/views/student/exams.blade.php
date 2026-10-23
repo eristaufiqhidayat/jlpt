@@ -1,19 +1,12 @@
 @extends('layouts.app')
 @section('title', 'Ujian')
 @section('content')
-    <div class="page-head"><div><h1>Ujian</h1><p>Masukkan kode ujian dari sensei, atau lanjutkan ujian yang sedang berjalan.</p></div></div>
+    <div class="page-head"><div><h1>Ujian</h1><p>Pilih klasifikasi ujian lalu masukkan kode ujian, atau lanjutkan ujian yang sedang berjalan.</p></div></div>
     <div class="grid cols-2" style="align-items:start">
         <div>
             <div class="card">
-                <div class="card-head"><h2>Masukkan kode ujian</h2></div>
-                <form method="POST" action="{{ route('student.join') }}" class="inline-form">
-                    @csrf
-                    <div class="field" style="flex:1">
-                        <input id="code" name="code" type="text" value="{{ old('code') }}" maxlength="20" required placeholder="KODE UJIAN" aria-label="Kode ujian"
-                               style="text-transform:uppercase;letter-spacing:.15em;font-size:1.1rem;font-weight:700" autocomplete="off">
-                    </div>
-                    <button class="btn big" type="submit">Mulai</button>
-                </form>
+                <div class="card-head"><h2>Masuk ujian</h2></div>
+                @include('student._join_form')
             </div>
             @if ($ongoing->isNotEmpty() || $pendingPayments->isNotEmpty())
                 <div class="card">

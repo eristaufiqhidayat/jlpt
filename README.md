@@ -23,12 +23,12 @@ php artisan migrate --seed
 Kalau `ADMIN_PASSWORD` kosong, password admin dibuat acak dan ditampilkan sekali di terminal.
 
 **Demo masuk cepat** (untuk situs uji coba): isi `DEMO_LOGIN=true` di `.env`, lalu `php artisan config:clear`. Halaman login
-akan menampilkan tombol masuk tanpa password untuk Peserta, Sensei, Admin Pendidikan, Admin, dan Direktur (akun demo
+akan menampilkan tombol masuk tanpa password untuk Peserta, Sensei, Admin Pendidikan, Admin, Direktur, dan Pengawas (akun demo
 dibuat otomatis bila belum ada; emailnya di `config/app.php` → `demo_accounts`). Siapa pun yang membuka halaman login
 bisa masuk, termasuk sebagai Admin, jadi kembalikan ke `DEMO_LOGIN=false` sebelum situs dipakai peserta sungguhan.
 Lupa password? `php artisan user:password admin@example.com` (tambahkan `--admin` untuk membuat akun admin baru).
 Di `APP_ENV=local`, seeder juga membuat data demo: `sensei@example.com`, `student@example.com`, dan
-`direktur@example.com`, `pendidikan@example.com` (Admin Pendidikan) (password `password`), 8 soal N4, ujian gratis berkode `DEMON4`, kelas N4-A dengan jadwal,
+`direktur@example.com`, `pendidikan@example.com` (Admin Pendidikan), `pengawas@example.com` (Pengawas) (password `password`), 8 soal N4, ujian gratis berkode `DEMON4`, kelas N4-A dengan jadwal,
 3 materi, tahapan Program Jepang, dan satu pesan.
 
 Scheduler wajib aktif di server supaya bagian ujian yang waktunya habis dikumpulkan otomatis
@@ -42,7 +42,7 @@ Scheduler wajib aktif di server supaya bagian ujian yang waktunya habis dikumpul
 
 | Kelompok | Tabel | Keterangan |
 |---|---|---|
-| User | `users`, `student_profiles` | kolom `role`: admin, sensei, student, director; profil peserta (NIS, level, program, tanggal masuk) |
+| User | `users`, `student_profiles` | kolom `role`: admin, education_admin, sensei, student, test_taker, director, proctor (Pengawas); `last_login_at`; profil peserta (NIS, level, program, tanggal masuk) |
 | Kelas | `classrooms`, `classroom_student`, `class_sessions`, `attendances` | kelas, peserta, jadwal, absensi (hadir/izin/sakit/alpa) |
 | Materi | `materials`, `material_progress` | video (YouTube/upload), PDF, PPT, latihan soal (tautan ke ujian); tanda selesai per peserta |
 | Program Jepang | `program_stages`, `program_documents` | 7 tahap (Pendaftaran → Keberangkatan) dan dokumen (paspor, sertifikat JLPT, interview, MCU, visa, tiket) |
@@ -113,17 +113,18 @@ yang sudah tersedia di `legacy_answer_keys`; kolom `questions.legacy_file_id` me
 
 | Role | Menu | Isi |
 |---|---|---|
-| Semua | `/login` | Login dengan email + password (maks. 5 percobaan/menit) |
-| Admin | User | Tambah/edit admin, Admin Pendidikan, sensei, student; aktif/nonaktifkan; ganti password |
+| Semua | `/login` | Login dengan email + password (maks. 5 percobaan/menit). Pengawas memakai halaman login yang sama dengan peserta (bisa di domain LMS maupun tes online) |
+| Pengawas (juga admin, Admin Pendidikan, sensei) | Pengawasan Ujian `/pengawas` | Siapa yang sudah masuk ujian (dan yang sudah login tapi belum memasukkan kode), sesi/bagian yang sedang dikerjakan per klasifikasi ujian, nomor soal yang sedang dibuka, jumlah terjawab, sisa waktu berjalan semua peserta, tanda online. Filter klasifikasi ujian / ujian / status / tanggal; data diperbarui otomatis tiap 10 detik |
+| Admin | User | Tambah/edit admin, Admin Pendidikan, sensei, student, Pengawas; aktif/nonaktifkan; ganti password |
 | Admin Pendidikan | Data Master | Klasifikasi kelas, klasifikasi ujian (jenis tes → level → bagian), skor & batas lulus, kategori batsu. Hanya peran ini yang bisa menambah/mengubah/menonaktifkan (tidak ada hapus); staf lain hanya melihat. Setiap perubahan tercatat |
 | Admin | Pembayaran | Lihat semua transaksi (Midtrans & manual), catat pembayaran manual, ubah status |
-| Sensei & admin | Bank Soal | Soal isian, ★, bacaan, choukai, esai; furigana `{漢字|かんじ}`, garis bawah `__kata__`; gambar & audio |
+| Sensei & admin | Pelatihan Soal (dulu Bank Soal) | Soal isian, ★, bacaan, choukai, esai; furigana `{漢字|かんじ}`, garis bawah `__kata__`; gambar & audio |
 | Sensei & admin | Bacaan & audio | Bacaan/audio yang dipakai bersama beberapa soal |
-| Sensei & admin | Bank Soal → Import Excel | Template .xlsx, pratinjau + cek per baris, hanya baris valid yang disimpan; kunci bisa diambil otomatis dari arsip lama (`arsip_id` + `no_arsip`) |
+| Sensei & admin | Pelatihan Soal → Import Excel | Template .xlsx, pratinjau + cek per baris, hanya baris valid yang disimpan; kunci bisa diambil otomatis dari arsip lama (`arsip_id` + `no_arsip`) |
 | Sensei & admin | Ujian | Buat ujian per level: durasi & jumlah soal per bagian, gratis/berbayar, batas putar audio, buka/tutup; lihat peserta & nilai; export nilai ke .xlsx |
 | Sensei & admin | Penilaian Esai | Nilai jawaban esai benar/salah + catatan |
 | Sensei & admin | Arsip Lama | Baca PDF lama, perbaiki kunci (E/F/Z/kosong); perbaikan tidak tertimpa impor ulang |
-| Student | Beranda | Masukkan kode ujian, lanjutkan ujian/pembayaran, riwayat nilai |
+| Student & Peserta Tes | Beranda / Ujian | Pilih **klasifikasi ujian** (dropdown dari Data Master) lalu masukkan kode ujian; kode yang tidak sesuai klasifikasinya ditolak. Lanjutkan ujian/pembayaran, riwayat nilai |
 | Student | Pembayaran | Kode ujian berbayar → halaman bayar (Midtrans Snap: QRIS, VA, e-wallet) → langsung bisa mulai |
 | Student | Ujian | Satu soal per layar + navigasi nomor, timer per bagian, simpan otomatis, tanda ragu-ragu, audio dengan batas putar |
 | Student | Nilai & Riwayat | Semua ujian; halaman hasil dengan status Lulus/Belum lulus (bila ujian punya nilai minimal) dan rekap per bagian |
@@ -168,13 +169,17 @@ Untuk production: ganti ke key production dan `MIDTRANS_IS_PRODUCTION=true`.
 ## Update dari versi sebelumnya
 
 ```bash
-php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan, data master akademik
+php artisan migrate        # tabel kelas, materi, Program Jepang, sertifikat, pesan, data master akademik, kolom pengawasan ujian
 php artisan db:seed --class=MasterDataSeeder   # klasifikasi kelas & ujian sesuai notulen; aman diulang, tidak menimpa perubahan
 php artisan optimize:clear
 ```
 
 Peran **Admin Pendidikan** (`education_admin`) dibuat admin lewat menu User. Peran ini mengelola Data Master dan
-punya akses yang sama dengan sensei/admin untuk materi, kelas, bank soal, ujian (semua ujian), penilaian esai, dan laporan.
+punya akses yang sama dengan sensei/admin untuk materi, kelas, Pelatihan Soal, ujian (semua ujian), penilaian esai, dan laporan.
+
+Peran **Pengawas** (`proctor`) dibuat admin lewat menu User. Pengawas hanya melihat halaman Pengawasan Ujian (semua ujian),
+tidak bisa mengerjakan atau mengubah ujian. Nomor soal dan status online dikirim halaman ujian peserta setiap ganti soal dan
+setiap 30 detik; peserta dianggap online bila sinyal terakhir kurang dari 90 detik.
 
 ## Tahap berikutnya
 

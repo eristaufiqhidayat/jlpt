@@ -4,7 +4,7 @@
     <div class="page-head">
         <h1>Bacaan &amp; audio bersama</h1>
         <div>
-            <a class="btn secondary" href="{{ route('sensei.questions.index') }}">Bank soal</a>
+            <a class="btn secondary" href="{{ route('sensei.questions.index') }}">Pelatihan Soal</a>
             <a class="btn" href="{{ route('sensei.passages.create') }}">+ Bacaan baru</a>
         </div>
     </div>

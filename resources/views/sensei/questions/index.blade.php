@@ -1,8 +1,8 @@
 @extends('layouts.app')
-@section('title', 'Bank Soal')
+@section('title', 'Pelatihan Soal')
 @section('content')
     <div class="page-head">
-        <div><h1>Bank Soal</h1><p>Kelola soal ujian untuk semua level.</p></div>
+        <div><h1>Pelatihan Soal</h1><p>Kelola soal ujian untuk semua level.</p></div>
         <div>
             <a class="btn secondary" href="{{ route('sensei.passages.index') }}">Bacaan &amp; audio bersama</a>
             <a class="btn secondary" href="{{ route('sensei.questions.import') }}">Import Excel</a>

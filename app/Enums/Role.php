@@ -10,6 +10,7 @@ enum Role: string
     case Student = 'student';
     case Director = 'director';
     case TestTaker = 'test_taker'; // Peserta tes umum/berbayar: hanya di domain tes online
+    case Proctor = 'proctor'; // Pengawas ujian: memantau peserta yang sedang ujian; login di halaman yang sama dengan peserta
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum Role: string
             self::Student => 'Peserta',
             self::Director => 'Direktur',
             self::TestTaker => 'Peserta Tes',
+            self::Proctor => 'Pengawas',
         };
     }
 }

@@ -2,7 +2,7 @@
 @section('title', 'Arsip soal lama')
 @section('content')
     <div class="page-head"><h1>Arsip soal lama</h1></div>
-    <p class="muted">File PDF dan kunci jawaban dari aplikasi lama. Gunakan sebagai sumber saat menginput soal ke bank soal, dan perbaiki kunci yang ditandai.</p>
+    <p class="muted">File PDF dan kunci jawaban dari aplikasi lama. Gunakan sebagai sumber saat menginput soal ke Pelatihan Soal, dan perbaiki kunci yang ditandai.</p>
 
     <form method="GET" class="filters">
         <div class="field">

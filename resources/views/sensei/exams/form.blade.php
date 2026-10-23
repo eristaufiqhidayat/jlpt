@@ -99,7 +99,7 @@
 
             <div class="card">
                 <h2>Bagian ujian</h2>
-                <p class="muted">Soal diambil acak dari bank soal (yang berstatus "Siap pakai") saat student mulai. Durasi berlaku per bagian.</p>
+                <p class="muted">Soal diambil acak dari Pelatihan Soal (yang berstatus "Siap pakai") saat student mulai. Durasi berlaku per bagian.</p>
                 <div class="table-wrap"><table>
                     <tr><th></th><th>Bagian</th><th class="num">Menit</th><th class="num">Jumlah soal</th><th class="num">Urutan</th></tr>
                     @foreach ($rows as $row)

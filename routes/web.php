@@ -13,6 +13,7 @@ use App\Http\Controllers\Manage\ReportController;
 use App\Http\Controllers\Manage\UploadController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Proctor\MonitorController;
 use App\Http\Controllers\Student\LearningController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\MidtransNotificationController;
@@ -65,6 +66,12 @@ Route::middleware('auth')->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::post('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.status');
+    });
+
+    // ---------------- Pengawasan ujian (pengawas; staf juga boleh) ----------------
+    Route::middleware('role:proctor,admin,education_admin,sensei')->prefix('pengawas')->name('proctor.')->group(function () {
+        Route::get('/', [MonitorController::class, 'index'])->name('index');
+        Route::get('/data', [MonitorController::class, 'data'])->middleware('throttle:60,1')->name('data');
     });
 
     // ---------------- Laporan & monitoring (direktur, admin; sensei untuk monitoring) ----------------
@@ -151,6 +158,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/pay/{code}/refresh', [StudentPaymentController::class, 'refresh'])->name('student.payments.refresh');
         Route::get('/attempts/{attempt}', [AttemptController::class, 'show'])->name('student.attempts.show');
         Route::post('/attempts/{attempt}/answer', [AttemptController::class, 'answer'])->name('student.attempts.answer');
+        Route::post('/attempts/{attempt}/position', [AttemptController::class, 'position'])
+            ->middleware('throttle:240,1')->name('student.attempts.position');
         Route::post('/attempts/{attempt}/submit', [AttemptController::class, 'submitSection'])->name('student.attempts.submit');
         Route::get('/attempts/{attempt}/result', [AttemptController::class, 'result'])->name('student.attempts.result');
         Route::post('/attempts/{attempt}/audio/{item}/play', [AttemptController::class, 'play'])->name('student.attempts.play');

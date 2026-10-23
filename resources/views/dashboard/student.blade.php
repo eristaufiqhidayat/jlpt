@@ -61,14 +61,7 @@
     <div class="grid cols-2" style="align-items:start">
         <div class="card">
             <div class="card-head"><h2>Mulai ujian</h2><a href="{{ route('student.exams') }}">Menu ujian</a></div>
-            <form method="POST" action="{{ route('student.join') }}" class="inline-form">
-                @csrf
-                <div class="field" style="flex:1">
-                    <input id="code" name="code" type="text" value="{{ old('code') }}" maxlength="20" required placeholder="KODE UJIAN" aria-label="Kode ujian"
-                           style="text-transform:uppercase;letter-spacing:.15em;font-size:1.05rem;font-weight:700" autocomplete="off">
-                </div>
-                <button class="btn big" type="submit">Mulai</button>
-            </form>
+            @include('student._join_form')
             @foreach ($ongoing as $attempt)
                 <div class="list-row"><div class="ic">✏️</div><div class="info"><p>{{ $attempt->exam->title }}</p><span>Sedang dikerjakan</span></div>
                     <a class="btn small" href="{{ route('student.attempts.show', $attempt) }}">Lanjutkan</a></div>

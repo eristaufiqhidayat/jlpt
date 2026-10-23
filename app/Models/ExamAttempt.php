@@ -12,6 +12,7 @@ class ExamAttempt extends Model
     protected $fillable = [
         'exam_id', 'student_id', 'started_at', 'finished_at',
         'correct_count', 'question_count', 'score', 'status',
+        'current_question_no', 'last_seen_at',
     ];
 
     protected function casts(): array
@@ -19,6 +20,8 @@ class ExamAttempt extends Model
         return [
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'last_seen_at' => 'datetime',
+            'current_question_no' => 'integer',
             'score' => 'decimal:2',
             'status' => AttemptStatus::class,
         ];

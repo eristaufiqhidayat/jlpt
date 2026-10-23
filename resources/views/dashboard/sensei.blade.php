@@ -2,7 +2,7 @@
 @section('title', 'Beranda Sensei')
 @section('content')
     <div class="page-head">
-        <div><h1>おかえりなさい、{{ auth()->user()->name }}</h1><p>Kelola bank soal dan ujian peserta.</p></div>
+        <div><h1>おかえりなさい、{{ auth()->user()->name }}</h1><p>Kelola Pelatihan Soal dan ujian peserta.</p></div>
         <div>
             <a class="btn" href="{{ route('sensei.questions.create') }}">+ Soal baru</a>
             <a class="btn secondary" href="{{ route('sensei.exams.create') }}">+ Ujian baru</a>

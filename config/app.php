@@ -33,6 +33,7 @@ return [
         'admin' => 'admin-demo@example.com',
         'director' => 'direktur@example.com',
         'test_taker' => 'peserta-tes@example.com',
+        'proctor' => 'pengawas@example.com',
     ],
 
     /*

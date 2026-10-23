@@ -35,6 +35,7 @@ class DashboardController extends Controller
             Role::Director => redirect()->route('reports'),
             Role::EducationAdmin => redirect()->route('manage.master.index'),
             Role::TestTaker => redirect()->route('student.exams'),
+            Role::Proctor => redirect()->route('proctor.index'),
         };
     }
 
@@ -75,6 +76,7 @@ class DashboardController extends Controller
 
         return view('dashboard.student', [
             'level' => $user->profile?->level,
+            'testTypes' => \App\Http\Controllers\Student\AttemptController::testTypeOptions(),
             'attendanceRate' => LearningController::attendanceRate($user->id),
             'materialsDone' => $doneMaterials,
             'materialsTotal' => $totalMaterials,
