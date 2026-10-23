@@ -16,7 +16,7 @@
     </div>
 
     @if ($attempt->stopped_by)
-        <div class="alert info">Ujian ini dihentikan oleh pengawas@if ($attempt->stop_reason) ({{ $attempt->stop_reason }})@endif. Jawaban yang sudah tersimpan tetap dinilai.</div>
+        <div class="alert info">Ujian ini dihentikan oleh pengawas{{ $attempt->stop_reason ? " ({$attempt->stop_reason})" : "" }}. Jawaban yang sudah tersimpan tetap dinilai.</div>
     @endif
 
     @if (! $show)
