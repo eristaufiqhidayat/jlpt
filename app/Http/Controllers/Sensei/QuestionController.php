@@ -10,6 +10,7 @@ use App\Models\Level;
 use App\Models\Passage;
 use App\Models\Question;
 use App\Support\SectionOptions;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -33,17 +34,14 @@ class QuestionController extends Controller
         'essay' => 'Esai (dinilai manual)',
     ];
 
+    /** Jumlah maksimal soal dalam satu pratinjau. */
+    public const PREVIEW_LIMIT = 100;
+
     public function index(Request $request): View
     {
-        $questions = Question::query()
+        $questions = $this->filtered($request)
             ->with(['section.level.testType', 'passage:id,title', 'correctOption:id,question_id,label'])
             ->withCount('options')
-            ->when($request->filled('level_id'), fn ($q) => $q->whereHas('section', fn ($s) => $s->where('level_id', $request->integer('level_id'))))
-            ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->integer('section_id')))
-            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->when($request->filled('usage'), fn ($q) => $q->where('usage', $request->string('usage')))
-            ->when($request->filled('q'), fn ($q) => $q->where('stem', 'like', '%'.$request->string('q').'%'))
             ->latest('id')
             ->paginate(30)->withQueryString();
 
@@ -53,6 +51,62 @@ class QuestionController extends Controller
             'levels' => Level::with('testType')->orderBy('test_type_id')->orderBy('sort_order')->get(),
             'types' => self::TYPE_LABELS,
         ]);
+    }
+
+    /**
+     * Pratinjau soal persis seperti tampilan ujian peserta (satu soal per layar).
+     * Memakai filter yang sama dengan daftar soal; jawaban tidak disimpan ke mana pun.
+     * Urutan mengikuti susunan ujian: per bagian, jenis soal (isian → ★ → bacaan → choukai → esai), lalu bacaan.
+     */
+    public function preview(Request $request): View
+    {
+        $filters = collect($request->only(['level_id', 'section_id', 'type', 'status', 'usage', 'q']))->filter(fn ($v) => filled($v));
+        $focus = $request->integer('question') ?: null;
+        $with = ['section.level.testType', 'passage', 'options'];
+
+        if ($filters->isEmpty() && $focus) {
+            $questions = Question::with($with)->whereKey($focus)->get();
+            $truncated = false;
+        } else {
+            $questions = $this->filtered($request)->with($with)
+                ->orderBy('section_id')
+                ->orderByRaw("CASE type WHEN 'blank' THEN 1 WHEN 'star' THEN 2 WHEN 'reading' THEN 3 WHEN 'listening' THEN 4 ELSE 5 END")
+                ->orderByRaw('COALESCE(passage_id, 0)')
+                ->orderBy('number_in_passage')
+                ->orderBy('id')
+                ->limit(self::PREVIEW_LIMIT + 1)
+                ->get();
+            $truncated = $questions->count() > self::PREVIEW_LIMIT;
+            $questions = $questions->take(self::PREVIEW_LIMIT)->values();
+
+            // Soal yang diklik di daftar berada di luar hasil (mis. lewat batas): tampilkan soal itu saja.
+            if ($focus && ! $questions->contains('id', $focus)) {
+                $questions = Question::with($with)->whereKey($focus)->get();
+                $truncated = false;
+            }
+        }
+
+        $start = $focus ? max(0, (int) $questions->search(fn ($q) => $q->id === $focus)) : 0;
+
+        return view('sensei.questions.preview', [
+            'questions' => $questions,
+            'start' => $start,
+            'truncated' => $truncated,
+            'backUrl' => route('sensei.questions.index', $filters->all()),
+            'types' => self::TYPE_LABELS,
+        ]);
+    }
+
+    /** Filter daftar soal (dipakai daftar dan pratinjau). */
+    private function filtered(Request $request): Builder
+    {
+        return Question::query()
+            ->when($request->filled('level_id'), fn ($q) => $q->whereHas('section', fn ($s) => $s->where('level_id', $request->integer('level_id'))))
+            ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->integer('section_id')))
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('usage'), fn ($q) => $q->where('usage', $request->string('usage')))
+            ->when($request->filled('q'), fn ($q) => $q->where('stem', 'like', '%'.$request->string('q').'%'));
     }
 
     public function create(Request $request): View

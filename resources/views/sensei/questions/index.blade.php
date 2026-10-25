@@ -4,6 +4,7 @@
     <div class="page-head">
         <div><h1>Pelatihan Soal</h1><p>Kelola soal ujian untuk semua level.</p></div>
         <div>
+            <a class="btn secondary" href="{{ route('sensei.questions.preview', request()->except('page')) }}" title="Lihat soal hasil filter seperti tampilan ujian peserta">👁 Pratinjau seperti peserta</a>
             <a class="btn secondary" href="{{ route('sensei.passages.index') }}">Bacaan &amp; audio bersama</a>
             <a class="btn secondary" href="{{ route('sensei.questions.import') }}">Import Excel</a>
             <a class="btn" href="{{ route('sensei.questions.create', ['section_id' => request('section_id')]) }}">+ Soal baru</a>
@@ -85,6 +86,7 @@
                     <td>@include('sensei.questions._status', ['status' => $q->status->value])
                         <br><small @class(['badge', 'warn' => $q->usage === 'test', 'info' => $q->usage === 'both'])>{{ $q->usageLabel() }}</small></td>
                     <td class="actions">
+                        <a class="btn small secondary" href="{{ route('sensei.questions.preview', request()->except('page') + ['question' => $q->id]) }}" title="Pratinjau seperti peserta">Lihat</a>
                         <a class="btn small secondary" href="{{ route('sensei.questions.edit', $q) }}">Edit</a>
                     </td>
                 </tr>

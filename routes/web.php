@@ -122,6 +122,7 @@ Route::middleware('auth')->group(function () {
         Route::get('questions/import/template', [QuestionImportController::class, 'template'])->name('questions.import.template');
         Route::post('questions/import/preview', [QuestionImportController::class, 'preview'])->name('questions.import.preview');
         Route::post('questions/import', [QuestionImportController::class, 'store'])->name('questions.import.store');
+        Route::get('questions/preview', [QuestionController::class, 'preview'])->name('questions.preview');
         Route::resource('questions', QuestionController::class)->except(['show']);
         Route::resource('passages', PassageController::class)->except(['show', 'destroy']);
 
