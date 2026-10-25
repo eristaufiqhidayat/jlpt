@@ -75,8 +75,11 @@ class QuestionUsageTest extends TestCase
         $this->seedBank();
         $picker = app(QuestionPicker::class);
 
-        $this->assertEqualsCanonicalizing(['soal latihan', 'soal keduanya'], $picker->pick($this->section->id, 10, 'practice')->pluck('stem')->all());
-        $this->assertEqualsCanonicalizing(['soal tes', 'soal keduanya'], $picker->pick($this->section->id, 10, 'test')->pluck('stem')->all());
+        // pick() hanya memuat kolom yang dibutuhkan ujian, jadi teks soal diambil ulang lewat id.
+        $stems = fn (string $pool) => Question::whereKey($picker->pick($this->section->id, 10, $pool)->pluck('id'))->pluck('stem')->all();
+
+        $this->assertEqualsCanonicalizing(['soal latihan', 'soal keduanya'], $stems('practice'));
+        $this->assertEqualsCanonicalizing(['soal tes', 'soal keduanya'], $stems('test'));
     }
 
     public function test_pool_follows_audience_unless_chosen(): void
