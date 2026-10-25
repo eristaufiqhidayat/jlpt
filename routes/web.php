@@ -167,6 +167,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/attempts/{attempt}/away', [AttemptController::class, 'away'])
             ->middleware('throttle:60,1')->name('student.attempts.away');
         Route::post('/attempts/{attempt}/submit', [AttemptController::class, 'submitSection'])->name('student.attempts.submit');
+        // Refresh/buka langsung URL submit (GET) diarahkan ke halaman ujian, bukan error 405.
+        Route::get('/attempts/{attempt}/submit', fn (\App\Models\ExamAttempt $attempt) => redirect()->route('student.attempts.show', $attempt))
+            ->name('student.attempts.submit.get');
         Route::get('/attempts/{attempt}/result', [AttemptController::class, 'result'])->name('student.attempts.result');
         Route::post('/attempts/{attempt}/audio/{item}/play', [AttemptController::class, 'play'])->name('student.attempts.play');
         Route::get('/attempts/{attempt}/audio/{item}', [AttemptController::class, 'audio'])

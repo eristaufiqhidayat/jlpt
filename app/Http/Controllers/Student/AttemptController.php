@@ -276,7 +276,7 @@ class AttemptController extends Controller
 
     private function authorizeOwner(Request $request, ExamAttempt $attempt): void
     {
-        abort_unless($attempt->student_id === $request->user()->id, 403);
+        abort_unless((int) $attempt->student_id === (int) $request->user()->id, 403);
     }
 
     private function findItem(ExamAttempt $attempt, int $itemId): AttemptQuestion
