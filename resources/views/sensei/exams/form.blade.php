@@ -82,6 +82,13 @@
                     <div class="hint">Siswa LPK masuk lewat LMS; peserta tes umum (berbayar) lewat domain tes online. Kode ujian hanya bisa dipakai oleh akun yang sesuai.</div>
                 </div>
                 <div class="field">
+                    <label for="question_pool">Sumber soal</label>
+                    <select id="question_pool" name="question_pool">
+                        @foreach (\App\Models\Exam::QUESTION_POOLS as $key => $label)<option value="{{ $key }}" @selected(old('question_pool', $exam->question_pool ?? '') === $key)>{{ $label }}</option>@endforeach
+                    </select>
+                    <div class="hint">Otomatis: ujian siswa LPK memakai soal <strong>Latihan</strong>; ujian yang bisa diikuti peserta tes umum memakai soal <strong>Tes online</strong>. Soal "Keduanya" ikut di dua-duanya. Ujian bersumber soal tes tidak menampilkan pembahasan.</div>
+                </div>
+                <div class="field">
                     <input type="hidden" name="is_paid" value="0">
                     <label class="check"><input type="checkbox" name="is_paid" value="1" id="is_paid" @checked(old('is_paid', $exam->is_paid))> Ujian berbayar</label>
                 </div>
@@ -99,7 +106,7 @@
 
             <div class="card">
                 <h2>Bagian ujian</h2>
-                <p class="muted">Soal diambil acak dari Pelatihan Soal (yang berstatus "Siap pakai") saat student mulai. Durasi berlaku per bagian.</p>
+                <p class="muted">Soal diambil acak dari Pelatihan Soal (yang berstatus "Siap pakai", sesuai sumber soal) saat student mulai. Durasi berlaku per bagian.</p>
                 <div class="table-wrap"><table>
                     <tr><th></th><th>Bagian</th><th class="num">Menit</th><th class="num">Jumlah soal</th><th class="num">Urutan</th></tr>
                     @foreach ($rows as $row)
@@ -111,7 +118,7 @@
                             </td>
                             <td>
                                 {{ $row->section->name }}<br>
-                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}">Tersedia {{ $row->available }} soal</small>
+                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}">Tersedia {{ $row->available_practice }} soal latihan · {{ $row->available_test }} soal tes</small>
                             </td>
                             <td class="num"><input type="number" name="sections[{{ $sid }}][duration]" min="1" max="300" value="{{ old("sections.$sid.duration", $row->duration) }}" style="width:80px"></td>
                             <td class="num"><input type="number" name="sections[{{ $sid }}][count]" min="1" max="200" value="{{ old("sections.$sid.count", $row->count) }}" style="width:80px"></td>

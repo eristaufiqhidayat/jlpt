@@ -47,7 +47,7 @@
                 @php($d = $row['data'])
                 <tr @if ($row['errors']) style="background:var(--err-bg)" @endif>
                     <td>{{ $row['line'] }}</td>
-                    <td><small>{{ $row['section_label'] ?? '–' }}</small><br><small class="muted">{{ \App\Http\Controllers\Sensei\QuestionController::TYPE_LABELS[$d['type']] ?? $d['type'] }}</small></td>
+                    <td><small>{{ $row['section_label'] ?? '–' }}</small><br><small class="muted">{{ \App\Http\Controllers\Sensei\QuestionController::TYPE_LABELS[$d['type']] ?? $d['type'] }} · {{ \App\Models\Question::USAGES[$d['usage'] ?? 'practice'] ?? '–' }}</small></td>
                     <td lang="ja" style="max-width:360px">@jp($d['stem'])</td>
                     <td lang="ja"><small>@foreach ($d['options'] as $n => $o){{ $n }}. {{ $o }}<br>@endforeach</small></td>
                     <td>{{ $d['type'] === 'essay' ? 'esai' : ($d['correct'] ?? '–') }}</td>

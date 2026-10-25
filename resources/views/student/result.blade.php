@@ -63,7 +63,7 @@
                 <p class="muted">Rincian nilai akan tampil setelah diumumkan sensei.</p>
             @endif
             <div class="btnrow" style="flex-wrap:wrap">
-                @if ($show && ! $attempt->isPendingReview())
+                @if ($exam->showsReview() && ! $attempt->isPendingReview())
                     <a class="btn secondary" href="{{ route('student.attempts.review', $attempt) }}">📖 Lihat Pembahasan</a>
                 @endif
                 @if ($attempt->certificate)

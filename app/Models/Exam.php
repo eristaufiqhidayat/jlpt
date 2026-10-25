@@ -13,6 +13,7 @@ class Exam extends Model
     protected $fillable = [
         'sensei_id', 'level_id', 'code', 'title', 'description', 'opens_at', 'closes_at',
         'is_paid', 'price', 'pass_score', 'audio_play_limit', 'shuffle_options', 'show_result_immediately', 'status', 'audience',
+        'question_pool',
     ];
 
     /** Sasaran ujian => label. */
@@ -20,6 +21,13 @@ class Exam extends Model
         'internal' => 'Siswa LPK (LMS)',
         'public' => 'Peserta tes umum (tes online)',
         'both' => 'Keduanya',
+    ];
+
+    /** Sumber soal ujian => label. Kosong = otomatis mengikuti "Untuk siapa". */
+    public const QUESTION_POOLS = [
+        '' => 'Otomatis (ikut "Untuk siapa")',
+        'practice' => 'Soal latihan',
+        'test' => 'Soal tes online',
     ];
 
     protected function casts(): array
@@ -50,6 +58,30 @@ class Exam extends Model
             'both' => $user->isExamTaker(),
             default => $user->isStudent(),
         };
+    }
+
+    /**
+     * Sumber soal yang dipakai: 'practice' (soal Latihan + Keduanya) atau 'test' (soal Tes online + Keduanya).
+     * Otomatis: ujian khusus siswa LPK memakai soal latihan; ujian yang bisa diikuti peserta tes umum memakai soal tes.
+     */
+    public function questionPool(): string
+    {
+        if (in_array($this->question_pool, ['practice', 'test'], true)) {
+            return $this->question_pool;
+        }
+
+        return ($this->audience ?: 'internal') === 'internal' ? 'practice' : 'test';
+    }
+
+    public function questionPoolLabel(): string
+    {
+        return self::QUESTION_POOLS[$this->questionPool()].($this->question_pool ? '' : ' (otomatis)');
+    }
+
+    /** Pembahasan (kunci per soal) hanya untuk ujian bersumber soal latihan, supaya kunci soal tes tidak bocor. */
+    public function showsReview(): bool
+    {
+        return (bool) $this->show_result_immediately && $this->questionPool() === 'practice';
     }
 
     public function audienceLabel(): string

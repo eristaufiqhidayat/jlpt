@@ -51,7 +51,7 @@ class AttemptController extends Controller
     public function review(Request $request, ExamAttempt $attempt): View|RedirectResponse
     {
         $this->authorizeOwner($request, $attempt);
-        if (! $attempt->isFinished() || ! $attempt->exam->show_result_immediately) {
+        if (! $attempt->isFinished() || ! $attempt->exam->showsReview()) {
             return redirect()->route('student.attempts.result', $attempt);
         }
         $attempt->load(['exam', 'sections.examSection.section', 'sections.questions.question.options', 'sections.questions.question.passage']);

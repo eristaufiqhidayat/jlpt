@@ -9,6 +9,8 @@ use Illuminate\Support\Collection;
 /**
  * Mengambil soal acak dari bank soal untuk satu bagian.
  *
+ * Hanya soal dari sumber yang sesuai: 'practice' (Latihan + Keduanya) atau 'test' (Tes online + Keduanya).
+ *
  * Soal yang berbagi satu bacaan/audio (passage) diambil sebagai satu kelompok utuh,
  * supaya student tidak mendapat bacaan yang soalnya terpotong.
  */
@@ -17,9 +19,10 @@ class QuestionPicker
     /**
      * @return Collection<int, Question> soal terurut, siap disalin ke attempt_questions
      */
-    public function pick(int $sectionId, int $count): Collection
+    public function pick(int $sectionId, int $count, string $pool = 'practice'): Collection
     {
         $questions = Question::published()
+            ->forPool($pool)
             ->where('section_id', $sectionId)
             // Pilihan ganda harus punya kunci; esai tidak memakai kunci.
             ->where(fn ($q) => $q->where('type', QuestionType::Essay)->orWhereHas('correctOption'))

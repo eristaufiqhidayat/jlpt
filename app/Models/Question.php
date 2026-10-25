@@ -15,7 +15,18 @@ class Question extends Model
     protected $fillable = [
         'section_id', 'passage_id', 'created_by', 'type', 'mondai', 'number_in_passage',
         'stem', 'image_path', 'audio_path', 'star_position', 'correct_order',
-        'explanation', 'answer_reference', 'status', 'legacy_file_id', 'legacy_number',
+        'explanation', 'answer_reference', 'status', 'usage', 'legacy_file_id', 'legacy_number',
+    ];
+
+    /** Penggunaan soal => label. Soal "tes" tidak pernah ditampilkan kunci/pembahasannya ke peserta. */
+    public const USAGES = [
+        'practice' => 'Latihan',
+        'test' => 'Tes online',
+        'both' => 'Keduanya',
+    ];
+
+    protected $attributes = [
+        'usage' => 'practice',
     ];
 
     protected function casts(): array
@@ -60,5 +71,22 @@ class Question extends Model
     public function scopePublished(Builder $query): void
     {
         $query->where('status', ContentStatus::Published);
+    }
+
+    /** Soal yang boleh dipakai untuk sumber soal ujian ini ('practice' atau 'test'); "keduanya" selalu ikut. */
+    public function scopeForPool(Builder $query, string $pool): void
+    {
+        $query->whereIn('usage', [$pool === 'test' ? 'test' : 'practice', 'both']);
+    }
+
+    public function usageLabel(): string
+    {
+        return self::USAGES[$this->usage ?: 'practice'] ?? $this->usage;
+    }
+
+    /** Kunci & pembahasan soal tes online tidak boleh terlihat oleh peserta. */
+    public function isTestOnly(): bool
+    {
+        return $this->usage === 'test';
     }
 }
