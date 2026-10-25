@@ -19,6 +19,14 @@
     $flat = $groups->flatMap(fn ($g) => $g->map(fn ($item) => [$item, $g->first()]))->values();
 @endphp
 <div class="exam-page">
+    <div id="session-lost" role="alert" hidden style="position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:rgba(15,23,42,.55)">
+        <div style="max-width:440px;width:100%;background:#fff;border-radius:14px;padding:24px;color:#1c2434;line-height:1.6">
+            <h2 style="margin:0 0 8px;font-size:19px">Sesi ujian terputus</h2>
+            <p style="margin:0 0 10px">Akun yang login di browser ini sudah berganti atau sesinya berakhir, sehingga jawaban tidak bisa dikumpulkan dari halaman ini.</p>
+            <p style="margin:0 0 16px">Jawaban yang sudah <strong>✓ tersimpan</strong> tidak hilang. Login kembali sebagai <strong>{{ auth()->user()->name }}</strong>, lalu buka ujian ini lagi.</p>
+            <a href="{{ route('login') }}" style="display:inline-block;background:#1c3765;color:#fff;border-radius:10px;padding:10px 16px;font-weight:600;text-decoration:none">Ke halaman login</a>
+        </div>
+    </div>
     <div class="exam-topbar">
         <div class="brand"><img src="{{ asset('images/logo-160.png') }}" alt="">{{ config('app.brand') }}</div>
         <div class="user-chip">
@@ -134,6 +142,27 @@
     let submitting = false;
     let current = 0;
 
+    // ---- Sesi berganti akun / habis (401 belum login, 403 akun lain, 419 token CSRF basi) ----
+    let sessionLost = false;
+    const lostStatus = s => s === 401 || s === 403 || s === 419;
+    function markSessionLost() {
+        if (sessionLost) return;
+        sessionLost = true;
+        submitting = true; // hentikan auto-submit timer & laporan berikutnya
+        document.getElementById('session-lost').hidden = false;
+    }
+    async function sessionOk() {
+        try {
+            const res = await fetch(positionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+                body: JSON.stringify({ no: current + 1 }),
+            });
+            if (lostStatus(res.status)) { markSessionLost(); return false; }
+        } catch (e) { /* offline: biarkan form terkirim seperti biasa */ }
+        return true;
+    }
+
     // ---- Satu soal per layar ----
     function show(i) {
         if (i < 0 || i >= cards.length) return;
@@ -152,6 +181,7 @@
             body: JSON.stringify({ no: current + 1 }),
         }).then(res => {
             // 409 = ujian sudah selesai/dihentikan pengawas: muat ulang ke halaman hasil.
+            if (lostStatus(res.status)) { markSessionLost(); return null; }
             if (res.status === 409 && !submitting) { submitting = true; location.reload(); return null; }
             return res.ok ? res.json() : null;
         }).then(data => {
@@ -189,17 +219,24 @@
     const tick = () => {
         timer.textContent = '⏱ ' + fmt(Math.max(0, remaining));
         timer.classList.toggle('low', remaining <= 60);
-        if (remaining <= 0 && !submitting) { document.getElementById('timeout-flag').value = '1'; submitting = true; form.submit(); return; }
+        if (remaining <= 0 && !submitting) {
+            submitting = true;
+            sessionOk().then(ok => { if (ok) { document.getElementById('timeout-flag').value = '1'; form.submit(); } });
+            return;
+        }
         remaining--;
     };
     tick(); setInterval(tick, 1000);
 
     form.addEventListener('submit', e => {
+        e.preventDefault();
         if (submitting) return;
         const empty = navs.filter(a => !a.classList.contains('answered')).length;
         const msg = empty ? `Masih ada ${empty} soal belum dijawab. Kumpulkan sekarang?` : 'Kumpulkan bagian ini? Anda tidak bisa kembali.';
-        if (!confirm(msg)) { e.preventDefault(); return; }
+        if (!confirm(msg)) return;
         submitting = true;
+        // Cek dulu sesi masih milik peserta ini, supaya tidak berakhir di halaman 403.
+        sessionOk().then(ok => { if (ok) form.submit(); });
     });
 
     // ---- Autosave ----
@@ -212,6 +249,7 @@
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
                 body: JSON.stringify(Object.assign({ item_id: card.dataset.item, flagged: card.querySelector('[data-flag]').checked }, payload)),
             });
+            if (lostStatus(res.status)) { state.textContent = 'sesi berganti — login ulang'; markSessionLost(); return; }
             const data = await res.json();
             if (data.ok) { state.textContent = '✓ tersimpan'; if (typeof data.remaining === 'number') remaining = data.remaining; }
             else if (data.reason === 'timeout' || data.reason === 'section_closed') { state.textContent = data.message; location.reload(); }
