@@ -3,7 +3,12 @@
 @section('content')
     <div class="page-head">
         <h1>{{ $question->exists ? 'Edit soal #'.$question->id : 'Soal baru' }}</h1>
-        <a class="btn secondary" href="{{ route('sensei.questions.index', ['section_id' => $question->section_id]) }}">Kembali</a>
+        <div>
+            @if ($question->exists)
+                <a class="btn secondary" href="{{ route('sensei.questions.preview', ['question' => $question->id]) }}" target="_blank" rel="noopener">👁 Pratinjau seperti peserta</a>
+            @endif
+            <a class="btn secondary" href="{{ route('sensei.questions.index', ['section_id' => $question->section_id]) }}">Kembali</a>
+        </div>
     </div>
 
     <form method="POST" enctype="multipart/form-data"
