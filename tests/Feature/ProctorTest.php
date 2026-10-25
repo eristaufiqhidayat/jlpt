@@ -113,7 +113,7 @@ class ProctorTest extends TestCase
         $proctor = $this->user(Role::Proctor, 'pengawas@x.test');
         $this->user(Role::TestTaker, 'umum@x.test', 'Sari Peserta')->forceFill(['last_login_at' => now()])->save();
 
-        $this->actingAs($proctor)->get(self::LMS.'/pengawas')->assertOk()->assertSee('Sudah login, belum mulai ujian')->assertSee('Sari Peserta');
+        $this->actingAs($proctor)->get(self::LMS.'/pengawas')->assertOk()->assertSee('Siap ujian, belum memasukkan kode')->assertSee('Sari Peserta');
     }
 
     public function test_participant_page_reports_current_question_number(): void

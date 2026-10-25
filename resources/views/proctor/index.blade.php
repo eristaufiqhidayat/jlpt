@@ -21,6 +21,10 @@
     .pr-stop-reason { font-size: 11px; color: var(--sakura-deep); margin-top: 3px; }
     .pr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .pr-chip { background: #f6f4ee; border: 1px solid var(--line); border-radius: 20px; padding: 4px 10px; font-size: 12px; }
+    tr.pr-away td { background: var(--warn-bg); }
+    .pr-away-info { font-size: 11px; color: #9a5a17; font-weight: 700; margin-top: 3px; }
+    .pr-extra { font-size: 11px; color: var(--blue); margin-top: 3px; }
+    .pr-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 </style>
 @endpush
 @section('content')
@@ -57,6 +61,14 @@
             </select>
         </div>
         <div class="field">
+            <label for="jenis">Jenis ujian</label>
+            <select id="jenis" name="jenis" onchange="this.form.exam_id.value='';this.form.submit()">
+                <option value="all" @selected($filters['jenis'] === 'all')>Semua</option>
+                <option value="test" @selected($filters['jenis'] === 'test')>Ujian tes (soal tes online)</option>
+                <option value="practice" @selected($filters['jenis'] === 'practice')>Latihan</option>
+            </select>
+        </div>
+        <div class="field">
             <label for="status">Status</label>
             <select id="status" name="status" onchange="this.form.submit()">
                 <option value="all" @selected($filters['status'] === 'all')>Semua</option>
@@ -78,6 +90,8 @@
         <div class="stat"><div class="ic purple">✓</div><div><p class="label">Sudah selesai</p><p class="value" data-stat="finished">{{ $stats['finished'] }}</p></div></div>
     </div>
 
+    <div id="pr-alerts">@include('proctor._alerts')</div>
+
     <div id="pr-open-exams">@include('proctor._open_exams')</div>
 
     <div class="card flush">
@@ -88,7 +102,7 @@
             <tbody id="pr-rows">@include('proctor._rows')</tbody>
         </table></div>
     </div>
-    <p class="muted" style="font-size:12px;margin-top:-6px">● hijau = halaman ujian peserta aktif dalam 90 detik terakhir. No. soal = nomor yang sedang dibuka di sesi berjalan.</p>
+    <p class="muted" style="font-size:12px;margin-top:-6px">● hijau = halaman ujian peserta aktif dalam 90 detik terakhir. No. soal = nomor yang sedang dibuka di sesi berjalan. Baris kuning = peserta pernah keluar dari halaman ujian (pindah tab/jendela/aplikasi).</p>
 
     <div id="pr-waiting">@include('proctor._waiting')</div>
 @endsection
@@ -97,7 +111,7 @@
 <script>
 (function () {
     const dataUrl = @json(route('proctor.data')) + location.search;
-    const rows = document.getElementById('pr-rows'), openExams = document.getElementById('pr-open-exams'), waiting = document.getElementById('pr-waiting'), live = document.getElementById('pr-live');
+    const rows = document.getElementById('pr-rows'), openExams = document.getElementById('pr-open-exams'), waiting = document.getElementById('pr-waiting'), alerts = document.getElementById('pr-alerts'), live = document.getElementById('pr-live');
     let offset = {{ now()->getTimestampMs() }} - Date.now(); // selisih jam server dan jam browser
 
     const fmt = s => { const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60; return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(r).padStart(2, '0'); };
@@ -122,6 +136,7 @@
             rows.innerHTML = data.rows;
             waiting.innerHTML = data.waiting;
             openExams.innerHTML = data.openExams;
+            alerts.innerHTML = data.alerts;
             Object.entries(data.stats).forEach(([k, v]) => { const el = document.querySelector(`[data-stat="${k}"]`); if (el) el.textContent = v; });
             live.classList.remove('paused'); live.textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
             tick();
@@ -138,6 +153,15 @@
         const reason = prompt(form.dataset.message + '\n\nAlasan (opsional):', form.dataset.default || '');
         if (reason === null) { e.preventDefault(); return; }
         form.querySelector('[name=reason]').value = reason.trim();
+    });
+    // ---- Tambah waktu: tanya jumlah menit ----
+    document.addEventListener('submit', e => {
+        const form = e.target.closest('form[data-extend]');
+        if (!form) return;
+        const answer = prompt(form.dataset.message + '\n\nTambah berapa menit? (1–60)', '5');
+        const minutes = parseInt(answer, 10);
+        if (answer === null || !(minutes >= 1 && minutes <= 60)) { e.preventDefault(); if (answer !== null) alert('Isi angka 1 sampai 60.'); return; }
+        form.querySelector('[name=minutes]').value = minutes;
     });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 })();

@@ -9,6 +9,7 @@
                     <p>{{ $e->title }} · <code>{{ $e->code }}</code></p>
                     <span>{{ $e->level->testType?->name }} {{ $e->level->code }} · {{ $e->ongoing_count ? $e->ongoing_count.' peserta masih mengerjakan' : 'tidak ada yang sedang mengerjakan' }}</span>
                 </div>
+                @if ($canManage($e))
                 <form method="POST" action="{{ route('proctor.exams.close', $e) }}" data-confirm-stop
                       data-message="{{ 'Tutup ujian "'.$e->title.'" ('.$e->code.')? Kode tidak bisa dipakai lagi'.($e->ongoing_count ? ' dan '.$e->ongoing_count.' peserta yang masih mengerjakan akan dihentikan serta langsung dinilai' : '').'.' }}"
                       data-default="Ujian ditutup pengawas">
@@ -16,6 +17,7 @@
                     <input type="hidden" name="reason">
                     <button class="btn small danger" type="submit">⏹ Tutup ujian</button>
                 </form>
+                @endif
             </div>
         @endforeach
     </div>

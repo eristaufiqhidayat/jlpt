@@ -152,9 +152,28 @@
             body: JSON.stringify({ no: current + 1 }),
         }).then(res => {
             // 409 = ujian sudah selesai/dihentikan pengawas: muat ulang ke halaman hasil.
-            if (res.status === 409 && !submitting) { submitting = true; location.reload(); }
+            if (res.status === 409 && !submitting) { submitting = true; location.reload(); return null; }
+            return res.ok ? res.json() : null;
+        }).then(data => {
+            // Pengawas bisa menambah waktu: ikuti sisa waktu dari server.
+            if (data && typeof data.remaining === 'number' && data.remaining > remaining + 2) remaining = data.remaining;
         }).catch(() => {});
     }
+
+    // ---- Keluar dari halaman ujian (pindah tab/jendela/aplikasi): dicatat untuk pengawas ----
+    // Satu kali keluar dihitung sekali; jeda 1,5 detik supaya dialog konfirmasi/pemutar audio tidak ikut terhitung.
+    const awayUrl = @json(route('student.attempts.away', $attempt));
+    let awayTimer = null, away = false;
+    const markAway = () => {
+        if (away || submitting) return;
+        away = true;
+        fetch(awayUrl, { method: 'POST', keepalive: true, headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' } }).catch(() => {});
+    };
+    const leave = () => { if (!awayTimer && !away) awayTimer = setTimeout(markAway, 1500); };
+    const back = () => { clearTimeout(awayTimer); awayTimer = null; if (away) { away = false; report(); } };
+    document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(awayTimer); awayTimer = null; markAway(); } else back(); });
+    window.addEventListener('blur', leave);
+    window.addEventListener('focus', back);
     report(); setInterval(report, 15000);
     navs.forEach((a, i) => a.addEventListener('click', e => { e.preventDefault(); show(i); }));
     document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => show(parseInt(b.dataset.go, 10))));

@@ -73,6 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [MonitorController::class, 'index'])->name('index');
         Route::get('/data', [MonitorController::class, 'data'])->middleware('throttle:60,1')->name('data');
         Route::post('/attempts/{attempt}/stop', [MonitorController::class, 'stop'])->name('attempts.stop');
+        Route::post('/attempts/{attempt}/extend', [MonitorController::class, 'extend'])->name('attempts.extend');
         Route::post('/exams/{exam}/close', [MonitorController::class, 'closeExam'])->name('exams.close');
     });
 
@@ -163,6 +164,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/attempts/{attempt}/answer', [AttemptController::class, 'answer'])->name('student.attempts.answer');
         Route::post('/attempts/{attempt}/position', [AttemptController::class, 'position'])
             ->middleware('throttle:240,1')->name('student.attempts.position');
+        Route::post('/attempts/{attempt}/away', [AttemptController::class, 'away'])
+            ->middleware('throttle:60,1')->name('student.attempts.away');
         Route::post('/attempts/{attempt}/submit', [AttemptController::class, 'submitSection'])->name('student.attempts.submit');
         Route::get('/attempts/{attempt}/result', [AttemptController::class, 'result'])->name('student.attempts.result');
         Route::post('/attempts/{attempt}/audio/{item}/play', [AttemptController::class, 'play'])->name('student.attempts.play');
