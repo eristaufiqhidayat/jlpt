@@ -63,7 +63,7 @@
             <span>{{ $total }} soal{{ $truncated ? ' (100 pertama; persempit filter untuk melihat sisanya)' : '' }}</span>
             <div class="section-steps">
                 @foreach ($questions->groupBy('section_id') as $group)
-                    @php($sec = $group->first()->section)
+                    @php $sec = $group->first()->section; @endphp
                     <span>{{ $sec->level->testType->code }} {{ $sec->level->code }} · {{ $sec->name }} ({{ $group->count() }})</span>
                 @endforeach
             </div>
@@ -136,7 +136,7 @@
                         @if ($isEssay)
                             <div><strong>Contoh jawaban:</strong> <span lang="ja">{{ $q->answer_reference ?: '–' }}</span> <small class="muted">(esai dinilai manual oleh sensei)</small></div>
                         @elseif ($key)
-                            @php($keyPos = $q->options->sortBy('label')->values()->search(fn ($o) => $o->id === $key->id))
+                            @php $keyPos = $q->options->sortBy('label')->values()->search(fn ($o) => $o->id === $key->id); @endphp
                             <div><strong>Kunci:</strong> {{ $letters[$keyPos] ?? '?' }} <small class="muted">(pilihan {{ $key->label }})</small></div>
                         @else
                             <div class="error-text"><strong>Kunci belum diisi.</strong> Soal ini tidak akan diambil ujian.</div>
@@ -161,7 +161,7 @@
             <h2>Navigasi Soal</h2>
             <div class="q-grid">
                 @foreach ($questions as $n => $q)
-                    @php($bad = $q->type->value !== 'essay' && ! $q->options->contains(fn ($o) => (bool) $o->is_correct))
+                    @php $bad = $q->type->value !== 'essay' && ! $q->options->contains(fn ($o) => (bool) $o->is_correct); @endphp
                     <a href="#" data-nav="{{ $n }}" @class(['current' => $n === $start, 'warn' => $bad]) aria-label="Soal {{ $n + 1 }}">{{ $n + 1 }}</a>
                 @endforeach
             </div>
