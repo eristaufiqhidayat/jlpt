@@ -15,12 +15,25 @@
         <div class="stat"><div class="value" style="color:var(--warn)">{{ $warnings }}</div><div class="label">Valid dengan catatan</div></div>
     </div>
 
+    @if ($header_warnings)
+        <div class="alert warn" style="margin-top:16px">
+            <strong>Judul kolom:</strong>
+            @foreach ($header_warnings as $w)<div>! {{ $w }}</div>@endforeach
+            <small class="muted">Daftar kolom yang dikenal ada di sheet Petunjuk pada template.</small>
+        </div>
+    @endif
+
     <div class="card" style="margin-top:16px">
         @if ($valid > 0)
-            <form method="POST" action="{{ route('sensei.questions.import.store') }}" class="inline-form">
+            <form method="POST" action="{{ route('sensei.questions.import.store') }}" class="inline-form"
+                  onsubmit="const b = this.querySelector('button'); b.disabled = true; b.textContent = 'Menyimpan…';">
                 @csrf <input type="hidden" name="token" value="{{ $token }}">
                 <button class="btn success big">Import {{ $valid }} soal</button>
-                @if ($invalid)<span class="muted">{{ $invalid }} baris yang salah tidak ikut diimport. Perbaiki di Excel lalu upload lagi baris-baris itu.</span>@endif
+                <label style="display:inline-flex;gap:6px;align-items:center">
+                    <input type="checkbox" name="skip_duplicates" value="1" checked>
+                    Lewati soal yang sudah ada{{ $duplicates ? " ({$duplicates} baris)" : '' }}
+                </label>
+                @if ($invalid)<span class="muted">{{ $invalid }} baris yang salah tidak ikut diimport. Perbaiki di Excel lalu upload lagi; soal yang sudah masuk otomatis dilewati.</span>@endif
             </form>
         @else
             <div class="alert error" style="margin:0">Tidak ada baris yang valid. Perbaiki file sesuai catatan di bawah, lalu upload lagi.</div>

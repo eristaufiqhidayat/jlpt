@@ -7,24 +7,43 @@ use SimpleXMLElement;
 use ZipArchive;
 
 /**
- * Pembaca sheet pertama dari file .xlsx (atau .csv) menjadi array baris.
+ * Pembaca satu sheet dari file .xlsx (atau .csv) menjadi array baris.
+ * Sheet yang dibaca: sheet bernama $sheetName bila ada (mis. "Soal"), selain itu sheet pertama.
  * Mendukung shared strings, inline strings, rich text, angka, dan sel kosong di tengah baris.
  */
 final class XlsxReader
 {
     /** @return list<list<string>> */
-    public static function read(string $path, ?string $originalName = null): array
+    public static function read(string $path, ?string $originalName = null, ?string $sheetName = null): array
     {
         $ext = strtolower(pathinfo($originalName ?? $path, PATHINFO_EXTENSION));
 
-        return $ext === 'csv' ? self::readCsv($path) : self::readXlsx($path);
+        return $ext === 'csv' ? self::readCsv($path) : self::readXlsx($path, $sheetName);
+    }
+
+    /**
+     * CSV dari Excel sering tersimpan dalam encoding ANSI (Shift-JIS di Windows Jepang), bukan UTF-8.
+     * Shift-JIS dikonversi otomatis; encoding lain ditolak supaya huruf Jepang tidak rusak di database.
+     */
+    public static function toUtf8(string $content): string
+    {
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content); // BOM dari Excel
+        if (mb_check_encoding($content, 'UTF-8')) {
+            return $content;
+        }
+        foreach (['SJIS-win', 'EUC-JP'] as $encoding) {
+            if (mb_check_encoding($content, $encoding)) {
+                return mb_convert_encoding($content, 'UTF-8', $encoding);
+            }
+        }
+
+        throw new RuntimeException('Encoding CSV tidak dikenali (bukan UTF-8). Simpan ulang sebagai "CSV UTF-8" atau .xlsx.');
     }
 
     /** @return list<list<string>> */
     private static function readCsv(string $path): array
     {
-        $content = file_get_contents($path);
-        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content); // BOM dari Excel
+        $content = self::toUtf8((string) file_get_contents($path));
         $delimiter = substr_count(strtok($content, "\n"), ';') > substr_count(strtok($content, "\n"), ',') ? ';' : ',';
 
         $rows = [];
@@ -40,7 +59,7 @@ final class XlsxReader
     }
 
     /** @return list<list<string>> */
-    private static function readXlsx(string $path): array
+    private static function readXlsx(string $path, ?string $sheetName = null): array
     {
         $zip = new ZipArchive;
         if ($zip->open($path) !== true) {
@@ -54,7 +73,7 @@ final class XlsxReader
             }
         }
 
-        $sheetPath = self::firstSheetPath($zip);
+        $sheetPath = self::sheetPath($zip, $sheetName);
         $sheetXml = $zip->getFromName($sheetPath);
         $zip->close();
         if ($sheetXml === false) {
@@ -104,7 +123,8 @@ final class XlsxReader
         return $out;
     }
 
-    private static function firstSheetPath(ZipArchive $zip): string
+    /** Path sheet bernama $name (tanpa beda huruf besar/kecil), atau sheet pertama bila tidak ada. */
+    private static function sheetPath(ZipArchive $zip, ?string $name = null): string
     {
         $wb = $zip->getFromName('xl/workbook.xml');
         $rels = $zip->getFromName('xl/_rels/workbook.xml.rels');
@@ -112,11 +132,27 @@ final class XlsxReader
             return 'xl/worksheets/sheet1.xml';
         }
 
-        $workbook = self::xml($wb);
-        $first = $workbook->sheets->sheet[0] ?? null;
-        $rid = $first ? (string) $first->attributes('http://schemas.openxmlformats.org/officeDocument/2006/relationships')['id'] : '';
+        $relNs = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+        $sheets = [];
+        foreach (self::xml($wb)->sheets->sheet ?? [] as $sheet) {
+            $sheets[] = ['name' => (string) $sheet['name'], 'rid' => (string) $sheet->attributes($relNs)['id']];
+        }
+        if ($sheets === []) {
+            return 'xl/worksheets/sheet1.xml';
+        }
+
+        $chosen = $sheets[0];
+        if ($name !== null) {
+            foreach ($sheets as $sheet) {
+                if (mb_strtolower(trim($sheet['name'])) === mb_strtolower($name)) {
+                    $chosen = $sheet;
+                    break;
+                }
+            }
+        }
+
         foreach (self::xml($rels)->Relationship as $rel) {
-            if ((string) $rel['Id'] === $rid) {
+            if ((string) $rel['Id'] === $chosen['rid']) {
                 $target = ltrim((string) $rel['Target'], '/');
 
                 return str_starts_with($target, 'xl/') ? $target : 'xl/'.$target;
