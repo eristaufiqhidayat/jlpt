@@ -55,7 +55,7 @@
         <td class="pr-num">
             @if ($running)
                 <span class="pr-timer" data-deadline="{{ $running->deadline_at->getTimestampMs() }}">{{ gmdate($running->remainingSeconds() >= 3600 ? 'G:i:s' : 'i:s', $running->remainingSeconds()) }}</span>
-                @if ($a->extra_minutes)<div class="pr-extra">+{{ $a->extra_minutes }} mnt@if ($a->extendedBy) oleh {{ $a->extendedBy->name }}@endif</div>@endif
+                @if ($a->extra_minutes)<div class="pr-extra">+{{ $a->extra_minutes }} mnt @if ($a->extendedBy)oleh {{ $a->extendedBy->name }}@endif</div>@endif
             @else
                 <span class="muted">—</span>
             @endif
