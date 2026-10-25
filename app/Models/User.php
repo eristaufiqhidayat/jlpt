@@ -35,6 +35,7 @@ class User extends Authenticatable
             'role' => Role::class,
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'exam_page_seen_at' => 'datetime',
         ];
     }
 

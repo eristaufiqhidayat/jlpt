@@ -38,6 +38,8 @@ class AttemptController extends Controller
     public function exams(Request $request): View
     {
         $user = $request->user();
+        // Tanda untuk pengawas: siswa ini sudah membuka halaman Ujian hari ini (siap memasukkan kode).
+        $user->forceFill(['exam_page_seen_at' => now()])->saveQuietly();
 
         return view('student.exams', [
             'classifications' => \App\Support\ExamClassification::options(),
@@ -159,6 +161,26 @@ class AttemptController extends Controller
         }
 
         $attempt->forceFill(['current_question_no' => $data['no'], 'last_seen_at' => now()])->saveQuietly();
+
+        // Sisa waktu ikut dikirim supaya timer peserta menyesuaikan bila pengawas menambah waktu.
+        $running = $attempt->sections()->whereNotNull('started_at')->whereNull('submitted_at')->first();
+
+        return response()->json(['ok' => true, 'remaining' => $running?->remainingSeconds()]);
+    }
+
+    /** Peserta keluar dari halaman ujian (pindah tab/jendela/aplikasi); dicatat untuk pengawas. */
+    public function away(Request $request, ExamAttempt $attempt): JsonResponse
+    {
+        $this->authorizeOwner($request, $attempt);
+
+        if ($attempt->isFinished()) {
+            return response()->json(['ok' => false], 409);
+        }
+
+        ExamAttempt::whereKey($attempt->id)->update([
+            'focus_lost_count' => DB::raw('focus_lost_count + 1'),
+            'last_focus_lost_at' => now(),
+        ]);
 
         return response()->json(['ok' => true]);
     }

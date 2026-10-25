@@ -335,6 +335,33 @@ class ExamAttemptService
     }
 
     /**
+     * Pengawas menambah waktu sesi yang sedang berjalan (mis. peserta terkendala internet).
+     * Bila waktunya sudah lewat tetapi sesi belum dikumpulkan, tambahan dihitung dari sekarang.
+     * Mengembalikan false bila tidak ada sesi yang sedang berjalan.
+     */
+    public function extendAttempt(ExamAttempt $attempt, User $by, int $minutes): bool
+    {
+        return DB::transaction(function () use ($attempt, $by, $minutes) {
+            $attempt = ExamAttempt::whereKey($attempt->id)->lockForUpdate()->first();
+            if ($attempt->status !== AttemptStatus::Ongoing) {
+                return false;
+            }
+
+            $section = $attempt->sections()->whereNotNull('started_at')->whereNull('submitted_at')
+                ->orderBy('sort_order')->lockForUpdate()->first();
+            if (! $section) {
+                return false;
+            }
+
+            $base = $section->deadline_at->isPast() ? now() : $section->deadline_at;
+            $section->update(['deadline_at' => $base->copy()->addMinutes($minutes)]);
+            $attempt->update(['extra_minutes' => $attempt->extra_minutes + $minutes, 'extended_by' => $by->id]);
+
+            return true;
+        });
+    }
+
+    /**
      * Kumpulkan otomatis bagian yang waktunya sudah habis.
      * Dipanggil saat student kembali, dan oleh scheduler untuk student yang menutup browser.
      */

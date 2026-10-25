@@ -13,6 +13,7 @@ class ExamAttempt extends Model
         'exam_id', 'student_id', 'started_at', 'finished_at',
         'correct_count', 'question_count', 'score', 'status',
         'current_question_no', 'last_seen_at', 'stopped_by', 'stop_reason',
+        'focus_lost_count', 'last_focus_lost_at', 'extra_minutes', 'extended_by',
     ];
 
     protected function casts(): array
@@ -21,6 +22,9 @@ class ExamAttempt extends Model
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'last_focus_lost_at' => 'datetime',
+            'focus_lost_count' => 'integer',
+            'extra_minutes' => 'integer',
             'current_question_no' => 'integer',
             'score' => 'decimal:2',
             'status' => AttemptStatus::class,
@@ -63,6 +67,11 @@ class ExamAttempt extends Model
     public function stoppedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'stopped_by');
+    }
+
+    public function extendedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'extended_by');
     }
 
     public function certificate(): \Illuminate\Database\Eloquent\Relations\HasOne
