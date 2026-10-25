@@ -24,6 +24,7 @@
             <label for="file">File .xlsx atau .csv (maks. 10 MB)</label>
             <input id="file" type="file" name="file" accept=".xlsx,.csv" required>
         </div>
+        <p class="muted">Isi soal di sheet <strong>Soal</strong>. Bila memakai CSV, simpan sebagai <strong>CSV UTF-8</strong> supaya huruf Jepang tidak rusak.</p>
         <p class="muted">Belum ada yang disimpan di langkah ini. Anda akan melihat pratinjau dan hasil pengecekan setiap baris dulu.</p>
         <button class="btn">Periksa file</button>
     </form>

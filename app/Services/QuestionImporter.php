@@ -49,18 +49,31 @@ class QuestionImporter
 
     /**
      * @param  list<list<string>>  $rows  baris mentah dari file, baris pertama = judul kolom
-     * @return array{rows: list<array>, valid: int, invalid: int, warnings: int, header_error: ?string}
+     * @return array{rows: list<array>, valid: int, invalid: int, warnings: int, duplicates: int, header_error: ?string, header_warnings: list<string>}
      */
     public function parse(array $rows): array
     {
-        $header = array_map(fn ($h) => Str::snake(Str::lower(trim((string) $h))), $rows[0] ?? []);
+        $rawHeader = $rows[0] ?? [];
+        $header = array_map(fn ($h) => self::normalizeHeader((string) $h), $rawHeader);
         $missing = array_diff(['level', 'bagian', 'soal', 'jawaban'], $header);
         if ($missing) {
-            return ['rows' => [], 'valid' => 0, 'invalid' => 0, 'warnings' => 0,
+            return ['rows' => [], 'valid' => 0, 'invalid' => 0, 'warnings' => 0, 'duplicates' => 0, 'header_warnings' => [],
                 'header_error' => 'Kolom wajib tidak ada: '.implode(', ', $missing).'. Gunakan template dari halaman ini.'];
         }
 
+        // Kolom yang tidak dikenal dilaporkan, supaya salah ketik judul kolom tidak diam-diam diabaikan.
+        $headerWarnings = [];
+        foreach ($header as $i => $col) {
+            $label = trim((string) $rawHeader[$i]);
+            if ($col !== '' && ! in_array($col, self::COLUMNS, true)) {
+                $headerWarnings[] = "Kolom \"{$label}\" tidak dikenal dan diabaikan";
+            } elseif ($col !== '' && array_search($col, $header, true) !== $i) {
+                $headerWarnings[] = "Kolom \"{$label}\" muncul dua kali; hanya yang pertama dipakai";
+            }
+        }
+
         $out = [];
+        $seen = [];
         foreach (array_slice($rows, 1) as $i => $raw) {
             if (implode('', $raw) === '') {
                 continue; // baris kosong
@@ -70,7 +83,19 @@ class QuestionImporter
                 $pos = array_search($col, $header, true);
                 $data[$col] = $pos === false ? '' : trim((string) ($raw[$pos] ?? ''));
             }
-            $out[] = $this->validateRow($data, $i + 2); // nomor baris seperti di Excel
+            $row = $this->validateRow($data, $i + 2); // nomor baris seperti di Excel
+
+            // Soal yang sama persis di dalam file yang sama.
+            if (! $row['errors']) {
+                $key = self::duplicateKey($row['data']);
+                if (isset($seen[$key])) {
+                    $row['warnings'][] = "Sama dengan baris {$seen[$key]} di file ini";
+                    $row['duplicate'] = true;
+                } else {
+                    $seen[$key] = $row['line'];
+                }
+            }
+            $out[] = $row;
         }
 
         $valid = count(array_filter($out, fn ($r) => ! $r['errors']));
@@ -80,8 +105,35 @@ class QuestionImporter
             'valid' => $valid,
             'invalid' => count($out) - $valid,
             'warnings' => count(array_filter($out, fn ($r) => ! $r['errors'] && $r['warnings'])),
+            'duplicates' => count(array_filter($out, fn ($r) => ! $r['errors'] && $r['duplicate'])),
             'header_error' => null,
+            'header_warnings' => $headerWarnings,
         ];
+    }
+
+    /**
+     * "Pilihan 1", "pilihan-1", "PILIHAN_1", "pilihan1" → pilihan_1; "No. Arsip" → no_arsip; "soal*" → soal.
+     */
+    public static function normalizeHeader(string $h): string
+    {
+        $h = preg_replace('/^\xEF\xBB\xBF/', '', $h);
+        $h = mb_strtolower(trim($h));
+        $h = trim(preg_replace('/[^\p{L}\p{N}]+/u', '_', $h), '_');
+        $h = preg_replace('/^pilihan_?([1-4])$/', 'pilihan_$1', $h);
+
+        return self::HEADER_ALIASES[$h] ?? $h;
+    }
+
+    private const HEADER_ALIASES = [
+        'kunci' => 'jawaban', 'kunci_jawaban' => 'jawaban',
+        'tipe' => 'jenis', 'tipe_soal' => 'jenis', 'jenis_soal' => 'jenis',
+        'id_bacaan' => 'bacaan_id', 'nomor_arsip' => 'no_arsip', 'id_arsip' => 'arsip_id',
+    ];
+
+    private static function duplicateKey(array $d): string
+    {
+        return json_encode([$d['section_id'], $d['type'], $d['passage_id'], $d['number_in_passage'], $d['stem'], $d['options']],
+            JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
     private function validateRow(array $d, int $line): array
@@ -181,6 +233,15 @@ class QuestionImporter
         }
         if ($d['urutan_benar'] !== '' && ! preg_match('/^[1-4](-[1-4]){3}$/', $d['urutan_benar'])) {
             $errors[] = 'urutan_benar ditulis seperti 2-4-1-3';
+        } elseif ($d['urutan_benar'] !== '' && count(array_unique(explode('-', $d['urutan_benar']))) !== 4) {
+            $errors[] = 'urutan_benar harus memakai 1, 2, 3, 4 masing-masing sekali';
+        } elseif ($type === 'star' && $correct !== null && $d['urutan_benar'] !== ''
+            && in_array($d['posisi_bintang'], ['1', '2', '3', '4'], true)) {
+            // Jawaban soal ★ = pilihan yang berada di posisi ★ pada urutan benar.
+            $expected = (int) explode('-', $d['urutan_benar'])[(int) $d['posisi_bintang'] - 1];
+            if ($expected !== $correct) {
+                $errors[] = "Jawaban {$correct} tidak cocok: dengan urutan {$d['urutan_benar']} dan ★ di posisi {$d['posisi_bintang']}, jawabannya {$expected}";
+            }
         }
 
         $status = match (Str::lower($d['status'])) {
@@ -192,15 +253,18 @@ class QuestionImporter
             $errors[] = "Status \"{$d['status']}\" harus siap/draft";
         }
 
+        $duplicate = false;
         if (! $errors && $section && $d['soal'] !== ''
-            && ($dup = Question::where('section_id', $section->id)->where('stem', $d['soal'])->value('id'))) {
+            && ($dup = $this->existingQuestionId($section->id, $passageId, $d['soal']))) {
             $warnings[] = "Soal dengan teks sama sudah ada (#{$dup})";
+            $duplicate = true;
         }
 
         return [
             'line' => $line,
             'errors' => $errors,
             'warnings' => $warnings,
+            'duplicate' => $duplicate,
             'section_label' => $section ? "{$section->level->testType->code} {$section->level->code} · {$section->name}" : null,
             'data' => [
                 'section_id' => $section?->id,
@@ -223,14 +287,49 @@ class QuestionImporter
         ];
     }
 
-    /** Simpan baris yang valid. @return int jumlah soal dibuat */
-    public function import(array $parsedRows, int $userId): int
+    /** Soal dengan teks sama di bagian (dan bacaan) yang sama. */
+    private function existingQuestionId(int $sectionId, ?int $passageId, string $stem): ?int
+    {
+        return Question::where('section_id', $sectionId)
+            ->when($passageId, fn ($q) => $q->where('passage_id', $passageId), fn ($q) => $q->whereNull('passage_id'))
+            ->where('stem', $stem)
+            ->value('id');
+    }
+
+    /**
+     * Simpan baris yang valid. Data acuan (bagian, bacaan, arsip) dicek ulang karena bisa berubah
+     * sejak pratinjau; baris yang acuannya hilang dilewati, bukan menggagalkan seluruh import.
+     *
+     * @return array{created: int, skipped: list<array{line: int, reason: string}>}
+     */
+    public function import(array $parsedRows, int $userId, bool $skipDuplicates = true): array
     {
         $valid = array_filter($parsedRows, fn ($r) => ! $r['errors']);
 
-        return DB::transaction(function () use ($valid, $userId) {
+        return DB::transaction(function () use ($valid, $userId, $skipDuplicates) {
+            $created = 0;
+            $skipped = [];
+            $seen = [];
             foreach ($valid as $row) {
                 $d = $row['data'];
+
+                if ($reason = $this->missingReference($d)) {
+                    $skipped[] = ['line' => $row['line'], 'reason' => $reason];
+
+                    continue;
+                }
+                if ($skipDuplicates) {
+                    $key = self::duplicateKey($d);
+                    $dup = isset($seen[$key])
+                        || ($d['stem'] !== null && $this->existingQuestionId($d['section_id'], $d['passage_id'], $d['stem']));
+                    $seen[$key] = true;
+                    if ($dup) {
+                        $skipped[] = ['line' => $row['line'], 'reason' => 'soal sudah ada'];
+
+                        continue;
+                    }
+                }
+
                 $question = Question::create([
                     'section_id' => $d['section_id'],
                     'passage_id' => $d['passage_id'],
@@ -259,10 +358,26 @@ class QuestionImporter
                         'is_correct' => (int) $label === (int) $d['correct'],
                     ]);
                 }
+                $created++;
             }
 
-            return count($valid);
+            return ['created' => $created, 'skipped' => $skipped];
         });
+    }
+
+    private function missingReference(array $d): ?string
+    {
+        if (! $d['section_id'] || ! Section::whereKey($d['section_id'])->exists()) {
+            return 'bagian sudah tidak ada';
+        }
+        if ($d['passage_id'] && ! Passage::whereKey($d['passage_id'])->exists()) {
+            return "bacaan #{$d['passage_id']} sudah dihapus";
+        }
+        if ($d['legacy_file_id'] && ! LegacyExamFile::whereKey($d['legacy_file_id'])->exists()) {
+            return 'arsip lama sudah tidak ada';
+        }
+
+        return null;
     }
 
     public function writeTemplate(string $path): void
@@ -286,13 +401,16 @@ class QuestionImporter
             ['pilihan_1..4', 'ya', 'Minimal 2 pilihan. Choukai boleh kosong (otomatis 1–4)'],
             ['jawaban', 'ya*', '1–4 atau A–D. *Boleh kosong bila arsip_id + no_arsip diisi (kunci diambil dari arsip lama)'],
             ['posisi_bintang', 'tidak', 'Soal bintang: posisi ★ (1–4)'],
-            ['urutan_benar', 'tidak', 'Soal bintang: urutan benar, mis. 2-4-1-3'],
+            ['urutan_benar', 'tidak', 'Soal bintang: urutan benar, mis. 2-4-1-3. Bila diisi bersama posisi_bintang, jawaban harus = angka di posisi ★'],
             ['pembahasan', 'tidak', 'Penjelasan jawaban'],
             ['contoh_jawaban', 'tidak', 'Esai: contoh jawaban benar untuk sensei'],
             ['status', 'tidak', 'siap (default) atau draft'],
             ['arsip_id', 'tidak', 'Nomor arsip lama (#, lihat menu Arsip Lama)'],
             ['no_arsip', 'tidak', 'Nomor soal di PDF arsip lama. Audio choukai & pembahasan dari arsip ikut terpasang otomatis'],
             [],
+            ['Judul kolom tidak peka huruf besar/kecil; spasi atau tanda hubung boleh (mis. "Pilihan 1" = pilihan_1).'],
+            ['Program membaca sheet bernama "Soal"; bila tidak ada, sheet pertama.'],
+            ['CSV: simpan sebagai "CSV UTF-8" (Shift-JIS juga dikenali). Lebih aman pakai .xlsx.'],
             ['Gambar dan audio ditambahkan lewat halaman edit soal setelah import.'],
         ];
 
