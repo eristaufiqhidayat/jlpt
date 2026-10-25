@@ -70,7 +70,7 @@ class ExamController extends Controller
         $exam->load(['level.testType', 'sections.section', 'sensei:id,name']);
 
         $attempts = $exam->attempts()->with(['student:id,name,email', 'sections'])->latest('id')->paginate(50);
-        $available = $this->availableCounts($exam->sections->pluck('section_id'));
+        $available = $this->availableCounts($exam->sections->pluck('section_id'), $exam->questionPool());
 
         return view('sensei.exams.show', compact('exam', 'attempts', 'available'));
     }
@@ -194,7 +194,10 @@ class ExamController extends Controller
     {
         $level->loadMissing('sections');
         $existing = $exam?->sections->keyBy('section_id') ?? collect();
-        $available = $this->availableCounts($level->sections->pluck('id'));
+        $ids = $level->sections->pluck('id');
+        $practice = $this->availableCounts($ids, 'practice');
+        $test = $this->availableCounts($ids, 'test');
+        $available = ($exam?->questionPool() ?? 'practice') === 'test' ? $test : $practice;
 
         // Bagian nonaktif tidak ditawarkan untuk ujian baru, tetapi tetap tampil bila sudah dipakai ujian ini.
         return $level->sections->filter(fn ($s) => $s->is_active || $existing->has($s->id))->values()->map(fn ($s) => (object) [
@@ -204,13 +207,16 @@ class ExamController extends Controller
             'count' => $existing->get($s->id)?->question_count ?? ($s->default_question_count ?: min(10, $available[$s->id] ?? 0) ?: 10),
             'order' => $existing->get($s->id)?->sort_order ?? $s->sort_order,
             'available' => $available[$s->id] ?? 0,
+            'available_practice' => $practice[$s->id] ?? 0,
+            'available_test' => $test[$s->id] ?? 0,
         ]);
     }
 
-    /** @return array<int, int> section_id => jumlah soal siap pakai */
-    private function availableCounts(Collection $sectionIds): array
+    /** @return array<int, int> section_id => jumlah soal siap pakai untuk sumber soal ini */
+    private function availableCounts(Collection $sectionIds, string $pool): array
     {
         return Question::where('status', ContentStatus::Published)
+            ->forPool($pool)
             ->whereIn('section_id', $sectionIds)
             ->selectRaw('section_id, COUNT(*) as total')->groupBy('section_id')
             ->pluck('total', 'section_id')->map(fn ($v) => (int) $v)->all();
@@ -227,6 +233,7 @@ class ExamController extends Controller
             'closes_at' => ['nullable', 'date', 'after:opens_at'],
             'is_paid' => ['boolean'],
             'audience' => ['nullable', Rule::in(array_keys(Exam::AUDIENCES))],
+            'question_pool' => ['nullable', Rule::in(['practice', 'test'])],
             'price' => ['nullable', 'integer', 'min:0', 'required_if:is_paid,1'],
             'pass_score' => ['nullable', 'integer', 'min:1', 'max:100'],
             'audio_play_limit' => ['nullable', 'integer', 'min:1', 'max:5'],
@@ -278,6 +285,7 @@ class ExamController extends Controller
 
         unset($data['sections']);
         $data['audience'] = $data['audience'] ?? $exam?->audience ?? 'internal';
+        $data['question_pool'] = $data['question_pool'] ?? null; // kosong = otomatis
         $data['is_paid'] = $request->boolean('is_paid');
         $data['price'] = $data['is_paid'] ? (int) $data['price'] : 0;
         $data['shuffle_options'] = $request->boolean('shuffle_options');

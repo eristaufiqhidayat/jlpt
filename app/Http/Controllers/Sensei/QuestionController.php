@@ -42,6 +42,7 @@ class QuestionController extends Controller
             ->when($request->filled('section_id'), fn ($q) => $q->where('section_id', $request->integer('section_id')))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('usage'), fn ($q) => $q->where('usage', $request->string('usage')))
             ->when($request->filled('q'), fn ($q) => $q->where('stem', 'like', '%'.$request->string('q').'%'))
             ->latest('id')
             ->paginate(30)->withQueryString();
@@ -143,6 +144,7 @@ class QuestionController extends Controller
             'explanation' => ['nullable', 'string', 'max:5000'],
             'answer_reference' => ['nullable', 'string', 'max:2000'],
             'status' => ['required', new Enum(ContentStatus::class)],
+            'usage' => ['nullable', Rule::in(array_keys(Question::USAGES))],
             'image' => ['nullable', 'image', 'max:4096'],
             'audio' => ['nullable', 'file', 'mimes:mp3,m4a,wav,ogg', 'max:20480'],
             'options' => ['array'],
@@ -175,6 +177,7 @@ class QuestionController extends Controller
         // Pilihan jawaban dan file disimpan terpisah.
         unset($data['options'], $data['correct'], $data['image'], $data['audio']);
         $data['passage_id'] = $data['passage_id'] ?? null;
+        $data['usage'] = $data['usage'] ?? $question?->usage ?? 'practice';
 
         return $data;
     }

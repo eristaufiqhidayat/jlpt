@@ -11,6 +11,11 @@
             @php($lastPassage = null)
             @foreach ($s->questions as $i => $item)
                 @php($q = $item->question)
+                @if ($q->isTestOnly())
+                    {{-- Soal yang kini ditandai "Tes online" tidak ditampilkan supaya isi dan kuncinya tidak bocor. --}}
+                    <div class="review-q"><p class="muted" style="margin:0"><strong>{{ $i + 1 }}.</strong> Soal ini sekarang dipakai untuk tes online, jadi isi dan kuncinya tidak ditampilkan.</p></div>
+                    @continue
+                @endif
                 <div class="review-q">
                     @if ($q->passage && $q->passage_id !== $lastPassage)
                         @php($lastPassage = $q->passage_id)

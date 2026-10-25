@@ -27,6 +27,13 @@ class QuestionImporter
         'jenis_tes', 'level', 'bagian', 'jenis', 'mondai', 'bacaan_id', 'urutan_bacaan', 'soal',
         'pilihan_1', 'pilihan_2', 'pilihan_3', 'pilihan_4', 'jawaban',
         'posisi_bintang', 'urutan_benar', 'pembahasan', 'contoh_jawaban', 'status', 'arsip_id', 'no_arsip',
+        'penggunaan',
+    ];
+
+    private const USAGE_ALIASES = [
+        '' => 'practice', 'latihan' => 'practice', 'practice' => 'practice',
+        'tes' => 'test', 'test' => 'test', 'tes_online' => 'test', 'ujian' => 'test',
+        'keduanya' => 'both', 'both' => 'both', 'semua' => 'both',
     ];
 
     private const TYPE_ALIASES = [
@@ -128,6 +135,7 @@ class QuestionImporter
         'kunci' => 'jawaban', 'kunci_jawaban' => 'jawaban',
         'tipe' => 'jenis', 'tipe_soal' => 'jenis', 'jenis_soal' => 'jenis',
         'id_bacaan' => 'bacaan_id', 'nomor_arsip' => 'no_arsip', 'id_arsip' => 'arsip_id',
+        'dipakai_untuk' => 'penggunaan', 'pemakaian' => 'penggunaan', 'usage' => 'penggunaan',
     ];
 
     private static function duplicateKey(array $d): string
@@ -253,6 +261,12 @@ class QuestionImporter
             $errors[] = "Status \"{$d['status']}\" harus siap/draft";
         }
 
+        $usageKey = trim(preg_replace('/[\s\-]+/', '_', Str::lower($d['penggunaan'])), '_');
+        $usage = self::USAGE_ALIASES[$usageKey] ?? null;
+        if (! $usage) {
+            $errors[] = "Penggunaan \"{$d['penggunaan']}\" harus latihan/tes/keduanya";
+        }
+
         $duplicate = false;
         if (! $errors && $section && $d['soal'] !== ''
             && ($dup = $this->existingQuestionId($section->id, $passageId, $d['soal']))) {
@@ -279,6 +293,7 @@ class QuestionImporter
                 'legacy_audio_path' => $legacyAudio,
                 'answer_reference' => $d['contoh_jawaban'] ?: null,
                 'status' => $status,
+                'usage' => $usage,
                 'legacy_file_id' => $legacyFileId,
                 'legacy_number' => $legacyNumber,
                 'options' => $options,
@@ -343,6 +358,7 @@ class QuestionImporter
                     'explanation' => $d['explanation'],
                     'answer_reference' => $d['answer_reference'],
                     'status' => $d['status'],
+                    'usage' => $d['usage'] ?? 'practice',
                     'legacy_file_id' => $d['legacy_file_id'],
                     'legacy_number' => $d['legacy_number'],
                 ]);
@@ -383,10 +399,10 @@ class QuestionImporter
     public function writeTemplate(string $path): void
     {
         $rows = [self::COLUMNS];
-        $rows[] = ['JLPT', 'N4', 'Moji Goi', 'isian', '問題1', '', '', 'あしたは __雨__ が ふるでしょう。', 'あめ', 'ゆき', 'くも', 'かぜ', 'A', '', '', '', '', 'siap', '', ''];
-        $rows[] = ['JLPT', 'N4', 'Bunpou Dokkai', 'bintang', '問題2', '', '', 'これは きのう ＿＿ ＿＿ ★ ＿＿ です。', 'デパート', 'で', 'かった', 'くつ', '3', '3', '1-2-3-4', '', '', 'siap', '', ''];
-        $rows[] = ['JLPT', 'N4', 'Bunpou Dokkai', 'isian', '問題1', '', '', '{新聞|しんぶん}（　）読みます。', 'を', 'に', 'が', 'で', '', '', '', 'を = objek', '', 'draft', '1', '1'];
-        $rows[] = ['KANJI', 'N5', 'Kanji-Furigana', 'esai', '', '', '', 'Tulis cara baca: __山__', '', '', '', '', '', '', '', '', 'やま', 'siap', '', ''];
+        $rows[] = ['JLPT', 'N4', 'Moji Goi', 'isian', '問題1', '', '', 'あしたは __雨__ が ふるでしょう。', 'あめ', 'ゆき', 'くも', 'かぜ', 'A', '', '', '', '', 'siap', '', '', 'latihan'];
+        $rows[] = ['JLPT', 'N4', 'Bunpou Dokkai', 'bintang', '問題2', '', '', 'これは きのう ＿＿ ＿＿ ★ ＿＿ です。', 'デパート', 'で', 'かった', 'くつ', '3', '3', '1-2-3-4', '', '', 'siap', '', '', 'tes'];
+        $rows[] = ['JLPT', 'N4', 'Bunpou Dokkai', 'isian', '問題1', '', '', '{新聞|しんぶん}（　）読みます。', 'を', 'に', 'が', 'で', '', '', '', 'を = objek', '', 'draft', '1', '1', 'keduanya'];
+        $rows[] = ['KANJI', 'N5', 'Kanji-Furigana', 'esai', '', '', '', 'Tulis cara baca: __山__', '', '', '', '', '', '', '', '', 'やま', 'siap', '', '', ''];
 
         $guide = [
             ['Kolom', 'Wajib', 'Keterangan'],
@@ -407,6 +423,7 @@ class QuestionImporter
             ['status', 'tidak', 'siap (default) atau draft'],
             ['arsip_id', 'tidak', 'Nomor arsip lama (#, lihat menu Arsip Lama)'],
             ['no_arsip', 'tidak', 'Nomor soal di PDF arsip lama. Audio choukai & pembahasan dari arsip ikut terpasang otomatis'],
+            ['penggunaan', 'tidak', 'latihan (default), tes, atau keduanya. Soal "tes" hanya dipakai ujian bersumber soal tes online; kunci & pembahasannya tidak ditampilkan ke peserta'],
             [],
             ['Judul kolom tidak peka huruf besar/kecil; spasi atau tanda hubung boleh (mis. "Pilihan 1" = pilihan_1).'],
             ['Program membaca sheet bernama "Soal"; bila tidak ada, sheet pertama.'],
@@ -424,7 +441,7 @@ class QuestionImporter
         }
 
         (new XlsxWriter)
-            ->addSheet('Soal', $rows, [10, 7, 16, 9, 9, 9, 9, 45, 14, 14, 14, 14, 9, 9, 11, 25, 18, 8, 9, 9])
+            ->addSheet('Soal', $rows, [10, 7, 16, 9, 9, 9, 9, 45, 14, 14, 14, 14, 9, 9, 11, 25, 18, 8, 9, 9, 11])
             ->addSheet('Petunjuk', $guide, [16, 8, 95])
             ->addSheet('Bagian', $sections, [16, 8, 28, 18])
             ->save($path);

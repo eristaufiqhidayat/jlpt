@@ -51,6 +51,15 @@
                             </select>
                             <div class="hint">Hanya soal "Siap pakai" yang diambil untuk ujian.</div>
                         </div>
+                        <div class="field">
+                            <label for="usage">Dipakai untuk</label>
+                            <select id="usage" name="usage">
+                                @foreach (\App\Models\Question::USAGES as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('usage', $question->usage ?: 'practice') === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <div class="hint">Soal "Tes online" hanya diambil ujian bersumber soal tes, dan kunci serta pembahasannya tidak pernah ditampilkan ke peserta.</div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="field">

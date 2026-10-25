@@ -64,7 +64,7 @@ class ExamAttemptService
 
             $total = 0;
             foreach ($exam->sections as $examSection) {
-                $questions = $this->picker->pick($examSection->section_id, $examSection->question_count);
+                $questions = $this->picker->pick($examSection->section_id, $examSection->question_count, $exam->questionPool());
 
                 if ($questions->isEmpty()) {
                     throw new ExamAccessException(

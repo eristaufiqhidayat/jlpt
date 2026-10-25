@@ -42,6 +42,15 @@
                 <option value="archived" @selected(request('status') === 'archived')>Diarsipkan</option>
             </select>
         </div>
+        <div class="field">
+            <label for="usage">Dipakai untuk</label>
+            <select id="usage" name="usage">
+                <option value="">Semua</option>
+                @foreach (\App\Models\Question::USAGES as $value => $label)
+                    <option value="{{ $value }}" @selected(request('usage') === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="field" style="flex:1">
             <label for="q">Cari teks soal</label>
             <input id="q" type="search" name="q" value="{{ request('q') }}">
@@ -73,7 +82,8 @@
                             <span class="badge err">belum ada</span>
                         @endif
                     </td>
-                    <td>@include('sensei.questions._status', ['status' => $q->status->value])</td>
+                    <td>@include('sensei.questions._status', ['status' => $q->status->value])
+                        <br><small @class(['badge', 'warn' => $q->usage === 'test', 'info' => $q->usage === 'both'])>{{ $q->usageLabel() }}</small></td>
                     <td class="actions">
                         <a class="btn small secondary" href="{{ route('sensei.questions.edit', $q) }}">Edit</a>
                     </td>
