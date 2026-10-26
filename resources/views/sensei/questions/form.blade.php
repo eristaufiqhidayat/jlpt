@@ -21,17 +21,26 @@
                 <div class="card">
                     <div class="row">
                         <div class="field">
-                            <label for="section_id">Bagian</label>
-                            <select id="section_id" name="section_id" required>
-                                <option value="">— pilih —</option>
-                                @foreach ($sections as $group => $items)
+                            <label for="level_id">Jenis Ujian</label>
+                            <select id="level_id" name="level_id" required>
+                                @foreach ($levelGroups as $group => $items)
                                     <optgroup label="{{ $group }}">
                                         @foreach ($items as $id => $name)
-                                            <option value="{{ $id }}" @selected(old('section_id', $question->section_id) == $id)>{{ $group }} · {{ $name }}</option>
+                                            <option value="{{ $id }}" @selected($selectedLevelId === $id)>{{ $name }}</option>
                                         @endforeach
                                     </optgroup>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="field">
+                            <label for="section_id">Bagian</label>
+                            <select id="section_id" name="section_id" required>
+                                <option value="">— pilih —</option>
+                                @foreach ($sectionsByLevel->get($selectedLevelId, collect()) as $id => $name)
+                                    <option value="{{ $id }}" @selected($selectedSectionId === $id)>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="hint" id="no-section-hint" @if ($sectionsByLevel->get($selectedLevelId, collect())->isNotEmpty()) hidden @endif>Jenis ujian ini belum punya bagian. Tambahkan di Data Master.</div>
                         </div>
                         <div class="field">
                             <label for="type">Jenis soal</label>
@@ -194,6 +203,18 @@
     const stem = document.getElementById('stem'), preview = document.getElementById('preview');
     const update = () => preview.innerHTML = render(stem.value) || '<span class="muted">(kosong)</span>';
     stem.addEventListener('input', update); update();
+
+    // ---- "Bagian" mengikuti "Jenis Ujian" ----
+    const sectionsByLevel = @json($sectionsJson);
+    const level = document.getElementById('level_id'), section = document.getElementById('section_id');
+    const noSectionHint = document.getElementById('no-section-hint');
+    level.addEventListener('change', () => {
+        const items = sectionsByLevel[level.value] || [];
+        section.innerHTML = '<option value="">— pilih —</option>';
+        items.forEach(([id, name]) => section.add(new Option(name, id)));
+        if (section.options.length === 2) section.selectedIndex = 1;
+        noSectionHint.hidden = section.options.length > 1;
+    });
 
     const type = document.getElementById('type');
     const toggle = () => {
