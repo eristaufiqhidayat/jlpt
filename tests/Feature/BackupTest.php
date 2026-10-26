@@ -113,11 +113,21 @@ class BackupTest extends TestCase
 
     public function test_sensitive_tables_are_marked_and_system_tables_skip_select_all(): void
     {
-        $this->actingAs($this->admin())->get(route('admin.backup.index'))
+        $html = $this->actingAs($this->admin())->get(route('admin.backup.index'))
             ->assertOk()
             ->assertSee('berisi hash password')
-            ->assertSee('id="tbl-sessions" class="cb-table" data-skip="1"', false)
-            ->assertDontSee('id="tbl-users" class="cb-table" data-skip="1"', false);
+            ->getContent();
+
+        $this->assertStringContainsString('data-skip="1"', $this->checkbox($html, 'sessions'));
+        $this->assertStringNotContainsString('data-skip', $this->checkbox($html, 'users'));
+    }
+
+    /** Tag <input> checkbox untuk satu tabel. */
+    private function checkbox(string $html, string $table): string
+    {
+        $this->assertSame(1, preg_match('/<input[^>]*id="tbl-'.preg_quote($table, '/').'"[^>]*>/', $html, $m), "checkbox {$table} tidak ditemukan");
+
+        return $m[0];
     }
 
     public function test_large_table_is_read_in_chunks_and_complete(): void
