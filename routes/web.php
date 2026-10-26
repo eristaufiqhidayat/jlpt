@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -66,6 +67,9 @@ Route::middleware('auth')->group(function () {
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::post('payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::post('payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.status');
+
+        Route::get('backup', [BackupController::class, 'index'])->name('backup.index');
+        Route::post('backup', [BackupController::class, 'download'])->middleware('throttle:10,1')->name('backup.download');
     });
 
     // ---------------- Pengawasan ujian (pengawas; staf juga boleh) ----------------

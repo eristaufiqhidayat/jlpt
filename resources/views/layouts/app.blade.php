@@ -86,6 +86,7 @@
                 $item('User', '👥', 'admin.users.index', 'admin.users.*'),
                 $item('Pembayaran', '💳', 'admin.payments.index', 'admin.payments.*'),
                 $item('Laporan', '📈', 'reports', 'reports'),
+                $item('Backup', '💾', 'admin.backup.index', 'admin.backup.*'),
             ];
         }
         $groups['Akun'] = [
