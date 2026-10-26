@@ -12,6 +12,7 @@ use App\Models\MaterialFile;
 use App\Models\User;
 use App\Services\ChunkedUploads;
 use App\Services\MaterialAccess;
+use App\Support\AudioUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -278,7 +279,7 @@ class MaterialController extends Controller
         $rules = [];
         foreach (MaterialFile::TYPES as $type => [, , $mimes, $maxKb]) {
             $rules[$type.'s'] = ['nullable', 'array', 'max:'.MaterialFile::MAX_PER_TYPE];
-            $rules[$type.'s.*'] = ['file', 'mimes:'.$mimes, 'max:'.$maxKb];
+            $rules[$type.'s.*'] = $type === 'audio' ? AudioUpload::rules($maxKb) : ['file', 'mimes:'.$mimes, 'max:'.$maxKb];
         }
 
         return $rules;
@@ -297,7 +298,9 @@ class MaterialController extends Controller
             foreach ($request->file($type.'s', []) as $file) {
                 $material->files()->create([
                     'type' => $type,
-                    'path' => $file->store("materials/{$material->id}", 'local'),
+                    'path' => $type === 'audio'
+                        ? AudioUpload::store($file, "materials/{$material->id}")
+                        : $file->store("materials/{$material->id}", 'local'),
                     'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
                     'size' => $file->getSize(),
                     'sort_order' => ++$order,
