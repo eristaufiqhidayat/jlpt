@@ -12,7 +12,7 @@ use Database\Seeders\MasterDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Filter "Jenis Ujian" di Pelatihan Soal: level dikelompokkan per jenis tes (JLPT → JLPT N5, ...). */
+/** Filter "Jenis Ujian" di Pelatihan Soal: level dikelompokkan per jenis tes (JLPT → N5, N4, ...). */
 class QuestionLevelFilterTest extends TestCase
 {
     use RefreshDatabase;
@@ -51,7 +51,8 @@ class QuestionLevelFilterTest extends TestCase
             ->assertSee('Jenis Ujian')
             ->assertSee('<optgroup label="JLPT">', false)
             ->assertSee('value="'.$n5->id.'"', false)
-            ->assertSeeInOrder(['JLPT N5', 'JLPT N4', 'JLPT N3', 'JLPT N2', 'JLPT N1']);
+            ->assertDontSee('>JLPT N5</option>', false)
+            ->assertSeeInOrder(['<optgroup label="JLPT">', '>N5</option>', '>N4</option>', '>N3</option>', '>N2</option>', '>N1</option>'], false);
     }
 
     public function test_only_active_test_types_and_levels_are_listed(): void
@@ -61,8 +62,8 @@ class QuestionLevelFilterTest extends TestCase
 
         $this->actingAs($this->sensei())->get(route('sensei.questions.index'))
             ->assertOk()
-            ->assertSee('JLPT N5')
-            ->assertDontSee('JLPT N1')
+            ->assertSee('>N5</option>', false)
+            ->assertDontSee('>N1</option>', false)
             ->assertDontSee('<optgroup label="NAT-TEST">', false)
             ->assertDontSee('<optgroup label="J.TEST">', false);
     }
