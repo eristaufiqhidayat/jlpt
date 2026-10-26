@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
  */
 final class LevelOptions
 {
-    /** @return Collection<string, Collection<int, string>> ["JLPT" => [level_id => "JLPT N5", ...], ...] */
+    /** @return Collection<string, Collection<int, string>> ["JLPT" => [level_id => "N5", ...], ...] */
     public static function grouped(): Collection
     {
         return TestType::query()
@@ -21,7 +21,7 @@ final class LevelOptions
             ->get()
             ->filter(fn (TestType $type) => $type->levels->isNotEmpty())
             ->mapWithKeys(fn (TestType $type) => [
-                $type->name => $type->levels->mapWithKeys(fn ($level) => [$level->id => "{$type->name} {$level->code}"]),
+                $type->name => $type->levels->mapWithKeys(fn ($level) => [$level->id => $level->code]),
             ]);
     }
 }
