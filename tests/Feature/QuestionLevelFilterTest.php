@@ -54,6 +54,19 @@ class QuestionLevelFilterTest extends TestCase
             ->assertSeeInOrder(['JLPT N5', 'JLPT N4', 'JLPT N3', 'JLPT N2', 'JLPT N1']);
     }
 
+    public function test_only_active_test_types_and_levels_are_listed(): void
+    {
+        // Seeder: J.TEST & NAT-TEST belum aktif.
+        \App\Models\TestType::where('code', 'JLPT')->firstOrFail()->levels()->where('code', 'N1')->update(['is_active' => false]);
+
+        $this->actingAs($this->sensei())->get(route('sensei.questions.index'))
+            ->assertOk()
+            ->assertSee('JLPT N5')
+            ->assertDontSee('JLPT N1')
+            ->assertDontSee('<optgroup label="NAT-TEST">', false)
+            ->assertDontSee('<optgroup label="J.TEST">', false);
+    }
+
     public function test_filter_by_level_shows_only_that_level(): void
     {
         $this->questionIn('N5', 'soal level lima');
