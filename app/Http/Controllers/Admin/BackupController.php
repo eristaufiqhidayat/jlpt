@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BackupLog;
 use Illuminate\Database\Connection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,11 +23,33 @@ class BackupController extends Controller
     /** Jumlah baris per statement INSERT pada backup SQL. */
     private const INSERT_BATCH = 200;
 
+    /** Jumlah baris yang dibaca per query (tabel ber-kolom id), agar memori tetap kecil untuk tabel besar. */
+    private const READ_CHUNK = 1000;
+
+    /**
+     * Tabel berisi data sensitif. Yang ber-flag true adalah tabel sistem (sesi, cache, antrean) yang tidak ikut
+     * "pilih semua" karena tidak diperlukan untuk restore dan berbahaya bila bocor; tetap bisa dicentang manual.
+     *
+     * @var array<string, array{0: string, 1: bool}>
+     */
+    private const SENSITIVE = [
+        'users' => ['berisi hash password', false],
+        'sessions' => ['berisi ID sesi login yang aktif', true],
+        'password_reset_tokens' => ['berisi token reset password', true],
+        'personal_access_tokens' => ['berisi token akses', true],
+        'cache' => ['tabel sistem', true],
+        'cache_locks' => ['tabel sistem', true],
+        'jobs' => ['tabel sistem', true],
+        'job_batches' => ['tabel sistem', true],
+        'failed_jobs' => ['tabel sistem', true],
+    ];
+
     public function index(): View
     {
         return view('admin.backup.index', [
             'tables' => $this->tables(),
             'database' => DB::connection()->getDatabaseName(),
+            'logs' => Schema::hasTable('backup_logs') ? BackupLog::with('user:id,name')->latest('id')->take(10)->get() : collect(),
         ]);
     }
 
@@ -54,14 +77,20 @@ class BackupController extends Controller
         $selected = array_values(array_intersect($names, $data['tables']));
         $stamp = now()->format('Ymd_His');
 
-        if ($data['format'] === 'sql') {
-            $structure = $request->boolean('sql_structure');
-            $withData = $request->boolean('sql_data');
-            if (! $structure && ! $withData) {
-                return back()->withInput()->with('error', 'Untuk SQL, pilih struktur dan/atau data.');
-            }
+        if ($data['format'] === 'sql' && ! $request->boolean('sql_structure') && ! $request->boolean('sql_data')) {
+            return back()->withInput()->with('error', 'Untuk SQL, pilih struktur dan/atau data.');
+        }
 
-            return $this->sql($selected, $structure, $withData, $request->boolean('sql_drop'), $stamp);
+        // Jejak unduhan: siapa, kapan, format, tabel.
+        BackupLog::create([
+            'user_id' => $request->user()->id, 'format' => $data['format'], 'tables' => $selected, 'ip' => $request->ip(),
+        ]);
+
+        // Tabel besar bisa butuh lebih dari batas waktu default PHP (30 detik).
+        $this->noTimeLimit();
+
+        if ($data['format'] === 'sql') {
+            return $this->sql($selected, $request->boolean('sql_structure'), $request->boolean('sql_data'), $request->boolean('sql_drop'), $stamp);
         }
 
         $delimiter = match ($data['csv_delimiter'] ?? ',') {
@@ -82,6 +111,7 @@ class BackupController extends Controller
         $filename = 'backup_'.basename((string) $name).'_'.$stamp.'.sql';
 
         return response()->streamDownload(function () use ($db, $tables, $structure, $withData, $drop) {
+            $this->noTimeLimit();
             $isMysql = in_array($db->getDriverName(), ['mysql', 'mariadb'], true);
 
             echo '-- Backup database '.$db->getDatabaseName()."\n";
@@ -137,7 +167,7 @@ class BackupController extends Controller
             }
         };
 
-        foreach ($db->table($table)->cursor() as $row) {
+        foreach ($this->rows($db, $table) as $row) {
             $row = (array) $row;
             $columns ??= '('.implode(', ', array_map(fn ($c) => $this->quoteIdent($db, $c), array_keys($row))).')';
             $batch[] = '('.implode(', ', array_map(fn ($v) => match (true) {
@@ -163,6 +193,7 @@ class BackupController extends Controller
             $table = $tables[0];
 
             return response()->streamDownload(function () use ($table, $delimiter, $header, $bom) {
+                $this->noTimeLimit();
                 $out = fopen('php://output', 'w');
                 $this->writeCsv($table, $out, $delimiter, $header, $bom);
                 fclose($out);
@@ -206,7 +237,7 @@ class BackupController extends Controller
         if ($header) {
             fputcsv($fh, Schema::getColumnListing($table), $delimiter, '"', '\\');
         }
-        foreach (DB::table($table)->cursor() as $row) {
+        foreach ($this->rows(DB::connection(), $table) as $row) {
             fputcsv($fh, array_values((array) $row), $delimiter, '"', '\\');
         }
     }
@@ -226,8 +257,32 @@ class BackupController extends Controller
 
         return collect(Schema::getTables($schema))
             ->reject(fn ($t) => str_starts_with($t['name'], 'sqlite_'))
-            ->map(fn ($t) => ['name' => $t['name'], 'size' => $t['size'] ?? null])
+            ->map(fn ($t) => [
+                'name' => $t['name'],
+                'size' => $t['size'] ?? null,
+                'note' => self::SENSITIVE[$t['name']][0] ?? null,
+                'skip' => self::SENSITIVE[$t['name']][1] ?? false,
+            ])
             ->sortBy('name')->values()->all();
+    }
+
+    /**
+     * Baris tabel tanpa memuat semuanya ke memori. Tabel ber-kolom id dibaca per 1000 baris (lazyById);
+     * cursor() di MySQL tetap menampung seluruh hasil di memori PHP (buffered query), jadi hanya dipakai
+     * untuk tabel tanpa kolom id, yang umumnya kecil (cache, pivot).
+     */
+    private function rows(Connection $db, string $table): iterable
+    {
+        return Schema::connection($db->getName())->hasColumn($table, 'id')
+            ? $db->table($table)->lazyById(self::READ_CHUNK, 'id')
+            : $db->table($table)->cursor();
+    }
+
+    private function noTimeLimit(): void
+    {
+        if (function_exists('set_time_limit')) {
+            @set_time_limit(0);
+        }
     }
 
     private function quoteIdent(Connection $db, string $name): string

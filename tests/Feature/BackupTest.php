@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Models\BackupLog;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use ZipArchive;
@@ -82,5 +84,65 @@ class BackupTest extends TestCase
         $this->actingAs($this->admin())->post(route('admin.backup.download'), [
             'tables' => ['users; DROP TABLE users'], 'format' => 'sql', 'sql_structure' => '1',
         ])->assertSessionHasErrors('tables.0');
+    }
+
+    public function test_download_is_logged_and_shown_in_history(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('admin.backup.download'), [
+            'tables' => ['users', 'migrations'], 'format' => 'csv', 'csv_header' => '1',
+        ])->assertOk();
+
+        $log = BackupLog::sole();
+        $this->assertSame($admin->id, $log->user_id);
+        $this->assertSame('csv', $log->format);
+        $this->assertEqualsCanonicalizing(['users', 'migrations'], $log->tables);
+
+        $this->actingAs($admin)->get(route('admin.backup.index'))
+            ->assertOk()->assertSee('Riwayat unduhan terakhir')->assertSee("O&#039;Brien", false);
+    }
+
+    public function test_invalid_request_is_not_logged(): void
+    {
+        $this->actingAs($this->admin())->post(route('admin.backup.download'), [
+            'tables' => ['users'], 'format' => 'sql', 'sql_structure' => '0', 'sql_data' => '0',
+        ]);
+
+        $this->assertSame(0, BackupLog::count());
+    }
+
+    public function test_sensitive_tables_are_marked_and_system_tables_skip_select_all(): void
+    {
+        $this->actingAs($this->admin())->get(route('admin.backup.index'))
+            ->assertOk()
+            ->assertSee('berisi hash password')
+            ->assertSee('id="tbl-sessions" class="cb-table" data-skip="1"', false)
+            ->assertDontSee('id="tbl-users" class="cb-table" data-skip="1"', false);
+    }
+
+    public function test_large_table_is_read_in_chunks_and_complete(): void
+    {
+        // Lebih dari satu potongan baca (1000 baris) dan lebih dari satu INSERT (200 baris).
+        $rows = [];
+        for ($i = 1; $i <= 2345; $i++) {
+            $rows[] = ['subject_type' => 'level', 'subject_id' => $i, 'subject_label' => "baris-{$i}", 'action' => 'updated', 'created_at' => now()];
+        }
+        foreach (array_chunk($rows, 500) as $chunk) {
+            DB::table('master_data_logs')->insert($chunk);
+        }
+
+        $sql = $this->actingAs($this->admin())->post(route('admin.backup.download'), [
+            'tables' => ['master_data_logs'], 'format' => 'sql', 'sql_structure' => '0', 'sql_data' => '1',
+        ])->assertOk()->streamedContent();
+
+        $this->assertSame(2345, substr_count($sql, "'baris-"));
+        $this->assertStringContainsString("'baris-1'", $sql);
+        $this->assertStringContainsString("'baris-2345'", $sql);
+
+        $csv = $this->actingAs($this->admin())->post(route('admin.backup.download'), [
+            'tables' => ['master_data_logs'], 'format' => 'csv', 'csv_header' => '1', 'csv_bom' => '0',
+        ])->assertOk()->streamedContent();
+
+        $this->assertSame(2345 + 1, count(array_filter(explode("\n", $csv))));
     }
 }
