@@ -39,15 +39,27 @@ class QuestionFormJenisUjianTest extends TestCase
         $n5MojiGoi = Section::where('level_id', $this->jlpt('N5')->id)->where('code', 'moji_goi')->firstOrFail();
         $n4MojiGoi = Section::where('level_id', $n4->id)->where('code', 'moji_goi')->firstOrFail();
 
-        $this->actingAs($this->sensei())->get(route('sensei.questions.create', ['level_id' => $n4->id]))
+        $response = $this->actingAs($this->sensei())->get(route('sensei.questions.create', ['level_id' => $n4->id]))
             ->assertOk()
             ->assertSee('Jenis Ujian')
             ->assertSee('<optgroup label="JLPT">', false)
             ->assertSeeInOrder(['<optgroup label="JLPT">', '>N5</option>', '>N4</option>'], false)
             ->assertSee('<option value="'.$n4->id.'" selected>N4</option>', false)
-            ->assertSee('value="'.$n4MojiGoi->id.'"', false)
-            ->assertDontSee('<option value="'.$n5MojiGoi->id.'"', false)
             ->assertDontSee('JLPT N4 · ', false); // format lama "JLPT N4 · Moji Goi"
+
+        // Cek isi dropdown "Bagian" saja (id bagian bisa sama dengan id level di dropdown Jenis Ujian).
+        $sectionSelect = $this->selectHtml($response->getContent(), 'section_id');
+        $this->assertStringContainsString('<option value="'.$n4MojiGoi->id.'"', $sectionSelect);
+        $this->assertStringNotContainsString('<option value="'.$n5MojiGoi->id.'"', $sectionSelect);
+    }
+
+    /** Potongan HTML satu <select id="..."> sampai </select>. */
+    private function selectHtml(string $html, string $id): string
+    {
+        $start = strpos($html, '<select id="'.$id.'"');
+        $this->assertNotFalse($start, "select #{$id} tidak ditemukan");
+
+        return substr($html, $start, strpos($html, '</select>', $start) - $start);
     }
 
     public function test_edit_form_preselects_level_and_section_of_question(): void
@@ -58,10 +70,11 @@ class QuestionFormJenisUjianTest extends TestCase
             'status' => ContentStatus::Draft, 'usage' => 'practice',
         ]);
 
-        $this->actingAs($this->sensei())->get(route('sensei.questions.edit', $question))
+        $response = $this->actingAs($this->sensei())->get(route('sensei.questions.edit', $question))
             ->assertOk()
-            ->assertSee('<option value="'.$section->level_id.'" selected>N3</option>', false)
-            ->assertSee('<option value="'.$section->id.'" selected>', false);
+            ->assertSee('<option value="'.$section->level_id.'" selected>N3</option>', false);
+
+        $this->assertStringContainsString('<option value="'.$section->id.'" selected>', $this->selectHtml($response->getContent(), 'section_id'));
     }
 
     public function test_question_still_saves_with_section(): void
