@@ -13,13 +13,13 @@
 
     <form method="GET" class="filters">
         <div class="field">
-            <label for="section_id">Bagian</label>
-            <select id="section_id" name="section_id">
+            <label for="level_id">Jenis Ujian</label>
+            <select id="level_id" name="level_id">
                 <option value="">Semua</option>
-                @foreach ($sections as $group => $items)
+                @foreach ($levelGroups as $group => $items)
                     <optgroup label="{{ $group }}">
                         @foreach ($items as $id => $name)
-                            <option value="{{ $id }}" @selected(request('section_id') == $id)>{{ $group }} · {{ $name }}</option>
+                            <option value="{{ $id }}" @selected(request('level_id') == $id)>{{ $name }}</option>
                         @endforeach
                     </optgroup>
                 @endforeach
