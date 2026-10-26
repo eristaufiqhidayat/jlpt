@@ -7,7 +7,7 @@
             @if ($question->exists)
                 <a class="btn secondary" href="{{ route('sensei.questions.preview', ['question' => $question->id]) }}" target="_blank" rel="noopener">👁 Pratinjau seperti peserta</a>
             @endif
-            <a class="btn secondary" href="{{ route('sensei.questions.index', ['section_id' => $question->section_id]) }}">Kembali</a>
+            <a class="btn secondary" href="{{ route('sensei.questions.index', array_filter(['level_id' => $question->section?->level_id])) }}">Kembali</a>
         </div>
     </div>
 

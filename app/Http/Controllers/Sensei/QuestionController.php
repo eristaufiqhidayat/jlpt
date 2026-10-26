@@ -6,9 +6,9 @@ use App\Enums\ContentStatus;
 use App\Enums\QuestionType;
 use App\Http\Controllers\Controller;
 use App\Models\AttemptQuestion;
-use App\Models\Level;
 use App\Models\Passage;
 use App\Models\Question;
+use App\Support\LevelOptions;
 use App\Support\SectionOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -47,8 +47,7 @@ class QuestionController extends Controller
 
         return view('sensei.questions.index', [
             'questions' => $questions,
-            'sections' => SectionOptions::grouped(),
-            'levels' => Level::with('testType')->orderBy('test_type_id')->orderBy('sort_order')->get(),
+            'levelGroups' => LevelOptions::grouped(),
             'types' => self::TYPE_LABELS,
         ]);
     }
@@ -151,7 +150,7 @@ class QuestionController extends Controller
             $this->saveOptions($request, $question);
         });
 
-        return redirect()->route('sensei.questions.index', ['section_id' => $question->section_id])
+        return redirect()->route('sensei.questions.index', ['level_id' => $question->section()->value('level_id')])
             ->with('success', "Soal #{$question->id} diperbarui. Ujian yang sudah berjalan tetap memakai kunci lama.");
     }
 
