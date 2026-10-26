@@ -9,10 +9,14 @@
     @unless ($exam->exists)
         <form method="GET" class="card inline-form">
             <div class="field" style="flex:1">
-                <label for="pick_level">Level ujian</label>
+                <label for="pick_level">Jenis Ujian</label>
                 <select id="pick_level" name="level_id" onchange="this.form.submit()">
-                    @foreach ($levels as $l)
-                        <option value="{{ $l->id }}" @selected($level?->id === $l->id)>{{ $l->testType->name }} {{ $l->code }}</option>
+                    @foreach ($levelGroups as $group => $items)
+                        <optgroup label="{{ $group }}">
+                            @foreach ($items as $id => $name)
+                                <option value="{{ $id }}" @selected($level?->id === $id)>{{ $name }}</option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
             </div>
@@ -21,7 +25,9 @@
     @endunless
 
     @if (! $level)
-        <div class="alert warn">Belum ada level dengan bagian soal.</div>
+        <div class="alert warn">Belum ada jenis ujian yang aktif.</div>
+    @elseif (! $exam->exists && $rows->isEmpty())
+        <div class="alert warn">{{ $level->testType->name }} {{ $level->code }} belum punya bagian soal. Tambahkan bagian di Data Master terlebih dahulu.</div>
     @else
     <form method="POST" action="{{ $exam->exists ? route('sensei.exams.update', $exam) : route('sensei.exams.store') }}">
         @csrf

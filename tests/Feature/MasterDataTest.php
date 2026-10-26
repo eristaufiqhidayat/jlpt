@@ -275,6 +275,10 @@ class MasterDataTest extends TestCase
         $n1->update(['is_active' => false]);
 
         $this->actingAs($user)->get(route('sensei.exams.create'))->assertOk()
-            ->assertViewHas('levels', fn ($levels) => ! $levels->contains('id', $n1->id) && $levels->contains('code', 'N4'));
+            ->assertViewHas('levelGroups', function ($groups) use ($n1) {
+                $ids = $groups->flatMap(fn ($items) => $items->keys());
+
+                return ! $ids->contains($n1->id) && $groups->get('JLPT')?->contains('N4');
+            });
     }
 }
