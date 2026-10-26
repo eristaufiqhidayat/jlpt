@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sensei;
 use App\Enums\ContentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Passage;
+use App\Support\AudioUpload;
 use App\Support\SectionOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,7 +69,7 @@ class PassageController extends Controller
             'content' => ['nullable', 'string', 'max:20000'],
             'status' => ['required', new Enum(ContentStatus::class)],
             'image' => ['nullable', 'image', 'max:4096'],
-            'audio' => ['nullable', 'file', 'mimes:mp3,m4a,wav,ogg', 'max:40960'],
+            'audio' => ['nullable', ...AudioUpload::rules(40960)],
         ], [], ['section_id' => 'bagian', 'content' => 'isi bacaan']);
 
         $hasSomething = filled($data['content'] ?? null) || $request->hasFile('image') || $request->hasFile('audio')
@@ -91,7 +92,9 @@ class PassageController extends Controller
             }
             if ($request->hasFile($input)) {
                 $passage->$column && Storage::disk('local')->delete($passage->$column);
-                $passage->$column = $request->file($input)->store("passages/{$passage->id}", 'local');
+                $passage->$column = $input === 'audio'
+                    ? AudioUpload::store($request->file($input), "passages/{$passage->id}")
+                    : $request->file($input)->store("passages/{$passage->id}", 'local');
             }
         }
         $passage->save();

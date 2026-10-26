@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttemptQuestion;
 use App\Models\Passage;
 use App\Models\Question;
+use App\Support\AudioUpload;
 use App\Support\LevelOptions;
 use App\Support\SectionOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -199,7 +200,7 @@ class QuestionController extends Controller
             'status' => ['required', new Enum(ContentStatus::class)],
             'usage' => ['nullable', Rule::in(array_keys(Question::USAGES))],
             'image' => ['nullable', 'image', 'max:4096'],
-            'audio' => ['nullable', 'file', 'mimes:mp3,m4a,wav,ogg', 'max:20480'],
+            'audio' => ['nullable', ...AudioUpload::rules(20480)],
             'options' => ['array'],
             'options.*.content' => ['nullable', 'string', 'max:1000'],
             'options.*.image' => ['nullable', 'image', 'max:2048'],
@@ -303,7 +304,9 @@ class QuestionController extends Controller
             }
             if ($request->hasFile($input)) {
                 $question->$column && Storage::disk('local')->delete($question->$column);
-                $question->$column = $this->storeFile($request->file($input), $question);
+                $question->$column = $input === 'audio'
+                    ? AudioUpload::store($request->file($input), "questions/{$question->id}")
+                    : $this->storeFile($request->file($input), $question);
             }
         }
         $question->save();

@@ -21,7 +21,7 @@ class MediaController extends Controller
 
         // Audio soal hanya untuk sensei/admin; student lewat rute ujian yang membatasi pemutaran.
         // Materi belajar (video/PDF/PPT) boleh dibuka semua user yang login.
-        $isAudio = ! str_starts_with($path, 'materials/') && preg_match('/\.(mp3|m4a|wav|ogg)$/i', $path);
+        $isAudio = ! str_starts_with($path, 'materials/') && preg_match('/\.(mp3|m4a|mp4|wav|ogg)$/i', $path); // mp4: audio m4a lama yang tersimpan dengan ekstensi tebakan
         abort_if($isAudio && request()->user()->isExamTaker(), 403);
 
         // File materi untuk peserta mengikuti lock yang sama dengan halaman materi (materials/{id}/nama-file).

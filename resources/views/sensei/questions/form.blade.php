@@ -107,7 +107,7 @@
                         </div>
                         <div class="field">
                             <label for="audio">Audio soal (choukai)</label>
-                            <input id="audio" name="audio" type="file" accept="audio/*">
+                            <input id="audio" name="audio" type="file" accept="audio/*,.mp3,.m4a,.wav,.ogg">
                             @if ($question->audio_path)
                                 <audio controls src="{{ route('media', $question->audio_path) }}" style="width:100%;margin-top:6px"></audio>
                                 <label class="check"><input type="checkbox" name="remove_audio" value="1"> Hapus audio</label>
