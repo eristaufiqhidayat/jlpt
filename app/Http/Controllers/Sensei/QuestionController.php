@@ -8,9 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AttemptQuestion;
 use App\Models\Passage;
 use App\Models\Question;
+use App\Models\Section;
 use App\Support\AudioUpload;
 use App\Support\LevelOptions;
-use App\Support\SectionOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -133,7 +133,7 @@ class QuestionController extends Controller
 
         $next = $request->input('after') === 'new'
             ? route('sensei.questions.create', ['section_id' => $question->section_id, 'passage_id' => $question->passage_id, 'type' => $question->type->value])
-            : route('sensei.questions.index', ['section_id' => $question->section_id]);
+            : route('sensei.questions.index', ['level_id' => $question->section()->value('level_id')]);
 
         return redirect($next)->with('success', "Soal #{$question->id} tersimpan.");
     }
@@ -174,10 +174,27 @@ class QuestionController extends Controller
     {
         $options = $question->options->keyBy('label');
 
+        // "Jenis Ujian" sama dengan filter Pelatihan Soal; "Bagian" mengikuti jenis ujian yang dipilih.
+        $keepLevelId = $question->exists ? $question->section?->level_id : null;
+        $levelGroups = LevelOptions::grouped($keepLevelId);
+        $levelIds = $levelGroups->flatMap(fn ($items) => $items->keys())->values();
+        $sectionsByLevel = LevelOptions::sectionsByLevel($levelIds, $question->exists ? $question->section_id : null);
+
+        $sectionId = (int) old('section_id', $question->section_id) ?: null;
+        $levelId = (int) old('level_id', $sectionId ? Section::whereKey($sectionId)->value('level_id') : request()->integer('level_id')) ?: null;
+        if (! $levelIds->contains($levelId)) {
+            $levelId = $levelIds->first();
+        }
+
         return view('sensei.questions.form', [
             'question' => $question,
             'options' => collect(range(1, 4))->mapWithKeys(fn ($i) => [$i => $options->get($i)]),
-            'sections' => SectionOptions::grouped(),
+            'levelGroups' => $levelGroups,
+            'sectionsByLevel' => $sectionsByLevel,
+            // Untuk JavaScript: daftar [id, nama] per level agar urutan sort_order tetap terjaga.
+            'sectionsJson' => $sectionsByLevel->map(fn ($items) => $items->map(fn ($name, $id) => [$id, $name])->values()),
+            'selectedLevelId' => $levelId,
+            'selectedSectionId' => $sectionId,
             'passages' => Passage::with('section.level')->where('status', '!=', ContentStatus::Archived)
                 ->latest('id')->limit(300)->get(),
             'types' => self::TYPE_LABELS,

@@ -7,7 +7,7 @@
             <a class="btn secondary" href="{{ route('sensei.questions.preview', request()->except('page')) }}" title="Lihat soal hasil filter seperti tampilan ujian peserta">👁 Pratinjau seperti peserta</a>
             <a class="btn secondary" href="{{ route('sensei.passages.index') }}">Bacaan &amp; audio bersama</a>
             <a class="btn secondary" href="{{ route('sensei.questions.import') }}">Import Excel</a>
-            <a class="btn" href="{{ route('sensei.questions.create', ['section_id' => request('section_id')]) }}">+ Soal baru</a>
+            <a class="btn" href="{{ route('sensei.questions.create', array_filter(['level_id' => request('level_id')])) }}">+ Soal baru</a>
         </div>
     </div>
 
