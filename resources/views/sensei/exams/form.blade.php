@@ -92,6 +92,7 @@
                     <select id="question_pool" name="question_pool">
                         @foreach (\App\Models\Exam::QUESTION_POOLS as $key => $label)<option value="{{ $key }}" @selected(old('question_pool', $exam->question_pool ?? '') === $key)>{{ $label }}</option>@endforeach
                     </select>
+                    <div class="hint" id="pool-effective" hidden>Soal yang dipakai: <strong></strong></div>
                     <div class="hint">Otomatis: ujian siswa LPK memakai soal <strong>Latihan</strong>; ujian yang bisa diikuti peserta tes umum memakai soal <strong>Tes online</strong>. Soal "Keduanya" ikut di dua-duanya. Ujian bersumber soal tes tidak menampilkan pembahasan.</div>
                 </div>
                 <div class="field">
@@ -124,10 +125,10 @@
                             </td>
                             <td>
                                 {{ $row->section->name }}<br>
-                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}">Tersedia {{ $row->available_practice }} soal latihan · {{ $row->available_test }} soal tes</small>
+                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}" data-avail data-practice="{{ $row->available_practice }}" data-test="{{ $row->available_test }}">Tersedia <span data-pool="practice">{{ $row->available_practice }} soal latihan</span> · <span data-pool="test">{{ $row->available_test }} soal tes</span></small>
                             </td>
                             <td class="num"><input type="number" name="sections[{{ $sid }}][duration]" min="1" max="300" value="{{ old("sections.$sid.duration", $row->duration) }}" style="width:80px"></td>
-                            <td class="num"><input type="number" name="sections[{{ $sid }}][count]" min="1" max="200" value="{{ old("sections.$sid.count", $row->count) }}" style="width:80px"></td>
+                            <td class="num"><input type="number" data-count name="sections[{{ $sid }}][count]" min="1" max="200" value="{{ old("sections.$sid.count", $row->count) }}" style="width:80px"></td>
                             <td class="num"><input type="number" name="sections[{{ $sid }}][order]" min="0" max="50" value="{{ old("sections.$sid.order", $row->order) }}" style="width:64px"></td>
                         </tr>
                     @endforeach
@@ -147,6 +148,37 @@
     if (!cb) return;
     const t = () => f.style.display = cb.checked ? '' : 'none';
     cb.addEventListener('change', t); t();
+})();
+
+// "Tersedia" mengikuti sumber soal yang dipilih (Untuk siapa / Sumber soal), tanpa muat ulang halaman.
+(function () {
+    const audience = document.getElementById('audience'), pool = document.getElementById('question_pool');
+    if (!audience || !pool) return;
+    const labels = { practice: 'soal latihan', test: 'soal tes online' };
+    const effective = () => pool.value || (audience.value === 'internal' ? 'practice' : 'test');
+    const info = document.getElementById('pool-effective');
+
+    const update = () => {
+        const p = effective();
+        info.hidden = false;
+        info.querySelector('strong').textContent = labels[p] + (pool.value ? '' : ' (otomatis)');
+        document.querySelectorAll('[data-avail]').forEach(el => {
+            const row = el.closest('tr');
+            const enabled = row.querySelector('input[type=checkbox]')?.checked;
+            const want = parseInt(row.querySelector('[data-count]')?.value || '0', 10);
+            const have = parseInt(el.dataset[p], 10);
+            el.className = enabled && have < want ? 'error-text' : 'muted';
+            el.querySelectorAll('[data-pool]').forEach(s => s.style.fontWeight = s.dataset.pool === p ? '700' : '');
+        });
+    };
+
+    [audience, pool].forEach(el => el.addEventListener('change', update));
+    document.querySelectorAll('[data-avail]').forEach(el => {
+        const row = el.closest('tr');
+        row.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
+        row.querySelectorAll('input[type=checkbox]').forEach(i => i.addEventListener('change', update));
+    });
+    update();
 })();
 </script>
 @endpush

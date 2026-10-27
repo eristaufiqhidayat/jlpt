@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Enums\ContentStatus;
 use App\Models\Level;
+use App\Models\Question;
+use App\Models\Section;
 use App\Models\TestType;
 use App\Models\User;
 use Database\Seeders\MasterDataSeeder;
@@ -57,5 +60,51 @@ class ExamJenisUjianTest extends TestCase
         $this->actingAs($this->sensei())->post(route('sensei.exams.store'), [
             'title' => 'Coba', 'level_id' => $level->id, 'status' => 'draft', 'sections' => [1 => ['enabled' => 0]],
         ])->assertSessionHasErrors('level_id');
+    }
+
+    private function jlptN5Sections(): array
+    {
+        $level = Level::where('code', 'N5')->whereHas('testType', fn ($q) => $q->where('code', 'JLPT'))->firstOrFail();
+
+        return [$level, Section::where('level_id', $level->id)->where('code', 'moji_goi')->firstOrFail(),
+            Section::where('level_id', $level->id)->where('code', 'choukai')->firstOrFail()];
+    }
+
+    public function test_form_exposes_counts_per_pool_for_live_update(): void
+    {
+        [$level, $moji] = $this->jlptN5Sections();
+        Question::create(['section_id' => $moji->id, 'type' => 'blank', 'stem' => 'tes', 'status' => ContentStatus::Published, 'usage' => 'test']);
+
+        $this->actingAs($this->sensei())->get(route('sensei.exams.create', ['level_id' => $level->id]))
+            ->assertOk()
+            ->assertSee('data-practice="0" data-test="1"', false)
+            ->assertSee('id="pool-effective"', false);
+    }
+
+    public function test_saving_warns_about_sections_without_questions_for_chosen_pool(): void
+    {
+        [$level, $moji, $choukai] = $this->jlptN5Sections();
+        // Soal hanya untuk tes online; Choukai tidak punya soal sama sekali.
+        Question::create(['section_id' => $moji->id, 'type' => 'blank', 'stem' => 'tes', 'status' => ContentStatus::Published, 'usage' => 'test']);
+
+        $this->actingAs($this->sensei())->post(route('sensei.exams.store'), [
+            'title' => 'Tes umum', 'level_id' => $level->id, 'status' => 'draft', 'audience' => 'public',
+            'sections' => [
+                $moji->id => ['enabled' => 1, 'duration' => 20, 'count' => 5, 'order' => 1],
+                $choukai->id => ['enabled' => 1, 'duration' => 30, 'count' => 5, 'order' => 2],
+            ],
+        ])->assertSessionHasNoErrors()
+            ->assertSessionHas('warning', fn ($msg) => str_contains($msg, $choukai->name) && ! str_contains($msg, $moji->name));
+    }
+
+    public function test_no_warning_when_every_section_has_questions(): void
+    {
+        [$level, $moji] = $this->jlptN5Sections();
+        Question::create(['section_id' => $moji->id, 'type' => 'blank', 'stem' => 'tes', 'status' => ContentStatus::Published, 'usage' => 'test']);
+
+        $this->actingAs($this->sensei())->post(route('sensei.exams.store'), [
+            'title' => 'Tes umum', 'level_id' => $level->id, 'status' => 'draft', 'audience' => 'public',
+            'sections' => [$moji->id => ['enabled' => 1, 'duration' => 20, 'count' => 5, 'order' => 1]],
+        ])->assertSessionHasNoErrors()->assertSessionMissing('warning');
     }
 }

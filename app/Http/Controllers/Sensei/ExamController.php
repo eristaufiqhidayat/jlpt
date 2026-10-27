@@ -65,7 +65,8 @@ class ExamController extends Controller
         });
 
         return redirect()->route('sensei.exams.show', $exam)
-            ->with('success', "Ujian dibuat dengan kode {$exam->code}.".($exam->status === ExamStatus::Open ? '' : ' Buka ujian agar student bisa masuk.'));
+            ->with('success', "Ujian dibuat dengan kode {$exam->code}.".($exam->status === ExamStatus::Open ? '' : ' Buka ujian agar student bisa masuk.'))
+            ->with('warning', $this->emptySectionsWarning($exam));
     }
 
     public function show(Request $request, Exam $exam): View
@@ -108,7 +109,26 @@ class ExamController extends Controller
         });
 
         return redirect()->route('sensei.exams.show', $exam)
-            ->with('success', 'Ujian diperbarui. Perubahan durasi berlaku untuk peserta yang mulai setelah ini.');
+            ->with('success', 'Ujian diperbarui. Perubahan durasi berlaku untuk peserta yang mulai setelah ini.')
+            ->with('warning', $this->emptySectionsWarning($exam));
+    }
+
+    /** Peringatan bila ada bagian ujian yang tidak punya soal siap pakai untuk sumber soal ujian ini. */
+    private function emptySectionsWarning(Exam $exam): ?string
+    {
+        $exam->load('sections.section');
+        $pool = $exam->questionPool();
+        $available = $this->availableCounts($exam->sections->pluck('section_id'), $pool);
+        $empty = $exam->sections->filter(fn ($row) => ($available[$row->section_id] ?? 0) === 0)
+            ->map(fn ($row) => $row->section?->name)->filter()->values();
+
+        if ($empty->isEmpty()) {
+            return null;
+        }
+
+        return 'Bagian berikut belum punya soal "Siap pakai" untuk sumber '
+            .\App\Models\Exam::QUESTION_POOLS[$pool].': '.$empty->implode(', ')
+            .'. Peserta tidak akan mendapat soal di bagian ini.';
     }
 
     public function updateStatus(Request $request, Exam $exam): RedirectResponse
