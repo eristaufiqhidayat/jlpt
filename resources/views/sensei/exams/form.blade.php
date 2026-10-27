@@ -116,6 +116,7 @@
                 <p class="muted">Soal diambil acak dari Pelatihan Soal (yang berstatus "Siap pakai", sesuai sumber soal) saat student mulai. Durasi berlaku per bagian.</p>
                 <div class="table-wrap"><table>
                     <tr><th></th><th>Bagian</th><th class="num">Menit</th><th class="num">Jumlah soal</th><th class="num">Urutan</th></tr>
+                    @php($pool = old('question_pool', $exam->question_pool) ?: (old('audience', $exam->audience ?: 'internal') === 'internal' ? 'practice' : 'test'))
                     @foreach ($rows as $row)
                         @php($sid = $row->section->id)
                         <tr>
@@ -125,7 +126,7 @@
                             </td>
                             <td>
                                 {{ $row->section->name }}<br>
-                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}" data-avail data-practice="{{ $row->available_practice }}" data-test="{{ $row->available_test }}">Tersedia <span data-pool="practice">{{ $row->available_practice }} soal latihan</span> · <span data-pool="test">{{ $row->available_test }} soal tes</span></small>
+                                <small class="{{ $row->available < $row->count ? 'error-text' : 'muted' }}" data-avail data-practice="{{ $row->available_practice }}" data-test="{{ $row->available_test }}">Tersedia <strong data-pool="practice" @if ($pool !== 'practice') hidden @endif>{{ $row->available_practice }} soal latihan</strong><strong data-pool="test" @if ($pool !== 'test') hidden @endif>{{ $row->available_test }} soal tes online</strong></small>
                             </td>
                             <td class="num"><input type="number" name="sections[{{ $sid }}][duration]" min="1" max="300" value="{{ old("sections.$sid.duration", $row->duration) }}" style="width:80px"></td>
                             <td class="num"><input type="number" data-count name="sections[{{ $sid }}][count]" min="1" max="200" value="{{ old("sections.$sid.count", $row->count) }}" style="width:80px"></td>
@@ -168,7 +169,8 @@
             const want = parseInt(row.querySelector('[data-count]')?.value || '0', 10);
             const have = parseInt(el.dataset[p], 10);
             el.className = enabled && have < want ? 'error-text' : 'muted';
-            el.querySelectorAll('[data-pool]').forEach(s => s.style.fontWeight = s.dataset.pool === p ? '700' : '');
+            // Hanya jumlah dari sumber soal yang dipakai yang ditampilkan.
+            el.querySelectorAll('[data-pool]').forEach(s => s.hidden = s.dataset.pool !== p);
         });
     };
 

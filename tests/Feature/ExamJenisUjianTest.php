@@ -75,10 +75,15 @@ class ExamJenisUjianTest extends TestCase
         [$level, $moji] = $this->jlptN5Sections();
         Question::create(['section_id' => $moji->id, 'type' => 'blank', 'stem' => 'tes', 'status' => ContentStatus::Published, 'usage' => 'test']);
 
-        $this->actingAs($this->sensei())->get(route('sensei.exams.create', ['level_id' => $level->id]))
+        $html = $this->actingAs($this->sensei())->get(route('sensei.exams.create', ['level_id' => $level->id]))
             ->assertOk()
             ->assertSee('data-practice="0" data-test="1"', false)
-            ->assertSee('id="pool-effective"', false);
+            ->assertSee('id="pool-effective"', false)
+            ->getContent();
+
+        // Default "Siswa LPK" memakai soal latihan: jumlah soal tes disembunyikan sampai sumber soal diganti.
+        $this->assertMatchesRegularExpression('/<strong data-pool="test"\s+hidden\s*>1 soal tes online<\/strong>/', $html);
+        $this->assertMatchesRegularExpression('/<strong data-pool="practice"\s*>0 soal latihan<\/strong>/', $html);
     }
 
     public function test_saving_warns_about_sections_without_questions_for_chosen_pool(): void
