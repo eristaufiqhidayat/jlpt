@@ -100,7 +100,7 @@
                     <select id="max_attempts" name="max_attempts">
                         <option value="">Tanpa batas (boleh diulang)</option>
                         @foreach ([1, 2, 3, 5] as $n)
-                            <option value="{{ $n }}" @selected((string) old('max_attempts', $exam->max_attempts) === (string) $n)>{{ $n }} kali</option>
+                            <option value="{{ $n }}" @selected((string) old('max_attempts', $exam->max_attempts) === (string) $n)>{{ $n }} kali{{ $n === 1 ? ' (tidak bisa diulang)' : '' }}</option>
                         @endforeach
                     </select>
                     <div class="hint">Bila batas tercapai, tombol "Ulangi Ujian" tidak muncul dan kode ujian ditolak untuk peserta tersebut. Tes resmi/berbayar biasanya 1 kali.</div>

@@ -127,7 +127,7 @@ class ExamAttemptLimitTest extends TestCase
         $section = $level->sections()->orderBy('sort_order')->firstOrFail();
 
         $this->actingAs($sensei)->get(route('sensei.exams.create', ['level_id' => $level->id]))
-            ->assertOk()->assertSee('Batas pengerjaan per peserta');
+            ->assertOk()->assertSee('Batas pengerjaan per peserta')->assertSee('1 kali (tidak bisa diulang)');
 
         $this->actingAs($sensei)->post(route('sensei.exams.store'), [
             'title' => 'Tes resmi', 'level_id' => $level->id, 'status' => 'draft', 'audience' => 'public', 'max_attempts' => 1,
