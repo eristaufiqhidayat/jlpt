@@ -246,6 +246,7 @@ class ExamController extends Controller
             'is_paid' => ['boolean'],
             'audience' => ['nullable', Rule::in(array_keys(Exam::AUDIENCES))],
             'question_pool' => ['nullable', Rule::in(['practice', 'test'])],
+            'max_attempts' => ['nullable', 'integer', 'min:1', 'max:20'],
             'price' => ['nullable', 'integer', 'min:0', 'required_if:is_paid,1'],
             'pass_score' => ['nullable', 'integer', 'min:1', 'max:100'],
             'audio_play_limit' => ['nullable', 'integer', 'min:1', 'max:5'],
@@ -301,6 +302,7 @@ class ExamController extends Controller
         unset($data['sections']);
         $data['audience'] = $data['audience'] ?? $exam?->audience ?? 'internal';
         $data['question_pool'] = $data['question_pool'] ?? null; // kosong = otomatis
+        $data['max_attempts'] = $data['max_attempts'] ?? null;   // kosong = tanpa batas
         $data['is_paid'] = $request->boolean('is_paid');
         $data['price'] = $data['is_paid'] ? (int) $data['price'] : 0;
         $data['shuffle_options'] = $request->boolean('shuffle_options');

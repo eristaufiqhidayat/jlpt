@@ -96,6 +96,16 @@
                     <div class="hint">Otomatis: ujian siswa LPK memakai soal <strong>Latihan</strong>; ujian yang bisa diikuti peserta tes umum memakai soal <strong>Tes online</strong>. Soal "Keduanya" ikut di dua-duanya. Ujian bersumber soal tes tidak menampilkan pembahasan.</div>
                 </div>
                 <div class="field">
+                    <label for="max_attempts">Batas pengerjaan per peserta</label>
+                    <select id="max_attempts" name="max_attempts">
+                        <option value="">Tanpa batas (boleh diulang)</option>
+                        @foreach ([1, 2, 3, 5] as $n)
+                            <option value="{{ $n }}" @selected((string) old('max_attempts', $exam->max_attempts) === (string) $n)>{{ $n }} kali</option>
+                        @endforeach
+                    </select>
+                    <div class="hint">Bila batas tercapai, tombol "Ulangi Ujian" tidak muncul dan kode ujian ditolak untuk peserta tersebut. Tes resmi/berbayar biasanya 1 kali.</div>
+                </div>
+                <div class="field">
                     <input type="hidden" name="is_paid" value="0">
                     <label class="check"><input type="checkbox" name="is_paid" value="1" id="is_paid" @checked(old('is_paid', $exam->is_paid))> Ujian berbayar</label>
                 </div>

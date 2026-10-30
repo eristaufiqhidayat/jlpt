@@ -13,7 +13,7 @@ class Exam extends Model
     protected $fillable = [
         'sensei_id', 'level_id', 'code', 'title', 'description', 'opens_at', 'closes_at',
         'is_paid', 'price', 'pass_score', 'audio_play_limit', 'shuffle_options', 'show_result_immediately', 'status', 'audience',
-        'question_pool',
+        'question_pool', 'max_attempts',
     ];
 
     /** Sasaran ujian => label. */
@@ -37,6 +37,7 @@ class Exam extends Model
             'closes_at' => 'datetime',
             'is_paid' => 'boolean',
             'price' => 'integer',
+            'max_attempts' => 'integer',
             'shuffle_options' => 'boolean',
             'show_result_immediately' => 'boolean',
             'status' => ExamStatus::class,
@@ -64,6 +65,21 @@ class Exam extends Model
      * Sumber soal yang dipakai: 'practice' (soal Latihan + Keduanya) atau 'test' (soal Tes online + Keduanya).
      * Otomatis: ujian khusus siswa LPK memakai soal latihan; ujian yang bisa diikuti peserta tes umum memakai soal tes.
      */
+    /** Berapa kali lagi peserta ini boleh memulai ujian; null = tanpa batas. */
+    public function remainingAttemptsFor(User $student): ?int
+    {
+        if (! $this->max_attempts) {
+            return null;
+        }
+
+        return max(0, $this->max_attempts - $this->attempts()->where('student_id', $student->id)->count());
+    }
+
+    public function maxAttemptsLabel(): string
+    {
+        return $this->max_attempts ? $this->max_attempts.'× per peserta' : 'Tanpa batas';
+    }
+
     public function questionPool(): string
     {
         if (in_array($this->question_pool, ['practice', 'test'], true)) {
