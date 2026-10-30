@@ -127,7 +127,7 @@ class ExamAttemptLimitTest extends TestCase
         $section = $level->sections()->orderBy('sort_order')->firstOrFail();
 
         $this->actingAs($sensei)->get(route('sensei.exams.create', ['level_id' => $level->id]))
-            ->assertOk()->assertSee('Batas pengerjaan per peserta');
+            ->assertOk()->assertSee('Batas pengerjaan per peserta')->assertSee('1 kali (tidak bisa diulang)');
 
         $this->actingAs($sensei)->post(route('sensei.exams.store'), [
             'title' => 'Tes resmi', 'level_id' => $level->id, 'status' => 'draft', 'audience' => 'public', 'max_attempts' => 1,
@@ -135,5 +135,31 @@ class ExamAttemptLimitTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->assertSame(1, Exam::where('title', 'Tes resmi')->value('max_attempts'));
+    }
+
+    public function test_new_exam_form_defaults_to_one_attempt(): void
+    {
+        $level = Level::whereHas('testType', fn ($q) => $q->where('code', 'JLPT'))->whereHas('sections')->firstOrFail();
+
+        $html = $this->actingAs($this->user(Role::Sensei, 'sensei@x.test'))
+            ->get(route('sensei.exams.create', ['level_id' => $level->id]))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/<option value="1"\s+selected\s*>1 kali \(tidak bisa diulang\)<\/option>/', $this->maxAttemptsSelect($html));
+    }
+
+    public function test_editing_old_unlimited_exam_keeps_unlimited(): void
+    {
+        $exam = $this->exam(null);
+        $html = $this->actingAs(User::find($exam->sensei_id))->get(route('sensei.exams.edit', $exam))->assertOk()->getContent();
+
+        $select = $this->maxAttemptsSelect($html);
+        $this->assertDoesNotMatchRegularExpression('/<option value="\d+"\s+selected/', $select);
+    }
+
+    private function maxAttemptsSelect(string $html): string
+    {
+        $this->assertSame(1, preg_match('/<select id="max_attempts".*?<\/select>/s', $html, $m), 'dropdown batas pengerjaan tidak ditemukan');
+
+        return $m[0];
     }
 }

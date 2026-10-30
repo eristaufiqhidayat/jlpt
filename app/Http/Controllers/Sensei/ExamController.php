@@ -46,7 +46,8 @@ class ExamController extends Controller
         $level = $levelId ? Level::with(['testType', 'sections'])->find($levelId) : null;
 
         return view('sensei.exams.form', [
-            'exam' => new Exam(['level_id' => $level?->id, 'status' => ExamStatus::Draft, 'is_paid' => false, 'show_result_immediately' => true, 'audience' => 'internal']),
+            'exam' => new Exam(['level_id' => $level?->id, 'status' => ExamStatus::Draft, 'is_paid' => false, 'show_result_immediately' => true, 'audience' => 'internal',
+                'max_attempts' => 1]), // default: sekali, tidak bisa diulang
             'levelGroups' => $levelGroups,
             'level' => $level,
             'rows' => $level ? $this->sectionRows($level) : collect(),
