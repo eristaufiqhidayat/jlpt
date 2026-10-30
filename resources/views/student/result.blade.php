@@ -69,10 +69,11 @@
                 @if ($attempt->certificate)
                     <a class="btn gold" href="{{ route('certificates.show', $attempt->certificate) }}">🏅 Download Sertifikat</a>
                 @endif
-                @if ($exam->isOpen())
+                @php($remaining = $exam->remainingAttemptsFor(auth()->user()))
+                @if ($exam->isOpen() && $remaining !== 0)
                     <form method="POST" action="{{ route('student.join') }}" style="display:inline">
                         @csrf <input type="hidden" name="code" value="{{ $exam->code }}">
-                        <button class="btn" type="submit">↻ Ulangi Ujian</button>
+                        <button class="btn" type="submit">↻ Ulangi Ujian @if ($remaining !== null)<small>(sisa {{ $remaining }} kali)</small>@endif</button>
                     </form>
                 @else
                     <a class="btn" href="{{ route('dashboard') }}">Ke beranda</a>

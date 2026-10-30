@@ -64,6 +64,13 @@ class ExamAccessService
             throw new ExamAccessException('Ujian ini berbayar. Selesaikan pembayaran terlebih dahulu.', 'payment_required');
         }
 
+        if ($exam->remainingAttemptsFor($student) === 0) {
+            throw new ExamAccessException(
+                'Anda sudah mencapai batas pengerjaan ujian ini ('.$exam->max_attempts.'×). Hubungi admin bila perlu mengulang.',
+                'attempt_limit',
+            );
+        }
+
         if ($exam->sections->isEmpty()) {
             throw new ExamAccessException('Ujian ini belum memiliki bagian soal.', 'not_ready');
         }
